@@ -268,6 +268,24 @@ Estos son los resultados que los usuarios clave esperan lograr, categorizados en
 
 #### 1.2.2.3. Lean UX Hypothesis Statements
 
+Las hipótesis transforman las suposiciones más críticas en declaraciones testeables, priorizadas según su impacto y nivel de riesgo.
+
+**Test (Alto valor, alto riesgo)**
+* Hipótesis 1 (Riesgo de Valor):
+El equipo cree que implementando sensores en 20 contenedores y un dashboard de optimización para los administradores municipales se logrará una reducción significativa de los costos operativos. Se sabrá que esto es cierto cuando, al finalizar un piloto de 3 meses, se observe una disminución medible del 15% en el tiempo y combustible utilizados para la recolección en esos puntos específicos.
+
+
+* Hipótesis 2 (Riesgo de Negocio):
+El equipo cree que presentando los resultados positivos del piloto a los decisores municipales se logrará demostrar un ROI claro que justifique la contratación del servicio. Se sabrá que esto es cierto cuando al menos 2 de 5 municipalidades contactadas firmen una carta de intención para un contrato anual post-piloto.
+
+**Ship & Measure (Alto valor, bajo riesgo)**
+* Hipótesis 3 (Riesgo de Adopción de Usuario):
+El equipo cree que diseñando una aplicación móvil intuitiva con rutas guiadas para los conductores de recolección se logrará una alta tasa de adopción de la nueva metodología. Se sabrá que esto es cierto cuando en pruebas de usabilidad, el 90% de los conductores completen sus tareas principales sin asistencia y califiquen la herramienta con un 4/5 o superior en facilidad de uso.
+
+
+* Hipótesis 4 (Riesgo de Valor para el Ciudadano):
+El equipo cree que ofreciendo una aplicación móvil informativa a los ciudadanos se logrará mejorar su percepción sobre el servicio de limpieza. Se sabrá que esto es cierto cuando una encuesta post-lanzamiento muestre un aumento del 25% en el índice de satisfacción ciudadana en las zonas donde opera WasteTrack.
+
 #### 1.2.2.4. Lean UX Canvas
 
 ## 1.3. Segmentos objetivos
