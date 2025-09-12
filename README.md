@@ -570,6 +570,7 @@ El sistema de navegación de WasteTrack se ha diseñado con un enfoque **omnican
 
 ---
 
+
 ## 5.3. Landing Page UI Design
 
 ### 5.3.1. Landing Page Wireframe
