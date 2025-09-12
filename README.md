@@ -250,10 +250,21 @@ Los resultados de negocio se establecen utilizando el framework AARRR (Pirate Me
 * Revenue (Ingresos): Se logrará un Ingreso Anual por Contrato (ACV) promedio de S/ 60,000 por distrito.
 * Referral (Recomendación): 1 de cada 3 municipalidades satisfechas referirá activamente la solución a otros distritos.
 
+**Users (Usuarios):**
 
-#### 1.2.2.1. Lean UX Problem Statements
+La identificación de usuarios se basa en el análisis del problema. Estas proto-personas representan los segmentos objetivo:
 
-#### 1.2.2.2. Lean UX Assumptions
+| Usuario               | Perfil                                     | Objetivos                                                                             | Obstáculos                                                                      |
+|-----------------------|--------------------------------------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| Jorge (Administrador) | 45 años, Gerente de Servicios a la Ciudad. | Reducir costos, eliminar quejas ciudadanas, modernizar la gestión.                    | Falta de datos, presión política, procesos burocráticos, resistencia al cambio. |
+| Carlos (Conductor)    | 38 años, Conductor de camión recolector.   | Completar su ruta de forma eficiente, evitar sobrecargas, terminar su turno a tiempo. | Rutas ineficientes, tráfico impredecible, contenedores desbordados o vacíos.    |
+| Maria (Ciudadana)     | 32 años, Vecina y madre de familia.        | Tener calles limpias, saber cuándo sacar la basura, sentirse segura en su comunidad.  | Servicio de recolección impredecible, falta de canales de información.          |
+
+**User Outcomes (Resultados de Usuario)**
+
+Estos son los resultados que los usuarios clave esperan lograr, categorizados en funcional, emocional y aspiracional.
+* Administrador: Reducir costos y optimizar recursos (funcional), sentirse en control y proactivo (emocional), ser visto como un gestor público innovador (aspiracional).
+* Conductor: Completar la ruta más rápido (funcional), sentirse menos frustrado y más eficiente (emocional), ser reconocido como un servidor público valioso (aspiracional).
 
 #### 1.2.2.3. Lean UX Hypothesis Statements
 
