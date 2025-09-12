@@ -288,6 +288,10 @@ El equipo cree que ofreciendo una aplicación móvil informativa a los ciudadano
 
 #### 1.2.2.4. Lean UX Canvas
 
+El Lean UX Canvas sintetiza visualmente todos los elementos del proceso Lean UX en una sola página, facilitando la comprensión compartida del equipo y la toma de decisiones ágiles. A continuación se presenta la información condensada para cada sección del canvas:
+
+![lean-ux-canvas](assets/1.introduction/1.2.solution-profile/1.2.2.lean-ux-process/lean-ux-canvas.png)
+
 ## 1.3. Segmentos objetivos
 
 # Capítulo II: Requirements Elicitation & Analysis
