@@ -195,6 +195,72 @@ En el siguiente cuadro se describe las acciones realizadas y enunciados de concl
 
 ## 1.3. Segmentos objetivos
 
+Esta sección describe los perfiles de los tres segmentos de usuarios clave identificados en el dominio del problema de la gestión de residuos sólidos en Lima Metropolitana. La caracterización de cada segmento se respalda con datos estadísticos para contextualizar sus necesidades, desafíos y el entorno en el que operan.
+
+**Segmento 1: Administrador de Limpieza Municipal**
+
+**Descripción:**  
+Este segmento representa al cliente principal y usuario estratégico de la plataforma WasteTrack. Son funcionarios o gestores públicos de nivel medio a alto, responsables de la planificación, ejecución y supervisión de los servicios de limpieza pública en uno de los 43 distritos de Lima.  
+Su principal motivación es cumplir con los objetivos de gestión (eficiencia, cobertura, presupuesto) mientras manejan la presión política y las quejas ciudadanas. Actualmente, su toma de decisiones es mayormente reactiva debido a la falta de datos en tiempo real, lo que les genera frustración y limita su capacidad para innovar.
+
+**Características Demográficas (Perfil Inferido):**
+
+| Aspecto                  | Detalle                                                                |
+|--------------------------|------------------------------------------------------------------------|
+| Rango de Edad            | 40 - 60 años                                                           |
+| Nivel Educativo          | Universitario o superior (Ingeniería, Administración Pública u afines) |
+| Entorno Laboral          | Oficinas municipales, ambiente burocrático con procesos establecidos   |
+| Familiaridad Tecnológica | Manejo avanzado de ofimática; limitada experiencia con analítica e IoT |
+
+**Datos Estadísticos de Sustento:**
+- El 40% de los residuos de la capital terminan en botaderos informales (SNI, 2024).
+- Costo por tonelada de basura recolectada: entre S/ 120 y S/ 180 (PUCP, 2022).
+- El 35% de los ciudadanos considera la acumulación de basura como el 2º problema ambiental más grave (Infobae Perú, 2024b).
+
+---
+
+**Segmento 2: Conductor de Recolección**
+
+**Descripción:**  
+Este segmento corresponde al usuario final operativo, pieza clave en la ejecución del servicio. Son trabajadores de primera línea que operan los vehículos recolectores y siguen las rutas diarias.  
+Su principal objetivo es completar la jornada de trabajo de forma eficiente y segura. Se sienten frustrados por rutas ineficientes, tráfico de la ciudad, fallas mecánicas y contenedores desbordados o vacíos.
+
+**Características Demográficas (Perfil Inferido):**
+
+| Aspecto                  | Detalle                                                                                                            |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------|
+| Rango de Edad            | 25 - 50 años                                                                                                       |
+| Nivel Educativo          | Secundaria completa o educación técnica                                                                            |
+| Entorno Laboral          | Trabajo de campo, operando vehículos pesados, a menudo en turnos nocturnos                                         |
+| Familiaridad Tecnológica | Uso cotidiano de smartphones y apps (WhatsApp, Facebook, Waze). Capacidad de adopción de apps laborales intuitivas |
+
+**Datos Estadísticos de Sustento:**
+- Responsables de manejar más de 8,000 toneladas de residuos diarios en Lima (Actualidad Ambiental, 2018).
+- Enfrentan puntos críticos de acumulación, como los 35 identificados en el Cercado de Lima (Infobae Perú, 2024a).
+
+---
+
+**Segmento 3: Ciudadano / Vecino Residente**
+
+**Descripción:**  
+Este segmento representa al beneficiario final del servicio y la principal fuente de validación social del proyecto.  
+Abarca a toda la población residente de Lima Metropolitana, con la necesidad de vivir en un entorno limpio, seguro y saludable.  
+Desean un servicio predecible y con canales de información transparentes, pero sienten desconfianza hacia la gestión municipal por la irregularidad del servicio.
+
+**Características Demográficas (Generales de Lima):**
+
+| Aspecto                  | Detalle                                                    |
+|--------------------------|------------------------------------------------------------|
+| Rango de Edad            | Todos los rangos                                           |
+| Nivel Socioeconómico     | Diverso, todos los niveles de la capital                   |
+| Entorno                  | Alta densidad poblacional, diversidad de contextos urbanos |
+| Familiaridad Tecnológica | Alta penetración de smartphones en todos los segmentos     |
+
+**Datos Estadísticos de Sustento:**
+- Generan los miles de toneladas de residuos diarios y son los más afectados por una mala gestión (Actualidad Ambiental, 2018).
+- El 35% de los ciudadanos ya considera la basura un problema prioritario en su vida diaria (Infobae Perú, 2024b).
+
+
 # Capítulo II: Requirements Elicitation & Analysis
 
 ## 2.1. Competidores
