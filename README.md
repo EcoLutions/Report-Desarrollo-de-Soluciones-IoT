@@ -301,7 +301,7 @@ Este capítulo presenta el diseño de la experiencia de usuario (UX) y la interf
 
 ## 5.1. Style Guidelines
 
-En esta sección se definen las directrices de estilo visual que regirán el diseño de la interfaz de usuario en los diferentes entornos donde estará presente la solución. Estas guías aseguran coherencia estética, usabilidad y reconocimiento de marca a lo largo de todas las plataformas y dispositivos.
+En esta sección de style se definen las directrices de estilo visual que regirán el diseño de la interfaz de usuario en los diferentes entornos donde estará presente la solución. Estas guías aseguran coherencia estética, usabilidad y reconocimiento de marca a lo largo de todas las plataformas y dispositivos.
 
 ### 5.1.1. General Style Guidelines
 En esta sección se definen los lineamientos generales de diseño visual para garantizar coherencia en todos los productos digitales de WasteTrack.  
