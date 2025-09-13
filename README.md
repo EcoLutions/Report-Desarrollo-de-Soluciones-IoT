@@ -301,13 +301,17 @@ Este capítulo presenta el diseño de la experiencia de usuario (UX) y la interf
 
 ## 5.1. Style Guidelines
 
-En esta sección de style se definen las directrices de estilo visual que regirán el diseño de la interfaz de usuario en los diferentes entornos donde estará presente la solución. Estas guías aseguran coherencia estética, usabilidad y reconocimiento de marca a lo largo de todas las plataformas y dispositivos.
+En esta sección de Style Guidelines se definen las directrices de estilo visual que regirán el diseño de la interfaz de usuario en los diferentes entornos donde estará presente la solución. Estas guías aseguran coherencia estética, usabilidad y reconocimiento de marca a lo largo de todas las plataformas y dispositivos.
 
 ### 5.1.1. General Style Guidelines
 En esta sección se definen los lineamientos generales de diseño visual para garantizar coherencia en todos los productos digitales de WasteTrack.  
+
 - **Paleta de colores:**  
 Se establece una paleta compuesta por negro, blanco y cuatro tonos de verde que representan sostenibilidad, limpieza y tecnología.  
-![Paleta de colores](./assets/uiux/paleta_wastetrack_final.png)
+
+<p align="center">
+  <img src="./assets/0.cover/paleta.jpg" alt="Paleta de colores" width="400"/>
+</p>
 
 - **Tipografía:**  
 Se utilizarán tipografías modernas y legibles, priorizando la jerarquía visual.  
@@ -316,8 +320,16 @@ Ejemplo: *Montserrat* para títulos y *Roboto* para texto de párrafo.
 - **Espaciado y grillas:**  
 Se aplicarán márgenes internos de 16px en formularios y botones, y entre secciones márgenes que varían entre 24px y 32px.  
 
+<p align="center">
+  <img src="./assets/0.cover/space.jpg" alt="Espaciado" width="400"/>
+</p>
+
 - **Branding:**  
-El logo de WasteTrack debe transmitir sostenibilidad, innovación y confianza, alineado a la paleta de verdes definida.
+El logo de WasteTrack debe transmitir sostenibilidad, innovación y confianza, alineado a la paleta de verdes definida.  
+
+<p align="center">
+  <img src="./assets/0.cover/logowaste.jpg" alt="Logo WasteTrack" width="400"/>
+</p>
 
 ---
 
@@ -337,39 +349,74 @@ Se consideran dimensiones estándar para asegurar una experiencia de usuario óp
 
 #### Navegación
 La navegación sigue un **diseño minimalista y funcional**, priorizando la rapidez de acceso a la información crítica.  
-- En web, el menú superior permite acceder a secciones principales como *Inicio, Contenedores, Rutas, Alertas y Reportes*.  
+- En web, el menú superior permite acceder a secciones principales como:  
+  **Inicio, Mapa de contenedores y rutas, Contenedores, Ajustes y Acerca de nosotros**.  
 - La sección activa se resalta en **negrita** y con un subrayado verde, siguiendo la paleta de colores corporativa.  
 
-**Ejemplo de navegación web:**
+**Ejemplo de navegación web:**  
+`[Inicio] [Mapa de contenedores y rutas] [Contenedores] [Ajustes] [Acerca de nosotros]`
 
-`[Inicio] [Contenedores] [Rutas] [Alertas] [Reportes]`
+<p align="center">
+  <img src="./assets/0.cover/nave.jpg" alt="Logo WasteTrack" width="400"/>
+</p>
 
 ---
 
 #### Iconos
 Se utilizan íconos simples y universales que refuercen la comprensión visual de las funciones.  
+- **Inicio:** 🏠  
+- **Mapa de contenedores y rutas:** 🗺️  
 - **Contenedores:** 🗑️  
-- **Rutas:** 🗺️  
-- **Alertas:** ⚠️  
-- **Reportes:** 📊  
-- **Configuración:** ⚙️  
+- **Alertas Activas:** ⚠️  
+- **Tipo de Residuos:** ♻️  
+- **Actividad Reciente:** 📊  
+- **Ajustes:** ⚙️  
+- **Acerca de nosotros:** ℹ️  
 
 ---
 
-#### Formularios
-Los formularios mantienen un diseño limpio y accesible, contemplando estados diferenciados:  
+#### Alertas Activas
+La sección de **alertas activas** se muestra de manera destacada con colores de alto contraste.  
+- **Azul:** Funcionamiento normal.  
+- **Amarillo:** Advertencia preventiva.  
+- **Rojo:** Alerta crítica (contenedor lleno, falla en ruta, incidencia IoT).  
+Cada alerta incluye un icono, un texto descriptivo breve y la hora de emisión.  
 
-- **Normal:** Campos con borde gris claro.  
-- **Correcto:** Resaltado en verde.  
-- **Error:** Bordes y mensajes en rojo con retroalimentación inmediata.  
+<p align="center">
+  <img src="./assets/0.cover/alertas.jpg" alt="Logo WasteTrack" width="400"/>
+</p>
 
 ---
 
-#### Checkboxes, Radio Buttons y Switches
-Estos componentes se diseñan con un estilo atractivo e intuitivo, respetando la paleta verde de WasteTrack.  
-- **Checkboxes:** Verde al seleccionar.  
-- **Radio buttons:** Con punto central resaltado.  
-- **Switches:** Cambio dinámico con animación de izquierda a derecha.  
+#### Tipo de Residuos
+El sistema clasifica los residuos utilizando **colores distintivos** y **iconografía clara** para facilitar la identificación rápida en la interfaz:  
+
+<p align="center">
+  <img src="./assets/0.cover/residuos.jpg" alt="Logo WasteTrack" width="400"/>
+</p>
+
+- 🥬 **Orgánicos** – Verde (#4CAF50)  
+- 🧴 **Plásticos** – Azul (#2196F3)  
+- 📄 **Papel** – Amarillo (#FFEB3B)  
+- 🍾 **Vidrio** – Morado (#9C27B0)  
+- 🗑️ **General** – Negro (#000000)  
+
+Cada categoría se representa en contenedores, mapas y dashboards, garantizando uniformidad visual y mejor comprensión por parte de los usuarios.  
+ 
+
+Esto permite que el usuario identifique rápidamente el estado de los contenedores y el tipo de material.
+
+---
+
+#### Actividad Reciente
+La sección de **actividad reciente** registra las interacciones clave dentro de la plataforma, mostrando un historial en orden cronológico.  
+- **Ejemplo:** “Contenedor #34 vaciado – 10:45 am”  
+- Incluye íconos de acción y colores de estado.  
+- La interfaz utiliza tarjetas minimalistas con sombra suave y espaciado de 16 px para facilitar la lectura.  
+
+<p align="center">
+  <img src="./assets/0.cover/actividad.jpg" alt="Logo WasteTrack" width="400"/>
+</p>
 
 ---
 
@@ -390,11 +437,11 @@ La paleta de WasteTrack combina sostenibilidad y tecnología:
 ---
 
 #### Aplicación Móvil
-La versión móvil adapta los principios del diseño web a pantallas táctiles, optimizando la usabilidad.
+La versión móvil adapta los principios del diseño web a pantallas táctiles, optimizando la usabilidad.  
 
 - **Dimensiones base:** Adaptativas entre 360 px y 480 px.  
 - **Navegación móvil:**  
-  - Menú inferior fijo con íconos: [Inicio | Contenedores | Alertas | Reportes | Cuenta].  
+  - Menú inferior fijo con íconos: [Inicio | Contenedores | Alertas Activas | Actividad Reciente | Cuenta].  
   - Opción de menú hamburguesa para configuraciones avanzadas.  
 - **Componentes táctiles:** Botones grandes, espaciado de al menos 16 px entre elementos, retroalimentación visual al presionar.  
 - **Iconografía optimizada:** Íconos simples y claros para facilitar la interacción.  
@@ -406,61 +453,111 @@ Las interfaces IoT de WasteTrack (pantallas embebidas en camiones y dashboards d
 
 - **Diseño simplificado:** Menús grandes, botones de acción destacados.  
 - **Contraste elevado:** Verde/rojo para alertas críticas en tiempo real.  
-- **Visualización rápida:** Indicadores gráficos de nivel de llenado y rutas en ejecución.  
+- **Visualización rápida:** Indicadores gráficos de nivel de llenado, tipo de residuo y rutas en ejecución.  
 - **Iconografía clara:** Íconos minimalistas acompañados de etiquetas de texto.  
 
 ---
 
-## 5.2. Information Architecture
-La arquitectura de información de WasteTrack busca **facilitar la comprensión, navegación y acceso eficiente a los datos**, asegurando que tanto funcionarios municipales como ciudadanos interactúen de manera intuitiva con el sistema.
+## 5.2. Information Architecture 
+La arquitectura de información de **WasteTrack** busca **facilitar la comprensión, navegación y acceso eficiente a los datos**, asegurando que tanto funcionarios municipales como ciudadanos interactúen de manera **intuitiva, coherente y ágil** con el sistema.  
+El diseño se basa en principios de **usabilidad, accesibilidad y consistencia omnicanal**, adaptándose a las características de cada dispositivo (web, móvil e IoT).  
 
 ---
 
 ### 5.2.1. Organization Systems
-Se aplican distintos sistemas de organización de la información:
+Para organizar la información, WasteTrack implementa diferentes **modelos de estructuración**, orientados a reducir la carga cognitiva y aumentar la eficiencia del usuario:
 
 - **Jerarquía visual:**  
-  Destaca datos críticos como contenedores llenos, alertas y retrasos en rutas.  
+  La información se organiza con distintos niveles de importancia, destacando datos críticos como:
+  - Alertas de contenedores llenos.  
+  - Retrasos en rutas de recolección.  
+  - Indicadores de sostenibilidad y eficiencia.  
+  Este enfoque asegura que el usuario pueda priorizar acciones urgentes sin distracciones.  
 
 - **Secuencial (paso a paso):**  
-  Para procesos como registro de usuario, configuración de alertas y exportación de reportes.  
+  Procesos sensibles se presentan de forma guiada y lineal, como:  
+  - Registro de nuevos usuarios.  
+  - Configuración de preferencias de alertas.  
+  - Generación y descarga de reportes en PDF/Excel.  
+  Este modelo garantiza que los usuarios completen cada proceso sin omitir pasos esenciales.  
 
-- **Matricial:**  
-  En dashboards de funcionarios: tablas y tarjetas con contenedores, rutas y camiones activos.  
+- **Matricial (multidimensional):**  
+  Utilizado principalmente en los **dashboards de funcionarios municipales**, permite la combinación de múltiples criterios para analizar información:
+  - Estado de contenedores vs. tipo de residuos.  
+  - Rutas activas vs. historial de cumplimiento.  
+  - Comparación de camiones activos por zonas.  
+  Este enfoque en “tablas y tarjetas interactivas” facilita la **toma de decisiones estratégicas** en tiempo real.  
 
 ---
 
 ### 5.2.2. Labeling Systems
-El sistema emplea etiquetas claras y comprensibles.  
+El sistema de etiquetado de WasteTrack emplea **lenguaje simple, intuitivo y consistente**, evitando tecnicismos innecesarios y priorizando la **rapidez de reconocimiento**.  
+Cada plataforma adapta sus etiquetas a las necesidades de su público objetivo.  
 
-**Aplicación Web:**  
-- **Inicio:** Página principal con visión general.  
-- **Contenedores:** Estado y nivel de llenado.  
-- **Rutas:** Optimización y monitoreo de rutas.  
-- **Alertas:** Configuración y visualización de notificaciones críticas.  
-- **Reportes:** Exportación de datos en PDF/Excel.  
+---
 
-**Aplicación Móvil (Ciudadanos):**  
-- **Home:** Vista general de alertas y estado de la zona.  
-- **Notificaciones:** Alertas personalizadas sobre residuos y retrasos.  
-- **Mapa:** Localización de contenedores y camiones.  
-- **Cuenta:** Datos y preferencias del usuario.  
+#### 📌 Aplicación Web (Funcionarios y Administradores)
+| Etiqueta        | Descripción                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+| **Inicio**      | Página principal con métricas globales, indicadores clave y estado general. |
+| **Contenedores**| Visualización del nivel de llenado, estado de sensores y ubicación en mapa. |
+| **Rutas**       | Planificación, seguimiento y optimización de rutas de recolección.          |
+| **Alertas**     | Panel de notificaciones críticas (retrasos, fallos de sensores, incidencias).|
+| **Reportes**    | Generación y exportación de datos en PDF o Excel con filtros avanzados.     |
+| **Ajustes**     | Configuración de usuarios, roles, permisos y parámetros del sistema.        |
+| **Acerca de**   | Información institucional, soporte y documentación del sistema.             |
 
-**Aplicación IoT (Funcionarios):**  
-- **Dashboard:** Estado de sensores en tiempo real.  
-- **Rutas activas:** Seguimiento de vehículos en movimiento.  
-- **Historial:** Acceso a rutas pasadas.  
+---
+
+#### 📱 Aplicación Móvil (Ciudadanos y Conductores)
+| Etiqueta             | Descripción                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| **Home**             | Vista general de alertas y resumen del estado en la zona.                   |
+| **Mapa**             | Ubicación de contenedores cercanos y seguimiento de camiones en tiempo real.|
+| **Notificaciones**   | Alertas personalizadas sobre retrasos, llenado de contenedores y novedades. |
+| **Actividad Reciente**| Histórico de interacciones: reportes enviados, alertas recibidas.           |
+| **Cuenta**           | Perfil del usuario, configuración de preferencias y opciones de sesión.     |
+| **Acerca de**        | Información de la aplicación, soporte y contacto directo.                   |
+
+---
+
+#### ⚙️ Interfaces IoT (Dashboards y Camiones)
+| Etiqueta             | Descripción                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| **Dashboard**        | Estado en tiempo real de sensores y alertas críticas.                       |
+| **Rutas Activas**    | Seguimiento de vehículos en ejecución, tiempos estimados y atrasos.          |
+| **Alertas Activas**  | Panel de incidencias críticas en campo (contenedor lleno, sensor inactivo). |
+| **Tipo de Residuos** | Visualización por colores: Orgánicos, Plástico, Papel, Vidrio, General.      |
+| **Actividad Reciente**| Registro de operaciones realizadas (inicio/final de rutas, incidencias).    |
+| **Configuración**    | Ajustes básicos de dispositivo y conexión IoT.                              |
+
+---
+
+Con esta clasificación y estandarización de etiquetas, WasteTrack garantiza:  
+- **Claridad semántica:** cada etiqueta comunica exactamente su función.  
+- **Consistencia visual y lingüística:** evita confusión entre plataformas.  
+- **Eficiencia operativa:** reduce tiempos de aprendizaje y errores en la interacción.  
 
 ---
 
 ### 5.2.3. SEO Tags and Meta Tags
 Las etiquetas y metadatos están optimizados para mejorar el posicionamiento en buscadores.  
 
+Meta tags estratégicos se usarán para posicionar la landing page y aplicación web de **WasteTrack**, mejorando su visibilidad y acceso.  
+
+- **Title tag:** Título principal que será visualizado tanto en la landing page, versión mobile y aplicación web.  
+- **Meta Description:** Descripción que explica de qué trata WasteTrack.  
+- **Meta Keywords:** Palabras clave para que los usuarios encuentren la aplicación web más rápido y sencillo.  
+- **Author and Copyright:** Enmarcar derechos de autor para WasteTrack.  
+- **Viewport:** Sirve para indicar al navegador cómo ajustar el tamaño de la página en relación con el dispositivo.  
+
 <title>WasteTrack - Gestión inteligente de residuos con IoT</title>
 <meta name="description" content="WasteTrack optimiza la gestión de residuos con sensores IoT, rutas inteligentes y reportes en tiempo real."/>
 <meta name="keywords" content="WasteTrack, IoT, gestión de residuos, rutas inteligentes, sostenibilidad, smart city"/>
-<meta name="author" content="TECHSOFTWARE INNOVATIONS"/>
+<meta name="author" content="EcoLutions"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+---
 
 ### 5.2.4. Searching Systems
 El sistema de búsqueda en WasteTrack se ha diseñado para ser **rápido, flexible e intuitivo**, permitiendo a los distintos perfiles de usuarios (funcionarios municipales, ciudadanos y administradores) acceder de forma eficiente a la información crítica sobre residuos, rutas y alertas.
@@ -569,7 +666,6 @@ El sistema de navegación de WasteTrack se ha diseñado con un enfoque **omnican
 - **IoT:** Control rápido y simplificado para camiones y dashboards municipales.  
 
 ---
-
 
 ## 5.3. Landing Page UI Design
 
