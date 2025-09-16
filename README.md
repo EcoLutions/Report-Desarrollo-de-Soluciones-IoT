@@ -92,6 +92,10 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
     * [2.3.3. User Journey Mapping](#233-user-journey-mapping)
     * [2.3.4. Empathy Mapping](#234-empathy-mapping)
   * [2.4. Big Picture EventStorming](#24-big-picture-eventstorming)
+    * [2.4.1. Introduction and Methodology](#241-introduction-and-methodology)
+    * [2.4.2. Session Process](#242-session-process)
+    * [2.4.3. Resultados Obtenidos](#243-resultados-obtenidos)
+    * [2.4.4. Results Obtained](#244-results-obtained)
   * [2.5. Ubiquitous Language](#25-ubiquitous-language)
 * [Capítulo III: Requirements Specification](#capítulo-iii-requirements-specification)
   * [3.1. User Stories](#31-user-stories)
@@ -150,6 +154,8 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
 * [Conclusiones](#conclusiones)
 * [Bibliografía](#bibliografía)
 * [Anexos](#anexos)
+  * [Anexo A: Enlaces de Herramientas Colaborativas](#anexo-a-enlaces-de-herramientas-colaborativas)
+    * [A.1 Big Picture Event Storming - Workspace Figma](#a1-big-picture-event-storming---workspace-figma)
 <!-- TOC -->
 
 <div style="page-break-before: always"></div>
@@ -657,6 +663,125 @@ Identificar procesos actuales, herramientas utilizadas y puntos de dolor especí
 
 ## 2.4. Big Picture EventStorming
 
+### 2.4.1. Introduction and Methodology
+
+**Propósito de la Sesión**
+
+El Big Picture EventStorming para WasteTrack tiene como objetivo mapear de manera colaborativa todo el dominio de la gestión de residuos sólidos en Lima Metropolitana. Esta técnica permite al equipo comprender el landscape completo del negocio, identificar procesos clave y exponer potenciales problemas u oportunidades donde la solución IoT puede generar valor.
+
+**Configuración de la Sesión**
+
+* **Participantes**: 5 miembros del equipo EcoLutions
+* **Duración**: 2 horas distribuidas en múltiples fases
+* **Herramientas**: Figma para colaboración visual en tiempo real
+* **Comunicación**: Discord para coordinación durante el proceso
+* **Enfoque**: Mapeo completo del ecosistema de gestión de residuos desde generación hasta disposición final
+
+### 2.4.2. Session Process
+
+**Fase 1: Chaotic Exploration - Identificación de Eventos del Dominio**
+
+En esta fase inicial, el equipo identificó de manera colaborativa todos los eventos significativos que ocurren en el dominio de gestión de residuos sólidos. Se aplicó la técnica de lluvia de ideas estructurada, donde cada miembro contribuyó con eventos desde su perspectiva del problema.
+
+**Eventos identificados por categorías:**
+* **Generación y Disposición**: Household Waste Generated, Commercial Waste Generated, Hospital Waste Generated, Industrial Waste Generated, Organic Waste Generated
+* **Acumulación**: Container Filled, Container Overflowed, Container Saturated
+* **Detección y Comunicación**: Problem Detected by Citizen, Citizen Complaint Registered, Call Received at Call Center
+* **Planificación Operativa**: Weekly Schedule Defined, Budget Approved, Route Planned, Staff Assigned
+* **Ejecución**: Truck Dispatched, Route Started, Collection Point Reached, Container Emptied
+* **Transporte y Disposición**: Waste Transported, Transfer Station Reached, Landfill Reached, Waste Finally Disposed
+* **Mantenimiento**: Maintenance Scheduled, Vehicle Repaired, Container Replaced, Fuel Supplied
+* **Regulación**: Report Sent to MINAM
+
+Total de eventos identificados: 54 eventos únicos
+
+**Fase 2: Enforcing the Timeline - Organización Temporal**
+
+Para organizar los eventos temporalmente, el equipo aplicó la estrategia **Combining Multiple Strategies**, utilizando:
+
+**Temporal Milestones** como estructura principal:
+* **Milestone 1**: "Waste Accumulation" (Generación → Llenado de contenedores)
+* **Milestone 2**: "Problem Detection & Response" (Detección → Respuesta de emergencia)
+* **Milestone 3**: "Collection Execution" (Planificación → Recolección completada)
+* **Milestone 4**: "Final Disposal & Reporting" (Transporte → Reportes)
+
+**Swimlanes** para procesos paralelos:
+
+* Maintenance Operations (continuo)
+
+**Fase 3: People and Systems - Identificación de Actores**
+
+El equipo identificó los actores humanos y sistemas que participan en los eventos:
+
+**People (8 actores principales):**
+* Waste Generator, Citizen Reporter, Municipal Administrator, Collection Supervisor
+* Emergency Dispatcher, Truck Driver, Maintenance Technician
+
+**Systems (5 sistemas identificados):**
+* Municipal Management System, Fleet Management System, Call Center System
+* MINAM Reporting System, Social Media Platforms
+
+**Fase 4: Explicit Walkthrough - Validación del Flujo**
+
+Durante esta fase, el equipo validó la secuencia temporal completa, asegurando que:
+* Los eventos fluyan lógicamente de un milestone al siguiente
+* Los actores estén correctamente asignados a sus eventos respectivos
+* Los sistemas soporten adecuadamente los procesos identificados
+* Las disrupciones se integren coherentemente con el flujo principal
+
+**Fase 5: Problems and Opportunities - Identificación de Hot Spots**
+
+Se identificaron Hot Spots críticos que representan ineficiencias, gaps o oportunidades de mejora:
+
+**Hot Spots principales:**
+* **Visibility Gap**: Entre Container Filled y Container Problem Occurred
+* **Detection Dependency**: Dependencia de detección manual ciudadana
+* **Route Planning Inefficiency**: Planificación manual sin datos reales
+* **Communication Fragmentation**: Múltiples canales descoordinados
+* **Resource Coordination Gap**: Falta de sincronización entre recursos
+* **Manual Data Collection**: Reportes propensos a errores
+* **Reactive Maintenance**: Mantenimiento no predictivo
+
+### 2.4.3. Resultados Obtenidos
+
+**Big Picture Event Storm Completo**
+
+El resultado final del Big Picture Event Storming presenta una vista panorámica integral del dominio de gestión de residuos sólidos en Lima Metropolitana. El Event Storm completo organiza 54 eventos únicos en un timeline horizontal que abarca desde la generación inicial de residuos hasta la disposición final y cumplimiento regulatorio.
+
+![Big Picture Event Storm Completo](assets/2.requirements/2.4.big-picture-eventstorming/big-picture-complete.png)
+
+La visualización muestra claramente la estructura temporal organizada en 4 milestones principales, con actores humanos (amarillo) y sistemas tecnológicos (rosa) distribuidos estratégicamente en sus puntos de interacción correspondientes. El timeline principal se complementa con una swimlane paralela que contiene los procesos continuos de mantenimiento, demostrando la complejidad operativa del dominio.
+
+Los hot spots identificados revelan 13 oportunidades críticas donde WasteTrack puede intervenir para optimizar procesos, eliminar ineficiencias y agregar valor medible a las operaciones municipales de gestión de residuos.
+
+Para acceder al Event Storm interactivo y explorar los detalles completos de la sesión colaborativa, consulte el Anexo A.1 donde se encuentra el enlace al workspace de Figma utilizado durante el proceso.
+
+
+### 2.4.4. Results Obtained
+
+**Procesos Core Identificados**
+1. **Waste Accumulation Management**: Gestión de acumulación y detección de problemas
+2. **Emergency Response Coordination**: Coordinación de respuestas a incidencias
+3. **Route Planning and Execution**: Planificación y ejecución de rutas de recolección
+4. **Compliance and Reporting**: Cumplimiento regulatorio y reportes
+
+**Bounded Contexts Candidatos Identificados**
+
+El Big Picture Event Storming reveló 5 bounded contexts naturales para el diseño de la solución:
+1. **Container Monitoring**: Monitoreo y gestión de contenedores
+2. **Route Optimization**: Planificación y optimización de rutas
+3. **Fleet Management**: Gestión de vehículos y recursos
+4. **Citizen Communication**: Comunicación con ciudadanos
+5. **Regulatory Compliance**: Cumplimiento y reportes regulatorios
+
+**Oportunidades Estratégicas para WasteTrack**
+
+Los Hot Spots identificados representan oportunidades de valor cuantificables:
+* Reducción de 30-40% en tiempo de detección de problemas mediante sensores IoT
+* Optimización de rutas con potencial de 20-25% ahorro en combustible
+* Automatización de reportes regulatorios eliminando errores manuales
+* Integración de comunicación ciudadana reduciendo tiempo de respuesta en 50%
+
 ## 2.5. Ubiquitous Language
 
 # Capítulo III: Requirements Specification
@@ -790,3 +915,13 @@ Identificar procesos actuales, herramientas utilizadas y puntos de dolor especí
 >Zeo Route Planner. (2025). Maximización de la eficiencia para la optimización de rutas de reciclaje. https://zeorouteplanner.com/es/recycling-operations/
 
 # Anexos
+
+## Anexo A: Enlaces de Herramientas Colaborativas
+
+### A.1 Big Picture Event Storming - Workspace Figma
+
+**Enlace**: [https://www.figma.com/board/QhNzzswJLValHHzMBSmIX4/Big-Picture-Event-Storming?node-id=0-1&t=5gyvsiZiBpko8mBJ-1](https://www.figma.com/board/QhNzzswJLValHHzMBSmIX4/Big-Picture-Event-Storming?node-id=0-1&t=5gyvsiZiBpko8mBJ-1)
+
+**Descripción**: Workspace interactivo de Figma donde se desarrolló la sesión completa de Big Picture Event Storming para WasteTrack. Incluye todas las fases del proceso: identificación de eventos, organización temporal, mapeo de actores y sistemas, y identificación de hot spots.
+
+**Acceso**: Enlace público de solo lectura para revisión y validación del trabajo colaborativo realizado por el equipo EcoLutions.
