@@ -92,6 +92,10 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
     * [2.3.3. User Journey Mapping](#233-user-journey-mapping)
     * [2.3.4. Empathy Mapping](#234-empathy-mapping)
   * [2.4. Big Picture EventStorming](#24-big-picture-eventstorming)
+    * [2.4.1. Introduction and Methodology](#241-introduction-and-methodology)
+    * [2.4.2. Session Process](#242-session-process)
+    * [2.4.3. Resultados Obtenidos](#243-resultados-obtenidos)
+    * [2.4.4. Results Obtained](#244-results-obtained)
   * [2.5. Ubiquitous Language](#25-ubiquitous-language)
 * [Capítulo III: Requirements Specification](#capítulo-iii-requirements-specification)
   * [3.1. User Stories](#31-user-stories)
@@ -150,6 +154,8 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
 * [Conclusiones](#conclusiones)
 * [Bibliografía](#bibliografía)
 * [Anexos](#anexos)
+  * [Anexo A: Enlaces de Herramientas Colaborativas](#anexo-a-enlaces-de-herramientas-colaborativas)
+    * [A.1 Big Picture Event Storming - Workspace Figma](#a1-big-picture-event-storming---workspace-figma)
 <!-- TOC -->
 
 <div style="page-break-before: always"></div>
