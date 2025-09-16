@@ -97,6 +97,7 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
     * [2.4.3. Resultados Obtenidos](#243-resultados-obtenidos)
     * [2.4.4. Results Obtained](#244-results-obtained)
   * [2.5. Ubiquitous Language](#25-ubiquitous-language)
+    * [Términos del Dominio](#términos-del-dominio)
 * [Capítulo III: Requirements Specification](#capítulo-iii-requirements-specification)
   * [3.1. User Stories](#31-user-stories)
   * [3.2. Impact Mapping](#32-impact-mapping)
