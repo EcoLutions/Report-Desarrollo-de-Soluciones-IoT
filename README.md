@@ -1029,8 +1029,10 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 ##### 4.2.2.6.2. Bounded Context Database Design Diagram
 
 # Capítulo V: Solution UI/UX Design
+En esta sección, presentaremos el diseño del producto como parte integral del sistema. El diseño de producto abarcará los componentes físicos como el software. Además, se va a detallar como los componentes influyen en la interacción humano-computadora
 
 ## 5.1. Style Guidelines
+Esta sección sentará las bases para contar con un repositorio para el formato visual de nuestros productos. Dicho proceso es necesario para tener una consistencia visual en los productos tanto landing, web como mobile.
 
 ### 5.1.1. General Style Guidelines
 
