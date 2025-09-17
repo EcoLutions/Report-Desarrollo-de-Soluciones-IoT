@@ -1123,6 +1123,49 @@ Este componente se muestra cuando no hay datos disponibles en una sección. Prop
 
 ![nothingToShowCard.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/nothingToShowCard.png)
 
+### Mobile Style Guidelines
+Estos componentes son la base visual de la aplicación móvil y se han diseñado para ser consistentes en ambas plataformas (iOS y Android). Su implementación se realizará como un conjunto de componentes reutilizables en un framework multiplataforma como Flutter, garantizando una experiencia de marca unificada.
+
+![typography.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/typography.png)
+
+Define la jerarquía de texto para las pantallas móviles, estableciendo tamaños y pesos para títulos de pantalla, títulos de sección, cuerpo de texto y textos de ayuda. Utiliza la fuente 'Inter' para una legibilidad óptima en pantallas pequeñas.
+
+![buttons.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/buttons.png)
+
+El sistema de botones incluye una variante primaria para acciones principales, una secundaria para opciones alternativas, y un botón de selección (tipo chip o segmented control) para alternar entre estados activo e inactivo.
+
+![formFields.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/formFields.png)
+
+Es un componente de entrada de texto con un diseño limpio que incluye un label y un placeholder. Contempla un estado de error, resaltando el borde para notificar al usuario sobre datos incorrectos, garantizando una validación clara en los formularios.
+
+![cards.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/cards.png)
+
+Se definen dos tipos de tarjetas. La Tarjeta de Selección combina un ícono, título y subtítulo, ideal para menús o listas de opciones. La Tarjeta de Información es más simple y se usa para mostrar datos clave de manera concisa, como el estado de un contenedor.
+
+![uiItems.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/uiItems.png)
+
+Este grupo incluye la Notificación en Lista, diseñada para mostrar actualizaciones o mensajes dentro de una lista con su título, descripción y marca de tiempo. También define los Indicadores de Página (puntos), utilizados comúnmente en carruseles o flujos de onboarding para mostrar el progreso.
+
+![completeStateWindow.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/completeStateWindow.png)
+
+Este componente se utiliza para comunicar estados importantes que ocupan toda la pantalla, como pantallas de carga, error, o estados vacíos (empty states). Incluye un ícono, un título y un mensaje descriptivo para guiar al usuario.
+
+#### iOS Mobile Style Guidelines
+Para ofrecer una experiencia nativa y familiar a los usuarios de iOS, los siguientes componentes se deben implementar siguiendo las "Human Interface Guidelines" de Apple. Se recomienda el uso de componentes nativos de SwiftUI.
+- Barra de Navegación Superior: Este componente presenta un título centrado y un botón de "Atrás" a la izquierda, que combina un ícono de chevron con texto. Esta estructura es un patrón estándar en iOS y se implementa nativamente con NavigationView en SwiftUI.
+- Barra de Pestañas (Tab Bar): Es la barra de navegación principal en la parte inferior de la pantalla. Se caracteriza por su fondo translúcido con efecto blur. Los íconos de las pestañas inactivas no llevan texto, mientras que la pestaña activa se resalta con un color y muestra su etiqueta correspondiente. Se implementa con el componente TabView.
+
+- ![iosStyle.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/iosStyle.png)
+
+#### Android Mobile Style Guidelines
+Estos componentes se basan en los principios de Material Design para asegurar una integración perfecta con el ecosistema Android. Su implementación se recomienda utilizando los componentes de Jetpack Compose.
+- Barra de Aplicación Superior (Top App Bar): A diferencia de iOS, la barra de navegación superior de Android alinea el título a la izquierda, justo después del ícono de navegación (flecha para retroceder o ícono de "hamburguesa"). Este componente se implementa con TopAppBar en Jetpack Compose.
+- Barra de Navegación Inferior: Este componente de navegación inferior se caracteriza por tener un fondo sólido y mostrar siempre las etiquetas de texto para todos los íconos, tanto para la pestaña activa como para las inactivas, facilitando el reconocimiento de cada sección. Se implementa con el componente NavigationBar.
+
+![androidStyle.png](assets/images/chapter5/styleGuidelines/mobileStyleGuidelines/androidStyle.png)
+
+### IoT Style Guidelines
+
 ## 5.2. Information Architecture
 
 ### 5.2.1. Organization Systems
