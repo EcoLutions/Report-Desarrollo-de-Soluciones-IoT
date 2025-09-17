@@ -1355,6 +1355,38 @@ El mock-up de la Landing Page ofrece una representación visual más avanzada de
 
 ### 5.4.1. Applications Wireframes
 
+### Mobile Applications Wireframes
+A continuación, se presentan los wireframes de baja fidelidad para la aplicación móvil del ciudadano. Estos wireframes ilustran la estructura básica y la disposición de los elementos en cada pantalla, proporcionando una visión clara de la experiencia del usuario y el flujo de navegación dentro de la aplicación.
+
+### Flujo de usuario: Ciudadano
+Este flujo está diseñado para ser simple e intuitivo, permitiendo a cualquier ciudadano interactuar con el sistema de gestión de residuos de su municipalidad.
+
+#### Pantallas de bienvenida e integración (Onboarding)
+Representa el primer contacto del usuario con la aplicación. A través de una serie de pantallas, se presenta la propuesta de valor, se le permite al usuario seleccionar su rol ("Ciudadano") y, crucialmente, buscar y elegir la municipalidad a la que pertenece para personalizar el contenido de la aplicación.
+
+![onboardingCitizen.png](assets/images/chapter4/mobileApplicationUxUi/onboardingCitizen.png)
+
+#### Vista principal (Mapa)
+Es el centro de la experiencia del ciudadano. Muestra un mapa en tiempo real con la ubicación de los contenedores de basura cercanos. Desde aquí, el usuario puede visualizar el estado de los contenedores y la ruta estimada del camión recolector. La barra de navegación inferior le da acceso directo a las funciones más importantes: "Mapa" y "Reportar".
+
+![mainViewMap.png](assets/images/chapter4/mobileApplicationUxUi/mainViewMap.png)
+
+#### Menú de municipalidad
+Este es un menú contextual que se despliega al presionar el ícono de la municipalidad en la vista principal. Su función principal es permitir al usuario cambiar de municipalidad de manera rápida y heurística, sin tener que navegar a una pantalla de configuración separada.
+
+![municipalityMenu.png](assets/images/chapter4/mobileApplicationUxUi/municipalityMenu.png)
+
+#### Reporte de incidencia
+Muestra un formulario simple y directo para que el ciudadano pueda reportar anónimamente problemas relacionados con la basura. Incluye campos para seleccionar el tipo de incidencia, añadir una descripción opcional y adjuntar una fotografía como evidencia, fomentando la colaboración para mantener la ciudad limpia.
+
+![incidenceReport.png](assets/images/chapter4/mobileApplicationUxUi/incidenceReport.png)
+
+#### Centro de notificaciones
+Esta pantalla funciona como una bandeja de entrada donde el usuario recibe actualizaciones importantes. Aquí se le notificará sobre el estado de sus reportes (ej. "reporte recibido", "reporte solucionado") y otros avisos relevantes de su municipalidad. Cada notificación puede ser eliminada individualmente.
+
+![notifications.png](assets/images/chapter4/mobileApplicationUxUi/notifications.png)
+
+
 ### 5.4.2. Applications Wire flow Diagrams
 
 ### 5.4.3. Applications Mock-ups
