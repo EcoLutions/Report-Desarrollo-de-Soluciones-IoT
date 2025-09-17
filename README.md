@@ -1226,6 +1226,54 @@ Las etiquetas para elementos interactivos se han estandarizado para ser claras, 
 Para la representación de datos dentro de formularios, tablas y vistas de detalle, se utilizan etiquetas descriptivas breves que definen claramente la información mostrada. Encabezados como **Nivel de Llenado**, **Estado del Dispositivo** o **Rol** son consistentes a través de toda la plataforma, asegurando que el usuario pueda escanear y comprender la información rápidamente, independientemente de la sección en la que se encuentre.
 
 ### 5.2.3. SEO Tags and Meta Tags
+A continuación se detallan los valores para las etiquetas SEO y Meta Tags recomendadas para las páginas clave del proyecto.
+
+#### 1. Landing Page
+
+El objetivo de esta página es atraer, informar y convertir a nuevos usuarios (municipios y ciudadanos). Por lo tanto, las etiquetas están optimizadas para motores de búsqueda públicos como Google.
+
+* **Title:**
+  * **Valor:** `WasteTrack | Gestión Inteligente de Residuos para Ciudades Modernas`
+  * **Descripción:** Es conciso, incluye el nombre de la marca al inicio y las palabras clave principales ("Gestión Inteligente de Residuos", "Ciudades Modernas"). Tiene una longitud ideal para una buena visualización en los resultados de búsqueda.
+
+* **Meta Tag Description:**
+  * **Valor:** `Transforma la gestión de residuos de tu ciudad con WasteTrack. Usamos sensores IoT y optimización de rutas para una recolección de basura eficiente y sostenible. ¡Descubre más!`
+  * **Descripción:** Ofrece un resumen atractivo de la propuesta de valor, utilizando palabras clave secundarias ("sensores IoT", "optimización de rutas", "recolección de basura") y finalizando con una llamada a la acción.
+
+* **Meta Tag Keywords:**
+  * **Valor:** `gestión de residuos, contenedores inteligentes, recolección de basura, optimización de rutas, IoT, ciudades inteligentes, sostenibilidad, software municipal, WasteTrack`
+  * **Descripción:** Agrupa los términos de búsqueda más relevantes para el servicio. Aunque su peso en el SEO moderno ha disminuido, sigue siendo una buena práctica para contextualizar el contenido de la página.
+
+* **Meta Tag Author:**
+  * **Valor:** `WasteTrack`
+  * **Descripción:** Identifica al creador o propietario del contenido, en este caso, el nombre del producto o la startup.
+
+#### 2. Aplicación Web
+
+Estas páginas no están destinadas a ser indexadas por motores de búsqueda públicos, ya que requieren autenticación. El objetivo aquí es la experiencia de usuario, especialmente en los títulos que se muestran en las pestañas del navegador.
+
+* **Title (Estructura Dinámica):**
+  * **Valor:** `[Nombre de la Vista Actual] - WasteTrack`
+  * **Descripción:** Se utiliza una estructura dinámica donde el título de la página específica precede al nombre de la marca. Esto ayuda a los usuarios a identificar rápidamente qué pestaña corresponde a qué tarea.
+  * **Ejemplos para Administrador:**
+    * `Dashboard - WasteTrack`
+    * `Gestión de Contenedores - WasteTrack`
+    * `Rutas Activas - WasteTrack`
+  * **Ejemplos para Ciudadano:**
+    * `Mapa de Recolección - WasteTrack`
+    * `Mis Reportes - WasteTrack`
+
+* **Meta Tag Description:**
+  * **Valor:** `Plataforma de WasteTrack para la gestión y monitoreo en tiempo real de la recolección de residuos urbanos.`
+  * **Descripción:** Se puede usar una descripción general para todas las páginas internas de la aplicación, ya que su propósito no es el SEO público. Describe la función principal de la plataforma.
+
+* **Meta Tag Keywords:**
+  * **Valor:** `dashboard, monitoreo IoT, rutas, reportes de ciudadanos, gestión municipal, nivel de llenado, sensores, mapa de recolección`
+  * **Descripción:** Incluye términos relacionados con las funcionalidades internas de la aplicación.
+
+* **Meta Tag Author:**
+  * **Valor:** `WasteTrack`
+  * **Descripción:** Mantiene la consistencia de la marca.
 
 ### 5.2.4. Searching Systems
 
