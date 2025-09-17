@@ -1331,8 +1331,16 @@ La navegación del sitio web estático está orientada a guiar a los potenciales
 * **Llamadas a la Acción (Call to Action - CTAs):** Se utilizan botones prominentes (**Registrarse**, **Solicita demostración**) en puntos estratégicos para guiar a los visitantes hacia las acciones de conversión.
 
 ## 5.3. Landing Page UI Design
+En esta sección se presentan los wireframes y mock-ups de alta fidelidad diseñados para la página de aterrizaje (landing page) del producto. El objetivo principal de esta página es captar la atención de potenciales clientes (municipalidades y ciudadanos), comunicar claramente la propuesta de valor del servicio y motivar a los visitantes a registrarse o solicitar una demostración.
 
 ### 5.3.1. Landing Page Wireframe
+En esta sección, se muestra un esquema básico del diseño de la Landing Page, donde se resaltan las principales áreas de contenido, como el encabezado y las secciones de beneficios para ciudadanos y municipalidades. Este wireframe representa la estructura fundamental de la página sin detalles visuales específicos.
+
+![landing-wireframe-1.png](assets/images/chapter5/landingPageUiDesign/landing-wireframe-1.png)
+![landing-wireframe-2.png](assets/images/chapter5/landingPageUiDesign/landing-wireframe-2.png)
+![landing-wireframe-3.png](assets/images/chapter5/landingPageUiDesign/landing-wireframe-3.png)
+![landing-wireframe-4.png](assets/images/chapter5/landingPageUiDesign/landing-wireframe-4.png)
+![landing-wireframe-5.png](assets/images/chapter5/landingPageUiDesign/landing-wireframe-5.png)
 
 ### 5.3.2. Landing Page Mock-up
 
