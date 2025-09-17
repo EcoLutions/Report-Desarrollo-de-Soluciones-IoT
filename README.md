@@ -1066,6 +1066,62 @@ Se ha seleccionado un estilo roboto para la tipografía utilizada en la aplicaci
 El tono de comunicación adoptará un enfoque serio, formal, respetuoso y sereno. Este tono refuerza la percepción de profesionalismo, que es esencial en un sistema que gestiona servicios públicos. Al mantener un tono formal, se transmite credibilidad a los usuarios, asegurándoles que están interactuando con una plataforma confiable y bien estructurada. Además, el respeto en la comunicación es fundamental para fomentar una relación positiva con los usuarios, promoviendo la colaboración y el compromiso con la gestión eficiente de residuos. La serenidad en el tono ayuda a crear una experiencia de usuario agradable, lo que es crucial para mantener la atención y satisfacción del usuario en un entorno digital.
 
 ### 5.1.2. Web, Mobile and IoT Style Guidelines
+### Web Style Guidelines
+#### Componentes
+#### Tipografía
+El sistema de tipografía define la jerarquía visual de la aplicación. Utiliza la fuente 'Inter' para garantizar legibilidad y una apariencia moderna. Se establecen estilos claros para encabezados (H1 a H4), párrafos, texto secundario y enlaces, asegurando consistencia en toda la interfaz. En una implementación con Vue, estas clases de Tailwind CSS se aplicarían directamente en las plantillas para mantener un estilo coherente y escalable.
+
+![typography.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/typography.png)
+
+#### Botones
+Este componente define un conjunto de botones de acción con tres variantes: primario, secundario y de acción en tabla. Será implementado como un único componente reutilizable en Vue que acepta propiedades (props) para modificar su estilo y tamaño. El botón primario se usará para llamadas a la acción principales, el secundario para acciones alternativas, y la variante de tabla para operaciones contextuales dentro de filas de datos.
+
+![buttons.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/buttons.png)
+
+#### Campos de formulario
+Este componente agrupa varios tipos de campos de entrada, como texto, email, contraseña, select, textarea y un estado deshabilitado. Se implementará como un componente base en Vue, personalizable a través de props para cambiar su tipo (type), placeholder, label y estado. Su diseño minimalista y funcional asegura una experiencia de usuario clara al capturar información en formularios.
+
+![formFields.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/formFields.png)
+
+#### Barra lateral (Administrador)
+Este componente es un menú de navegación vertical diseñado para el panel de administración. Incluye un espacio para el logo, enlaces de navegación con íconos, y una sección de perfil y cierre de sesión en la parte inferior. Implementado en Vue, utilizará vue-router para gestionar las rutas de la aplicación, con un estado activo que resalta la sección actual, ofreciendo una navegación intuitiva y organizada.
+
+![sideBar.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/sideBar.png)
+
+#### Encabezado de página
+El componente de encabezado de página muestra el título de la vista actual y la información del usuario que ha iniciado sesión. Implementado en Vue, este componente recibirá el título de la página como una prop para hacerlo dinámico y mostrará un avatar y el nombre del usuario, sirviendo como un punto de referencia constante en la parte superior de la interfaz.
+
+![header.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/header.png)
+
+#### Tabla de datos
+Este componente se utilizará para mostrar información de manera estructurada en filas y columnas. Incluye una cabecera (thead) para los títulos y un cuerpo (tbody) para los datos, además de una columna dedicada para botones de acción. Se puede implementar utilizando una librería como PrimeVue con su componente <DataTable> para añadir fácilmente funcionalidades avanzadas como ordenación, paginación y filtros.
+
+![dataTables.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/dataTables.png)
+
+#### Ventana modal
+Este componente es una ventana emergente (modal) que se superpone al contenido principal para solicitar una confirmación del usuario. Incluye un título, un mensaje descriptivo y botones de acción como "Cancelar" y "Aceptar". En Vue, se puede implementar utilizando el componente <Dialog> de PrimeVue o crearlo desde cero, gestionando su visibilidad con una variable de estado para controlar cuándo debe mostrarse.
+
+![modalWindow.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/modalWindow.png)
+
+#### Notificación toast
+El componente de notificación toast se utiliza para mostrar mensajes cortos y no intrusivos sobre el resultado de una acción (por ejemplo, "Éxito al guardar"). Aparece en una esquina de la pantalla y desaparece automáticamente. En Vue, se puede gestionar eficientemente con librerías como vue-toastification para manejar colas de notificaciones y diferentes estados (éxito, error, advertencia).
+
+![toastNotification.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/toastNotification.png)
+
+#### Tarjeta de métrica
+Este componente es una tarjeta simple diseñada para mostrar un dato o indicador clave (KPI) de forma destacada en un dashboard. Su diseño minimalista se centra en un valor numérico grande y una etiqueta descriptiva. Como componente de Vue, recibirá el dato y la etiqueta como props para ser reutilizado fácilmente en cualquier panel de control.
+
+![metricCard.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/metricCard.png)
+
+#### Tarjeta de gráfico
+Es un contenedor diseñado específicamente para albergar visualizaciones de datos, como gráficos de barras o líneas. Define un área con un título claro donde se puede renderizar un gráfico. En una aplicación Vue, este componente actuaría como un wrapper, integrando librerías de gráficos como Chart.js o ApexCharts a través de sus respectivos adaptadores para Vue.
+
+![graphicCard.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/graphicCard.png)
+
+#### Tarjeta de estado vacío
+Este componente se muestra cuando no hay datos disponibles en una sección. Proporciona un mensaje claro al usuario explicando la situación e incluye un botón de llamada a la acción para guiarlo sobre cómo proceder (por ejemplo, "Crear nuevo colaborador"). Es fundamental para una buena experiencia de usuario, evitando pantallas en blanco y confusas.
+
+![nothingToShowCard.png](assets/images/chapter5/styleGuidelines/webStyleGuidelines/nothingToShowCard.png)
 
 ## 5.2. Information Architecture
 
