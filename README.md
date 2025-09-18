@@ -95,7 +95,6 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
     * [2.4.1. Introduction and Methodology](#241-introduction-and-methodology)
     * [2.4.2. Session Process](#242-session-process)
     * [2.4.3. Resultados Obtenidos](#243-resultados-obtenidos)
-    * [2.4.4. Results Obtained](#244-results-obtained)
   * [2.5. Ubiquitous Language](#25-ubiquitous-language)
 * [Capítulo III: Requirements Specification](#capítulo-iii-requirements-specification)
   * [3.1. User Stories](#31-user-stories)
@@ -251,15 +250,16 @@ En esta fase inicial, el equipo identificó de manera colaborativa todos los eve
 
 **Eventos identificados por categorías:**
 * **Generación y Disposición**: Household Waste Generated, Commercial Waste Generated, Hospital Waste Generated, Industrial Waste Generated, Organic Waste Generated
-* **Acumulación**: Container Filled, Container Overflowed, Container Saturated
+* **Pre-Disposición Ciudadana**: Waste Segregated at Source, Container Location Searched, Container Availability Checked, Waste Type Identified
+* **Acumulación**: Container Filled, Container Overflowed, Container Saturated, Waste Deposited in Container, Waste Left Beside Container, Waste Disposed Out Off-Schedule
 * **Detección y Comunicación**: Problem Detected by Citizen, Citizen Complaint Registered, Call Received at Call Center
 * **Planificación Operativa**: Weekly Schedule Defined, Budget Approved, Route Planned, Staff Assigned
-* **Ejecución**: Truck Dispatched, Route Started, Collection Point Reached, Container Emptied
+* **Ejecución**: Truck Dispatched, Route Started, Collection Point Reached, Container Emptied, Route Modified Due to Traffic
 * **Transporte y Disposición**: Waste Transported, Transfer Station Reached, Landfill Reached, Waste Finally Disposed
 * **Mantenimiento**: Maintenance Scheduled, Vehicle Repaired, Container Replaced, Fuel Supplied
 * **Regulación**: Report Sent to MINAM
 
-Total de eventos identificados: 54 eventos únicos
+Total de eventos identificados: 61 eventos únicos
 
 **Fase 2: Enforcing the Timeline - Organización Temporal**
 
@@ -272,7 +272,6 @@ Para organizar los eventos temporalmente, el equipo aplicó la estrategia **Comb
 * **Milestone 4**: "Final Disposal & Reporting" (Transporte → Reportes)
 
 **Swimlanes** para procesos paralelos:
-
 * Maintenance Operations (continuo)
 
 **Fase 3: People and Systems - Identificación de Actores**
@@ -300,36 +299,38 @@ Durante esta fase, el equipo validó la secuencia temporal completa, asegurando 
 Se identificaron Hot Spots críticos que representan ineficiencias, gaps o oportunidades de mejora:
 
 **Hot Spots principales:**
-* **Visibility Gap**: Entre Container Filled y Container Problem Occurred
+* **Citizen Education Gap**: Not knowing how to segregate correctly
+* **Container Discovery Problem**: No information on container location/availability
+* **Visibility Gap**: There is no real-time visibility of the fill level
+* **Behavioral Issues**: Citizens do not respect schedules or locations
 * **Detection Dependency**: Dependencia de detección manual ciudadana
 * **Route Planning Inefficiency**: Planificación manual sin datos reales
 * **Communication Fragmentation**: Múltiples canales descoordinados
 * **Resource Coordination Gap**: Falta de sincronización entre recursos
 * **Manual Data Collection**: Reportes propensos a errores
 * **Reactive Maintenance**: Mantenimiento no predictivo
+* **Overflow Management**: Gestión inadecuada de contenedores desbordados
 
 ### 2.4.3. Resultados Obtenidos
 
 **Big Picture Event Storm Completo**
 
-El resultado final del Big Picture Event Storming presenta una vista panorámica integral del dominio de gestión de residuos sólidos en Lima Metropolitana. El Event Storm completo organiza 54 eventos únicos en un timeline horizontal que abarca desde la generación inicial de residuos hasta la disposición final y cumplimiento regulatorio.
+El resultado final del Big Picture Event Storming presenta una vista panorámica integral del dominio de gestión de residuos sólidos en Lima Metropolitana. El Event Storm completo organiza 61 eventos únicos en un timeline horizontal que abarca desde la generación inicial de residuos hasta la disposición final y cumplimiento regulatorio.
 
 ![Big Picture Event Storm Completo](assets/2.requirements/2.4.big-picture-eventstorming/big-picture-complete.png)
 
 La visualización muestra claramente la estructura temporal organizada en 4 milestones principales, con actores humanos (amarillo) y sistemas tecnológicos (rosa) distribuidos estratégicamente en sus puntos de interacción correspondientes. El timeline principal se complementa con una swimlane paralela que contiene los procesos continuos de mantenimiento, demostrando la complejidad operativa del dominio.
 
-Los hot spots identificados revelan 13 oportunidades críticas donde WasteTrack puede intervenir para optimizar procesos, eliminar ineficiencias y agregar valor medible a las operaciones municipales de gestión de residuos.
+Los hot spots identificados revelan 11 oportunidades críticas donde WasteTrack puede intervenir para optimizar procesos, eliminar ineficiencias y agregar valor medible a las operaciones municipales de gestión de residuos.
 
 Para acceder al Event Storm interactivo y explorar los detalles completos de la sesión colaborativa, consulte el Anexo A.1 donde se encuentra el enlace al workspace de Figma utilizado durante el proceso.
 
-
-### 2.4.4. Results Obtained
-
 **Procesos Core Identificados**
 1. **Waste Accumulation Management**: Gestión de acumulación y detección de problemas
-2. **Emergency Response Coordination**: Coordinación de respuestas a incidencias
-3. **Route Planning and Execution**: Planificación y ejecución de rutas de recolección
-4. **Compliance and Reporting**: Cumplimiento regulatorio y reportes
+2. **Citizen Behavior Optimization**: Optimización de comportamientos ciudadanos en disposición de residuos
+3. **Emergency Response Coordination**: Coordinación de respuestas a incidencias
+4. **Route Planning and Execution**: Planificación y ejecución de rutas de recolección
+5. **Compliance and Reporting**: Cumplimiento regulatorio y reportes
 
 **Bounded Contexts Candidatos Identificados**
 
@@ -343,10 +344,12 @@ El Big Picture Event Storming reveló 5 bounded contexts naturales para el dise�
 **Oportunidades Estratégicas para WasteTrack**
 
 Los Hot Spots identificados representan oportunidades de valor cuantificables:
-* Reducción de 30-40% en tiempo de detección de problemas mediante sensores IoT
-* Optimización de rutas con potencial de 20-25% ahorro en combustible
+* Reducción de 35-45% en tiempo de detección de problemas mediante sensores IoT y educación ciudadana
+* Optimización de rutas con potencial de 25-30% ahorro en combustible mediante datos en tiempo real
 * Automatización de reportes regulatorios eliminando errores manuales
-* Integración de comunicación ciudadana reduciendo tiempo de respuesta en 50%
+* Integración de comunicación ciudadana reduciendo tiempo de respuesta en 60%
+* Mejora del 40% en comportamientos ciudadanos apropiados mediante gamificación y educación
+* Reducción del 50% en incidentes de desbordamiento mediante monitoreo predictivo
 
 ## 2.5. Ubiquitous Language
 
