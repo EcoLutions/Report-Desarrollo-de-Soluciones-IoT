@@ -1439,6 +1439,9 @@ Esta es la pantalla final del flujo de trabajo diario. Al "Finalizar Jornada", l
 
 ![dayCompleted.png](assets/images/chapter5/mobileApplicationUxUi/dayCompleted.png)
 
+### Web Applications Wireframes
+
+
 ### 5.4.2. Applications Wire flow Diagrams
 
 ### 5.4.3. Applications Mock-ups
