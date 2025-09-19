@@ -1053,6 +1053,100 @@ Para ver el Design-Level EventStorming interactivo completo con mayor detalle, c
 
 #### 4.1.1.1. Candidate Context Discovery
 
+En esta sección se documenta el proceso de identificación de **bounded contexts candidatos** desarrollado por el equipo **EcoLutions** mediante la aplicación de heurísticas de descubrimiento sobre el **Design-Level EventStorming** previamente elaborado. El proceso se ejecutó con el objetivo de establecer límites coherentes del dominio que reflejen las verdaderas separaciones de responsabilidad del negocio y faciliten la posterior implementación arquitectónica del sistema **WasteTrack**.
+
+**Configuración de la Sesión de Discovery**
+- Duración: 1 hora 45 minutos
+- Participantes: 5 miembros del equipo EcoLutions
+- Herramienta: Miro (extensión del workspace de Design-Level EventStorming)
+- Enfoque metodológico: Heurística de *Pivotal Events* con validación por cohesión de responsabilidades
+
+Recursos de entrada:
+- Timeline completo del Design-Level EventStorming con flujos de comando-evento-policy
+- Reglas de negocio documentadas con precondiciones, postcondiciones e invariantes
+- Agregados identificados y sus responsabilidades de consistencia
+- Mapeo de sistemas externos y puntos de integración
+
+**Metodología: Heurística de Pivotal Events**  
+La identificación de bounded contexts se fundamentó en la heurística de *Pivotal Events*, que establece que eventos que marcan cambios significativos en la *ownership* de datos o responsabilidades del negocio típicamente señalan fronteras naturales entre contextos delimitados.
+
+Criterios aplicados para identificación de pivotal events:
+- Eventos que transfieren ownership de entidades entre diferentes *stakeholders*
+- Transiciones donde cambia el lenguaje ubiquo del dominio
+- Puntos donde las reglas de negocio pertenecen a áreas de *expertise* distintas
+- Momentos que separan preocupaciones estratégicas de operacionales
+
+**Proceso de Discovery Iterativo**  
+Iteración 1: Marcado de Pivotal Events  
+El equipo analizó sistemáticamente el timeline identificando eventos que actúan como puntos de separación contextual. Se utilizaron líneas verticales para marcar las divisiones naturales del flujo de negocio.
+
+![1.identify-pivotal-events.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/1.identify-pivotal-events.jpg)
+
+Pivotal events fundamentales identificados:
+- *Container Marked as Critical* → Separación entre monitoreo pasivo y respuesta operacional activa
+- *Citizen Registration Validated* → Transición de gestión de identidad a capacidades de *engagement* comunitario
+- *Payment Method Stored* → División entre procesamiento de pagos y gestión del ciclo de vida de suscripciones
+- *Municipal District Created* → Separación entre operaciones de EcoLutions y operaciones específicas del cliente municipal
+- *Route Optimization Requested* → Transición de planificación estratégica a ejecución operacional
+- *Administrator Account Activated* → División entre autenticación de usuarios y gestión de perfiles operacionales
+- *Device Token Registered* → Separación entre gestión de perfiles de usuario y infraestructura de entrega de comunicaciones
+- *Emergency Collection Scheduled* → Transición de operaciones rutinarias a manejo de situaciones críticas
+
+Iteración 2: Agrupación por Cohesión de Responsabilidades  
+Utilizando los pivotal events como guías de demarcación, se agruparon eventos, comandos y políticas aplicando principios de:
+- Cohesión funcional
+- Ownership de datos
+- Autonomía de evolución
+- Consistencia de lenguaje
+
+![2.identify-bounded-contexts.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/2.identify-bounded-contexts.jpg)
+
+Iteración 3: Nomenclatura Orientada a Capacidades de Negocio  
+Se estableció nomenclatura que refleja capacidades específicas del dominio de gestión de residuos sólidos urbanos, evitando *antipatterns* técnicos. La validación se realizó con la pregunta:  
+*"¿Este nombre describe una capacidad de negocio distintiva y comprensible para los stakeholders del dominio?"*
+
+![3.naming-bounded-contexts.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/3.naming-bounded-contexts.jpg)
+
+**Bounded Contexts Identificados**  
+El proceso de discovery estableció 8 bounded contexts candidatos con límites justificados por separación de responsabilidades:
+
+| **Bounded Context**            | **Agregado Principal** | **Responsabilidad Central**                   | **Justificación de Boundary**                 |
+|--------------------------------|------------------------|-----------------------------------------------|-----------------------------------------------|
+| **IAM**                        | User                   | Autenticación y control de acceso             | Separado por *Account Activated*              |
+| **Profile**                    | Profile                | Gestión de perfiles y preferencias personales | Separado por *Device Token Registered*        |
+| **Municipal Operations**       | District               | Gestión integral de operaciones municipales   | Separado por *Municipal District Created*     |
+| **Communication Hub**          | Notification           | Orquestación de entrega multi-canal           | Separado por *Device Token Registered*        |
+| **Payment & Subscriptions**    | Subscription           | Gestión de revenue y facturación              | Separado por *Payment Method Stored*          |
+| **Container Monitoring**       | Container              | Inteligencia de activos IoT                   | Separado por *Container Marked as Critical*   |
+| **Route Planning & Execution** | Route                  | Optimización algorítmica y ejecución de rutas | Separado por *Route Optimization Requested*   |
+| **Community Relations**        | Citizen Report         | *Engagement* y participación ciudadana        | Separado por *Citizen Registration Validated* |
+
+**Clasificación Estratégica por Valor de Negocio**  
+Para establecer prioridades de inversión en diseño e implementación, se aplicó el framework de Eric Evans para clasificación de subdominios:
+
+![4.strategic-class.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/4.strategic-class.jpg)
+
+Core Domain (2 contexts):
+- **Container Monitoring** → Inteligencia IoT, ventaja competitiva técnica única de WasteTrack
+- **Route Planning & Execution** → Algoritmos de optimización, diferenciador fundamental que justifica el desarrollo interno
+
+Supporting Subdomain (4 contexts):
+- Municipal Operations → Necesario para modelo B2B, patrones conocidos
+- Payment & Subscriptions → Crítico para revenue, basado en SaaS estándar
+- Community Relations → Diferenciación de servicio, pero no ventaja competitiva central
+- Profile → Mejora experiencia de usuario, no capacidad única
+
+Generic Subdomain (2 contexts):
+- IAM → Tercerizable con Auth0, AWS Cognito, etc.
+- Communication Hub → Implementable con SendGrid, Firebase u otros
+
+**Validación de Boundaries y Resultados**  
+El proceso de Candidate Context Discovery estableció 8 bounded contexts con separaciones justificadas por análisis de pivotal events y cohesión de responsabilidades.
+
+La clasificación estratégica identifica que **Container Monitoring** y **Route Planning & Execution** constituyen el **core diferenciador** de WasteTrack, representando aproximadamente el **20% del valor total del sistema** según los principios de Eric Evans.
+
+Estos boundaries proporcionan la base arquitectónica para el **Context Mapping** posterior y aseguran que los esfuerzos de diseño táctico se concentren en las capacidades que generan **ventaja competitiva real** en el dominio de gestión inteligente de residuos sólidos urbanos.
+
 #### 4.1.1.2. Domain Message Flows Modeling
 
 #### 4.1.1.3. Bounded Context Canvases
