@@ -156,6 +156,7 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
 * [Anexos](#anexos)
   * [Anexo A: Enlaces de Herramientas Colaborativas](#anexo-a-enlaces-de-herramientas-colaborativas)
     * [A.1 Big Picture Event Storming - Workspace Figma](#a1-big-picture-event-storming---workspace-figma)
+    * [A.2 Design-Level Event Storming - Workspace Miro](#a2-design-level-event-storming---workspace-miro)
 <!-- TOC -->
 
 <div style="page-break-before: always"></div>
@@ -418,10 +419,10 @@ A continuación, se presenta el "Competitive Analysis Landscape" para EcoLutions
 
   <tr>
     <th></th>
-    <th>EcoLutions <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/ecolutions-logo.png" alt="ecolutions logo"></th>
-    <th>Competidor 1: Bigbelly <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/bigbelly-logo.svg" alt="bigbelly logo"></th>
-    <th>Competidor 2: Sensoneo <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/sensoneo-logo.svg" alt="sensoneo logo"></th>
-    <th>Competidor 3: Ecube Labs <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/ecube-labs-logo.png" alt="ecube-labs logo"></th>
+    <th>EcoLutions <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/ecolutions-logo.png" alt="ecolutions logo"></th>
+    <th>Competidor 1: Bigbelly <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/bigbelly-logo.svg" alt="bigbelly logo"></th>
+    <th>Competidor 2: Sensoneo <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/sensoneo-logo.svg" alt="sensoneo logo"></th>
+    <th>Competidor 3: Ecube Labs <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/ecube-labs-logo.png" alt="ecube-labs logo"></th>
   </tr>
 
   <!-- Perfil -->
@@ -975,6 +976,81 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 
 ### 4.1.1. Design-Level EventStorming
 
+El Design-Level EventStorming se llevó a cabo en una sesión colaborativa con la participación de cinco miembros del equipo EcoLutions, incluyendo un facilitador y un relator. Durante la sesión, se utilizó Miro como herramienta de colaboración visual en tiempo real, empleando notas adhesivas de colores para representar eventos de dominio, comandos, actores, políticas y otros elementos clave del sistema. El objetivo principal fue profundizar en el modelado detallado del dominio identificado en el Big Picture EventStorming, estableciendo una aproximación revisada y mejorada que permita identificar el mayor nivel de detalle posible para el diseño del sistema WasteTrack.
+
+La sesión tuvo una duración de 2 horas, distribuidas en múltiples fases metodológicas que siguieron la agenda establecida por Alberto Brandolini para Design-Level EventStorming, adaptada específicamente para abordar el dominio crítico de gestión de residuos sólidos urbanos.
+
+_**Configuración de la Sesión**_
+
+* **Participantes:** 5 miembros del equipo EcoLutions
+* **Duración:** 2 horas distribuidas en múltiples fases metodológicas
+* **Herramientas:** Miro para colaboración visual en tiempo real
+* **Comunicación:** Discord para coordinación durante el proceso
+* **Enfoque:** Modelado detallado de eventos, comandos y reglas de negocio para diseño de software
+
+_**Proceso de la Sesión**_
+
+**Antes de la sesión:**
+
+
+Se preparó el espacio de trabajo digital en Miro estableciendo tableros organizados para el modelado detallado. Se definieron las convenciones de colores y se establecieron las reglas básicas para la participación colaborativa, enfatizando que el objetivo era fomentar la discusión técnica detallada y la identificación precisa de elementos de diseño.
+
+**Durante la sesión:**
+
+**1. The Target Design**
+
+Se presentó a todos los participantes el patrón objetivo del Design-Level EventStorming, explicando cómo las notas adhesivas se encadenan secuencialmente (Actor/Policy → Command → Business Rule/External System → Event → Read Model → UX Mock-up). Esta fase estableció el entendimiento común del vocabulario y la metodología a seguir, asegurando que todos los miembros del equipo comprendieran el flujo de trabajo y los resultados esperados.
+
+![1. The target design.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/1.the-target-design.jpg)
+
+**2. Domain Events**
+
+Se trasladaron los eventos de dominio identificados en el Big Picture EventStorming y se generaron eventos adicionales necesarios para el nivel de detalle requerido. Se utilizaron notas adhesivas naranjas para representar todos los eventos de dominio, organizándolos temporalmente según los flujos de procesos identificados. Esta fase construyó sobre el trabajo previo del Big Picture para establecer una base sólida de eventos.
+
+![2. Domain Events.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/2.domain-events.jpg)
+
+**3. Commands**
+
+Se agregaron comandos (notas azules) como prefijo de cada evento de dominio identificado. Esta fase fue principalmente mecánica, donde cada evento fue precedido por el comando que lo desencadena. En casos donde el comando no era evidente directamente del nombre del evento, se discutió entre los participantes para establecer la acción apropiada que genera el cambio de estado representado por el evento. Cada comando agregado enriqueció la comprensión del flujo de procesos.
+
+![3. Commands.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/3.commands.jpg)
+
+**4. Actors and Policies**
+
+Se identificaron y clasificaron los originadores de cada comando, distinguiendo entre actores humanos (representados en notas pequeñas amarillas) y políticas automatizadas (representadas en notas lilas). Las políticas fueron formuladas siguiendo el patrón "Whenever [Event X], then [Command Y]", mientras que los actores fueron identificados con roles específicos del dominio. Esta fase construyó sobre la identificación de commands para revelar la naturaleza automatizada versus manual de las operaciones del sistema.
+
+![4. Actors and Policies.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/4.actors-and-policies.jpg)
+
+**5. Blank Stickies for Read Models and UX Mock-ups**
+Se agregaron notas en blanco (verdes para read models, blancas para mock-ups) entre los eventos de dominio y los actores para establecer los lugares donde se definirá la información necesaria para la toma de decisiones. Esta fase fue mecánica pero crítica para establecer la estructura que permita posteriormente definir las necesidades de información y experiencia de usuario. Cada nota en blanco representó un placeholder que sería completado en la siguiente fase.
+
+![5. Blank stickies for what the actors will .jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/5.blank-stickies-for-what-the-actors-will.jpg)
+
+**6. Read Models and UX Mock-ups**
+Se completaron las notas verdes con los modelos de lectura necesarios, especificando qué información requieren los actores para ejecutar sus comandos y creando bocetos conceptuales en las notas blancas de cómo se presentará esta información en las interfaces. Esta fase construyó directamente sobre los placeholders establecidos anteriormente para generar discusiones valiosas sobre la experiencia de usuario y los requisitos de información.
+
+![6. Read models and UX mock-ups.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/6.read-models-and-ux-mock-ups.jpg)
+
+**7. External Systems**
+
+Se identificaron y mapearon los sistemas externos (representados en notas rosas) que interactúan con el dominio. Esto incluyó tanto servicio de terceros (Email Service, Payment Gateway, Maps API) como otros sistemas que actúan como dependencias externas. Esta fase construyó sobre los elementos previos para clarificar las dependencias y puntos de integración del sistema, estableciendo el panorama completo de interacciones.
+
+![7. External systems.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/7.external-systems.jpg)
+
+**8. Business Rules and Aggregates**
+
+Se identificaron las reglas de negocio (notas amarillas) que gobiernan las transiciones entre comandos y eventos, documentando precondiciones, postcondiciones e invariantes para cada regla. Posteriormente, se agruparon estas reglas por similitud de datos que manejan, formando los agregados del diseño Domain-Driven Design y asignándoles nombres representativos. Esta fase final integró todo el trabajo anterior, culminando con la identificación de 11 agregados que encapsulan las reglas de negocio críticas del dominio.
+
+![8. Aggregates.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/8.aggregates.jpg)
+
+_**Resultados del Proceso**_
+
+La sesión de Design-Level EventStorming resultó en el modelado detallado de flujos de eventos, comandos, políticas y reglas de negocio para el dominio de gestión de residuos sólidos urbanos. El proceso permitió establecer una comprensión profunda de las responsabilidades y reveló los agregados que encapsulan las reglas de negocio críticas del sistema WasteTrack.
+
+El trabajo realizado proporcionó las bases necesarias para proceder con la identificación formal de contextos candidatos y el posterior diseño táctico del sistema, estableciendo una transición natural hacia el análisis detallado de la arquitectura del software.
+
+Para ver el Design-Level EventStorming interactivo completo con mayor detalle, consulte el Anexo A.2 donde se encuentra el enlace al workspace de Miro utilizado durante el proceso.
+
 #### 4.1.1.1. Candidate Context Discovery
 
 #### 4.1.1.2. Domain Message Flows Modeling
@@ -1102,3 +1178,11 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 **Descripción**: Workspace interactivo de Figma donde se desarrolló la sesión completa de Big Picture Event Storming para WasteTrack. Incluye todas las fases del proceso: identificación de eventos, organización temporal, mapeo de actores y sistemas, y identificación de hot spots.
 
 **Acceso**: Enlace público de solo lectura para revisión y validación del trabajo colaborativo realizado por el equipo EcoLutions.
+
+### A.2 Design-Level Event Storming - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJGKek04=/?share_link_id=318269530571](https://miro.com/app/board/uXjVJGKek04=/?share_link_id=318269530571)
+
+**Descripción:** Workspace interactivo de Miro donde se desarrolló la sesión completa de Design-Level Event Storming para WasteTrack. Incluye todas las fases del proceso: eventos de dominio, comandos, actores, políticas, read models, UX mock-ups, sistemas externos, reglas de negocio y agregados identificados.
+
+**Acceso:** Enlace público de solo lectura para revisión detallada del modelado de software y validación del trabajo colaborativo realizado por el equipo EcoLutions.
