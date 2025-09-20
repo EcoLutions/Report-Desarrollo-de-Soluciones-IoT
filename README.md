@@ -1094,10 +1094,10 @@ Pivotal events fundamentales identificados:
 
 Iteración 2: Agrupación por Cohesión de Responsabilidades  
 Utilizando los pivotal events como guías de demarcación, se agruparon eventos, comandos y políticas aplicando principios de:
-- Cohesión funcional
-- Ownership de datos
-- Autonomía de evolución
-- Consistencia de lenguaje
+- Cohesión funcional: Elementos que contribuyen a la misma capacidad de negocio
+- Ownership de datos: Elementos que gestionan el mismo conjunto de entidades del dominio
+- Autonomía de evolución: Elementos que pueden cambiar independientemente sin afectar otros grupos
+- Consistencia de lenguaje: Elementos que comparten terminología y significado específico del subdominio
 
 ![2.identify-bounded-contexts.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/2.identify-bounded-contexts.jpg)
 
@@ -1110,16 +1110,16 @@ Se estableció nomenclatura que refleja capacidades específicas del dominio de 
 **Bounded Contexts Identificados**  
 El proceso de discovery estableció 8 bounded contexts candidatos con límites justificados por separación de responsabilidades:
 
-| **Bounded Context**            | **Agregado Principal** | **Responsabilidad Central**                   | **Justificación de Boundary**                 |
-|--------------------------------|------------------------|-----------------------------------------------|-----------------------------------------------|
-| **IAM**                        | User                   | Autenticación y control de acceso             | Separado por *Account Activated*              |
-| **Profile**                    | Profile                | Gestión de perfiles y preferencias personales | Separado por *Device Token Registered*        |
-| **Municipal Operations**       | District               | Gestión integral de operaciones municipales   | Separado por *Municipal District Created*     |
-| **Communication Hub**          | Notification           | Orquestación de entrega multi-canal           | Separado por *Device Token Registered*        |
-| **Payment & Subscriptions**    | Subscription           | Gestión de revenue y facturación              | Separado por *Payment Method Stored*          |
-| **Container Monitoring**       | Container              | Inteligencia de activos IoT                   | Separado por *Container Marked as Critical*   |
-| **Route Planning & Execution** | Route                  | Optimización algorítmica y ejecución de rutas | Separado por *Route Optimization Requested*   |
-| **Community Relations**        | Citizen Report         | *Engagement* y participación ciudadana        | Separado por *Citizen Registration Validated* |
+| **Bounded Context**            | **Agregado Principal**          | **Responsabilidad Central**                   | **Justificación de Boundary**                                                                                            |
+|--------------------------------|---------------------------------|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **IAM**                        | User                            | Autenticación y control de acceso             | Separado por *Account Activated* - ownership distinto entre seguridad y operaciones                                      |
+| **Profile**                    | Profile, NotificationPreference | Gestión de perfiles y preferencias personales | Separado por *Device Token Registered* - diferente ciclo de vida entre identidad y personalización                       |
+| **Municipal Operations**       | District                        | Gestión integral de operaciones municipales   | Separado por *Municipal District Created*  - ownership distinto entre EcoLutions y operaciones del cliente               |
+| **Communication Hub**          | NotificationMessage             | Orquestación de entrega multi-canal           | Separado por *Device Token Registered* - responsabilidad distinta entre contenido y infraestructura de entrega           |
+| **Payment & Subscriptions**    | Subscription, PaymentMethod     | Gestión de revenue y facturación              | Separado por *Payment Method Stored* - diferentes ciclos de vida entre procesamiento y facturación                       |
+| **Container Monitoring**       | Container                       | Inteligencia de activos IoT                   | Separado por *Container Marked as Critical* - responsabilidad distinta entre monitoreo y respuesta operacional           |
+| **Route Planning & Execution** | Route                           | Optimización algorítmica y ejecución de rutas | Separado por *Route Optimization Requested* - ownership distinto entre planificación estratégica y ejecución operacional |
+| **Community Relations**        | CitizenReport, CitizenRewards   | *Engagement* y participación ciudadana        | Separado por *Citizen Registration Validated* - ownership distinto entre gestión de identidad y gestión comunitaria      |
 
 **Clasificación Estratégica por Valor de Negocio**  
 Para establecer prioridades de inversión en diseño e implementación, se aplicó el framework de Eric Evans para clasificación de subdominios:
@@ -1127,18 +1127,18 @@ Para establecer prioridades de inversión en diseño e implementación, se aplic
 ![4.strategic-class.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/4.strategic-class.jpg)
 
 Core Domain (2 contexts):
-- **Container Monitoring** → Inteligencia IoT, ventaja competitiva técnica única de WasteTrack
-- **Route Planning & Execution** → Algoritmos de optimización, diferenciador fundamental que justifica el desarrollo interno
+- **Container Monitoring** → La capacidad de inteligencia IoT para contenedores representa la ventaja competitiva técnica única de WasteTrack
+- **Route Planning & Execution** → Los algoritmos de optimización constituyen el diferenciador fundamental que justifica el desarrollo interno
 
 Supporting Subdomain (4 contexts):
-- Municipal Operations → Necesario para modelo B2B, patrones conocidos
-- Payment & Subscriptions → Crítico para revenue, basado en SaaS estándar
-- Community Relations → Diferenciación de servicio, pero no ventaja competitiva central
-- Profile → Mejora experiencia de usuario, no capacidad única
+- Municipal Operations → Necesario para el modelo de negocio B2B, pero utiliza patrones conocidos de gestión de clientes
+- Payment & Subscriptions → Crítico para sostenibilidad del revenue, pero basado en modelos SaaS estándar
+- Community Relations → Importante para diferenciación de servicio, pero no constituye ventaja competitiva central
+- Profile → Facilita experiencia de usuario, pero no representa capacidad única del dominio
 
 Generic Subdomain (2 contexts):
-- IAM → Tercerizable con Auth0, AWS Cognito, etc.
-- Communication Hub → Implementable con SendGrid, Firebase u otros
+- IAM → Completamente tercerizable con soluciones como Auth0, AWS Cognito o similares
+- Communication Hub →  Puede implementarse completamente con servicios como SendGrid, Firebase o plataformas equivalentes
 
 **Validación de Boundaries y Resultados**  
 El proceso de Candidate Context Discovery estableció 8 bounded contexts con separaciones justificadas por análisis de pivotal events y cohesión de responsabilidades.
