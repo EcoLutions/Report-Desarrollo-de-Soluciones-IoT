@@ -1483,6 +1483,66 @@ Esta pantalla funciona como una bandeja de entrada donde el usuario recibe actua
 
 ![notifications.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/notifications.png)
 
+### Flujo de usuario: Colaborador municipal (Chofer)
+Este flujo es una herramienta de trabajo diseñada para la eficiencia operativa. Es una aplicación robusta que guía al conductor a través de sus tareas diarias.
+
+#### Pantallas de bienvenida e integración (Onboarding)
+Representa el primer contacto del usuario con la aplicación. A través de una serie de dos pantallas, primero se diferencia que la aplicación es exclusivamente para choferes recolectores de basura, y se presenta la propuesta de valor.
+
+![onboardingMunicipalityAgent.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/onboardingMunicipalityAgent.png)
+
+#### Acceso de colaborador
+Representa una pantalla de inicio de sesión segura y simple, diseñada para personal autorizado. El colaborador (conductor) ingresa sus credenciales (Usuario/ID y Contraseña) para acceder a sus funciones operativas. No incluye una opción de registro, ya que las cuentas son creadas por un administrador en la plataforma web.
+
+![login.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/login.png)
+
+#### Estado de acceso
+Esta vista muestra los posibles mensajes de error o estados informativos durante el login. Incluye el "unhappy path" de credenciales incorrectas, resaltando visualmente los campos erróneos y mostrando un mensaje claro. También cubre el caso en que el login es exitoso pero no hay una ruta de trabajo asignada para el día.
+
+![wrongCredentialsLogin.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/wrongCredentialsLogin.png)
+
+#### Hoja de ruta del día
+Es el dashboard principal del conductor después de iniciar sesión. Presenta la ruta optimizada del día de dos maneras: una vista de mapa para el contexto geográfico y una lista secuencial de las paradas a realizar. Desde aquí, el conductor puede iniciar su jornada y seleccionar cada parada para ver más detalles.
+
+![routPlan.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/routPlan.png)
+
+#### Detalle de parada
+Muestra toda la información necesaria para una única parada de recolección: la ubicación exacta, el ID del contenedor y su nivel de llenado. Funciona como el centro de acciones, permitiendo al conductor confirmar la recolección, navegar a la ubicación vía GPS o reportar una incidencia específica de esa parada.
+
+![stopDetail.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/stopDetail.png)
+
+#### Navegación GPS
+Representa la vista de navegación paso a paso. Se activa cuando el conductor presiona "Navegar a la Parada". Le proporciona instrucciones en tiempo real para llegar a su siguiente destino de la manera más eficiente, minimizando el tiempo de viaje.
+
+![gpsNavigation.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/gpsNavigation.png)
+
+#### Reporte de incidencia (Conductor)
+Un formulario especializado para que el conductor reporte problemas operativos que encuentre en su ruta, como un contenedor dañado, un acceso bloqueado u otra eventualidad. Esto permite comunicar problemas internos al administrador de forma inmediata.
+
+![incidenceReportDriver.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/incidenceReportDriver.png)
+
+#### Pantalla de confirmación
+Esta toast notification aparece como confirmación o feedback inmediato después de que el conductor realiza una acción clave, como confirmar una recolección o enviar un reporte. Es un mensaje breve que asegura al usuario que su acción fue exitosa sin interrumpir su flujo de trabajo. También, se utiliza para notificar errores críticos, como problemas de conexión a internet.
+
+![toastNotification.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/toastNotification.png)
+
+#### Perfil y opciones del Conductor
+Representa una pantalla de ajustes donde el conductor puede ver su información básica (nombre, ID, vehículo asignado) y realizar acciones clave de fin de sesión, como "Finalizar Jornada" o "Cerrar Sesión".
+
+![profile.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/profile.png)
+
+#### Resumen de jornada
+Esta es la pantalla final del flujo de trabajo diario. Al "Finalizar Jornada", la aplicación presenta un resumen del trabajo realizado (ej. paradas completadas, incidencias reportadas, duración del turno). Sirve para confirmar la finalización exitosa de las tareas del día.
+
+![dayCompleted.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/dayCompleted.png)
+
+#### Pantalla "Todo en Orden"
+Esta pantalla se muestra cuando el conductor ha completado todas las paradas asignadas para el día. Es una confirmación visual de que no quedan tareas pendientes, proporcionando un sentido de logro y cierre al finalizar su jornada laboral. También, se muestra cuando el conductor intenta iniciar su jornada sin una ruta asignada, informándole que no hay tareas para realizar.
+
+![nothingToDo.png](assets/images/chapter5/mobileApplicationUxUi/mockUps/nothingToDo.png)
+
+### Web Applications Mock-ups
+
 ### 5.4.4. Applications User Flow Diagrams
 
 ## 5.5. Applications Prototyping
