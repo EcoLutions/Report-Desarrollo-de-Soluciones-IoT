@@ -156,6 +156,9 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
 * [Anexos](#anexos)
   * [Anexo A: Enlaces de Herramientas Colaborativas](#anexo-a-enlaces-de-herramientas-colaborativas)
     * [A.1 Big Picture Event Storming - Workspace Figma](#a1-big-picture-event-storming---workspace-figma)
+    * [A.2 Design-Level Event Storming - Workspace Miro](#a2-design-level-event-storming---workspace-miro)
+    * [A.3 Domain Message Flows Modeling - Workspace Miro](#a3-domain-message-flows-modeling---workspace-miro)
+    * [A.4 Bounded Context Canvases - Workspace Miro](#a4-bounded-context-canvases---workspace-miro)
 <!-- TOC -->
 
 <div style="page-break-before: always"></div>
@@ -418,10 +421,10 @@ A continuación, se presenta el "Competitive Analysis Landscape" para EcoLutions
 
   <tr>
     <th></th>
-    <th>EcoLutions <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/ecolutions-logo.png" alt="ecolutions logo"></th>
-    <th>Competidor 1: Bigbelly <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/bigbelly-logo.svg" alt="bigbelly logo"></th>
-    <th>Competidor 2: Sensoneo <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/sensoneo-logo.svg" alt="sensoneo logo"></th>
-    <th>Competidor 3: Ecube Labs <img src="assets/2.requirements-elicitation-analysis/2.1.competitors/2.1.1.competitive-analysis-landscape/ecube-labs-logo.png" alt="ecube-labs logo"></th>
+    <th>EcoLutions <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/ecolutions-logo.png" alt="ecolutions logo"></th>
+    <th>Competidor 1: Bigbelly <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/bigbelly-logo.svg" alt="bigbelly logo"></th>
+    <th>Competidor 2: Sensoneo <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/sensoneo-logo.svg" alt="sensoneo logo"></th>
+    <th>Competidor 3: Ecube Labs <img src="assets/2.requirements/2.1.competitors/2.1.1.competitive-analysis-landscape/ecube-labs-logo.png" alt="ecube-labs logo"></th>
   </tr>
 
   <!-- Perfil -->
@@ -975,13 +978,657 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 
 ### 4.1.1. Design-Level EventStorming
 
+El Design-Level EventStorming se llevó a cabo en una sesión colaborativa con la participación de cinco miembros del equipo EcoLutions, incluyendo un facilitador y un relator. Durante la sesión, se utilizó Miro como herramienta de colaboración visual en tiempo real, empleando notas adhesivas de colores para representar eventos de dominio, comandos, actores, políticas y otros elementos clave del sistema. El objetivo principal fue profundizar en el modelado detallado del dominio identificado en el Big Picture EventStorming, estableciendo una aproximación revisada y mejorada que permita identificar el mayor nivel de detalle posible para el diseño del sistema WasteTrack.
+
+La sesión tuvo una duración de 2 horas, distribuidas en múltiples fases metodológicas que siguieron la agenda establecida por Alberto Brandolini para Design-Level EventStorming, adaptada específicamente para abordar el dominio crítico de gestión de residuos sólidos urbanos.
+
+_**Configuración de la Sesión**_
+
+* **Participantes:** 5 miembros del equipo EcoLutions
+* **Duración:** 2 horas distribuidas en múltiples fases metodológicas
+* **Herramientas:** Miro para colaboración visual en tiempo real
+* **Comunicación:** Discord para coordinación durante el proceso
+* **Enfoque:** Modelado detallado de eventos, comandos y reglas de negocio para diseño de software
+
+_**Proceso de la Sesión**_
+
+**Antes de la sesión:**
+
+
+Se preparó el espacio de trabajo digital en Miro estableciendo tableros organizados para el modelado detallado. Se definieron las convenciones de colores y se establecieron las reglas básicas para la participación colaborativa, enfatizando que el objetivo era fomentar la discusión técnica detallada y la identificación precisa de elementos de diseño.
+
+**Durante la sesión:**
+
+**1. The Target Design**
+
+Se presentó a todos los participantes el patrón objetivo del Design-Level EventStorming, explicando cómo las notas adhesivas se encadenan secuencialmente (Actor/Policy → Command → Business Rule/External System → Event → Read Model → UX Mock-up). Esta fase estableció el entendimiento común del vocabulario y la metodología a seguir, asegurando que todos los miembros del equipo comprendieran el flujo de trabajo y los resultados esperados.
+
+![1. The target design.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/1.the-target-design.jpg)
+
+**2. Domain Events**
+
+Se trasladaron los eventos de dominio identificados en el Big Picture EventStorming y se generaron eventos adicionales necesarios para el nivel de detalle requerido. Se utilizaron notas adhesivas naranjas para representar todos los eventos de dominio, organizándolos temporalmente según los flujos de procesos identificados. Esta fase construyó sobre el trabajo previo del Big Picture para establecer una base sólida de eventos.
+
+![2. Domain Events.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/2.domain-events.jpg)
+
+**3. Commands**
+
+Se agregaron comandos (notas azules) como prefijo de cada evento de dominio identificado. Esta fase fue principalmente mecánica, donde cada evento fue precedido por el comando que lo desencadena. En casos donde el comando no era evidente directamente del nombre del evento, se discutió entre los participantes para establecer la acción apropiada que genera el cambio de estado representado por el evento. Cada comando agregado enriqueció la comprensión del flujo de procesos.
+
+![3. Commands.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/3.commands.jpg)
+
+**4. Actors and Policies**
+
+Se identificaron y clasificaron los originadores de cada comando, distinguiendo entre actores humanos (representados en notas pequeñas amarillas) y políticas automatizadas (representadas en notas lilas). Las políticas fueron formuladas siguiendo el patrón "Whenever [Event X], then [Command Y]", mientras que los actores fueron identificados con roles específicos del dominio. Esta fase construyó sobre la identificación de commands para revelar la naturaleza automatizada versus manual de las operaciones del sistema.
+
+![4. Actors and Policies.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/4.actors-and-policies.jpg)
+
+**5. Blank Stickies for Read Models and UX Mock-ups**
+Se agregaron notas en blanco (verdes para read models, blancas para mock-ups) entre los eventos de dominio y los actores para establecer los lugares donde se definirá la información necesaria para la toma de decisiones. Esta fase fue mecánica pero crítica para establecer la estructura que permita posteriormente definir las necesidades de información y experiencia de usuario. Cada nota en blanco representó un placeholder que sería completado en la siguiente fase.
+
+![5. Blank stickies for what the actors will .jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/5.blank-stickies-for-what-the-actors-will.jpg)
+
+**6. Read Models and UX Mock-ups**
+Se completaron las notas verdes con los modelos de lectura necesarios, especificando qué información requieren los actores para ejecutar sus comandos y creando bocetos conceptuales en las notas blancas de cómo se presentará esta información en las interfaces. Esta fase construyó directamente sobre los placeholders establecidos anteriormente para generar discusiones valiosas sobre la experiencia de usuario y los requisitos de información.
+
+![6. Read models and UX mock-ups.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/6.read-models-and-ux-mock-ups.jpg)
+
+**7. External Systems**
+
+Se identificaron y mapearon los sistemas externos (representados en notas rosas) que interactúan con el dominio. Esto incluyó tanto servicio de terceros (Email Service, Payment Gateway, Maps API) como otros sistemas que actúan como dependencias externas. Esta fase construyó sobre los elementos previos para clarificar las dependencias y puntos de integración del sistema, estableciendo el panorama completo de interacciones.
+
+![7. External systems.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/7.external-systems.jpg)
+
+**8. Business Rules and Aggregates**
+
+Se identificaron las reglas de negocio (notas amarillas) que gobiernan las transiciones entre comandos y eventos, documentando precondiciones, postcondiciones e invariantes para cada regla. Posteriormente, se agruparon estas reglas por similitud de datos que manejan, formando los agregados del diseño Domain-Driven Design y asignándoles nombres representativos. Esta fase final integró todo el trabajo anterior, culminando con la identificación de 11 agregados que encapsulan las reglas de negocio críticas del dominio.
+
+![8. Aggregates.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.0.session/8.aggregates.jpg)
+
+_**Resultados del Proceso**_
+
+La sesión de Design-Level EventStorming resultó en el modelado detallado de flujos de eventos, comandos, políticas y reglas de negocio para el dominio de gestión de residuos sólidos urbanos. El proceso permitió establecer una comprensión profunda de las responsabilidades y reveló los agregados que encapsulan las reglas de negocio críticas del sistema WasteTrack.
+
+El trabajo realizado proporcionó las bases necesarias para proceder con la identificación formal de contextos candidatos y el posterior diseño táctico del sistema, estableciendo una transición natural hacia el análisis detallado de la arquitectura del software.
+
+Para ver el Design-Level EventStorming interactivo completo con mayor detalle, consulte el Anexo A.2 donde se encuentra el enlace al workspace de Miro utilizado durante el proceso.
+
 #### 4.1.1.1. Candidate Context Discovery
+
+En esta sección se documenta el proceso de identificación de **bounded contexts candidatos** desarrollado por el equipo **EcoLutions** mediante la aplicación de heurísticas de descubrimiento sobre el **Design-Level EventStorming** previamente elaborado. El proceso se ejecutó con el objetivo de establecer límites coherentes del dominio que reflejen las verdaderas separaciones de responsabilidad del negocio y faciliten la posterior implementación arquitectónica del sistema **WasteTrack**.
+
+**Configuración de la Sesión de Discovery**
+- Duración: 1 hora 45 minutos
+- Participantes: 5 miembros del equipo EcoLutions
+- Herramienta: Miro (extensión del workspace de Design-Level EventStorming)
+- Enfoque metodológico: Heurística de *Pivotal Events* con validación por cohesión de responsabilidades
+
+Recursos de entrada:
+- Timeline completo del Design-Level EventStorming con flujos de comando-evento-policy
+- Reglas de negocio documentadas con precondiciones, postcondiciones e invariantes
+- Agregados identificados y sus responsabilidades de consistencia
+- Mapeo de sistemas externos y puntos de integración
+
+**Metodología: Heurística de Pivotal Events**  
+La identificación de bounded contexts se fundamentó en la heurística de *Pivotal Events*, que establece que eventos que marcan cambios significativos en la *ownership* de datos o responsabilidades del negocio típicamente señalan fronteras naturales entre contextos delimitados.
+
+Criterios aplicados para identificación de pivotal events:
+- Eventos que transfieren ownership de entidades entre diferentes *stakeholders*
+- Transiciones donde cambia el lenguaje ubiquo del dominio
+- Puntos donde las reglas de negocio pertenecen a áreas de *expertise* distintas
+- Momentos que separan preocupaciones estratégicas de operacionales
+
+**Proceso de Discovery Iterativo**  
+Iteración 1: Marcado de Pivotal Events  
+El equipo analizó sistemáticamente el timeline identificando eventos que actúan como puntos de separación contextual. Se utilizaron líneas verticales para marcar las divisiones naturales del flujo de negocio.
+
+![1.identify-pivotal-events.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/1.identify-pivotal-events.jpg)
+
+Pivotal events fundamentales identificados:
+- *Container Marked as Critical* → Separación entre monitoreo pasivo y respuesta operacional activa
+- *Citizen Registration Validated* → Transición de gestión de identidad a capacidades de *engagement* comunitario
+- *Payment Method Stored* → División entre procesamiento de pagos y gestión del ciclo de vida de suscripciones
+- *Municipal District Created* → Separación entre operaciones de EcoLutions y operaciones específicas del cliente municipal
+- *Route Optimization Requested* → Transición de planificación estratégica a ejecución operacional
+- *Administrator Account Activated* → División entre autenticación de usuarios y gestión de perfiles operacionales
+- *Device Token Registered* → Separación entre gestión de perfiles de usuario y infraestructura de entrega de comunicaciones
+- *Emergency Collection Scheduled* → Transición de operaciones rutinarias a manejo de situaciones críticas
+
+Iteración 2: Agrupación por Cohesión de Responsabilidades  
+Utilizando los pivotal events como guías de demarcación, se agruparon eventos, comandos y políticas aplicando principios de:
+- Cohesión funcional: Elementos que contribuyen a la misma capacidad de negocio
+- Ownership de datos: Elementos que gestionan el mismo conjunto de entidades del dominio
+- Autonomía de evolución: Elementos que pueden cambiar independientemente sin afectar otros grupos
+- Consistencia de lenguaje: Elementos que comparten terminología y significado específico del subdominio
+
+![2.identify-bounded-contexts.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/2.identify-bounded-contexts.jpg)
+
+Iteración 3: Nomenclatura Orientada a Capacidades de Negocio  
+Se estableció nomenclatura que refleja capacidades específicas del dominio de gestión de residuos sólidos urbanos, evitando *antipatterns* técnicos. La validación se realizó con la pregunta:  
+*"¿Este nombre describe una capacidad de negocio distintiva y comprensible para los stakeholders del dominio?"*
+
+![3.naming-bounded-contexts.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/3.naming-bounded-contexts.jpg)
+
+**Bounded Contexts Identificados**  
+El proceso de discovery estableció 8 bounded contexts candidatos con límites justificados por separación de responsabilidades:
+
+| **Bounded Context**            | **Agregado Principal**          | **Responsabilidad Central**                   | **Justificación de Boundary**                                                                                            |
+|--------------------------------|---------------------------------|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **IAM**                        | User                            | Autenticación y control de acceso             | Separado por *Account Activated* - ownership distinto entre seguridad y operaciones                                      |
+| **Profile**                    | Profile, NotificationPreference | Gestión de perfiles y preferencias personales | Separado por *Device Token Registered* - diferente ciclo de vida entre identidad y personalización                       |
+| **Municipal Operations**       | District                        | Gestión integral de operaciones municipales   | Separado por *Municipal District Created*  - ownership distinto entre EcoLutions y operaciones del cliente               |
+| **Communication Hub**          | NotificationMessage             | Orquestación de entrega multi-canal           | Separado por *Device Token Registered* - responsabilidad distinta entre contenido y infraestructura de entrega           |
+| **Payment & Subscriptions**    | Subscription, PaymentMethod     | Gestión de revenue y facturación              | Separado por *Payment Method Stored* - diferentes ciclos de vida entre procesamiento y facturación                       |
+| **Container Monitoring**       | Container                       | Inteligencia de activos IoT                   | Separado por *Container Marked as Critical* - responsabilidad distinta entre monitoreo y respuesta operacional           |
+| **Route Planning & Execution** | Route                           | Optimización algorítmica y ejecución de rutas | Separado por *Route Optimization Requested* - ownership distinto entre planificación estratégica y ejecución operacional |
+| **Community Relations**        | CitizenReport, CitizenRewards   | *Engagement* y participación ciudadana        | Separado por *Citizen Registration Validated* - ownership distinto entre gestión de identidad y gestión comunitaria      |
+
+**Clasificación Estratégica por Valor de Negocio**  
+Para establecer prioridades de inversión en diseño e implementación, se aplicó el framework de Eric Evans para clasificación de subdominios:
+
+![4.strategic-class.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.1.candidate-context-discovery/4.strategic-class.jpg)
+
+Core Domain (2 contexts):
+- **Container Monitoring** → La capacidad de inteligencia IoT para contenedores representa la ventaja competitiva técnica única de WasteTrack
+- **Route Planning & Execution** → Los algoritmos de optimización constituyen el diferenciador fundamental que justifica el desarrollo interno
+
+Supporting Subdomain (4 contexts):
+- Municipal Operations → Necesario para el modelo de negocio B2B, pero utiliza patrones conocidos de gestión de clientes
+- Payment & Subscriptions → Crítico para sostenibilidad del revenue, pero basado en modelos SaaS estándar
+- Community Relations → Importante para diferenciación de servicio, pero no constituye ventaja competitiva central
+- Profile → Facilita experiencia de usuario, pero no representa capacidad única del dominio
+
+Generic Subdomain (2 contexts):
+- IAM → Completamente tercerizable con soluciones como Auth0, AWS Cognito o similares
+- Communication Hub →  Puede implementarse completamente con servicios como SendGrid, Firebase o plataformas equivalentes
+
+**Validación de Boundaries y Resultados**  
+El proceso de Candidate Context Discovery estableció 8 bounded contexts con separaciones justificadas por análisis de pivotal events y cohesión de responsabilidades.
+
+La clasificación estratégica identifica que **Container Monitoring** y **Route Planning & Execution** constituyen el **core diferenciador** de WasteTrack, representando aproximadamente el **20% del valor total del sistema** según los principios de Eric Evans.
+
+Estos boundaries proporcionan la base arquitectónica para el **Context Mapping** posterior y aseguran que los esfuerzos de diseño táctico se concentren en las capacidades que generan **ventaja competitiva real** en el dominio de gestión inteligente de residuos sólidos urbanos.
 
 #### 4.1.1.2. Domain Message Flows Modeling
 
+En esta sección se documenta el proceso seguido para visualizar cómo los bounded contexts identificados deben colaborar para resolver casos específicos que se presentan en el negocio para los usuarios del sistema WasteTrack. La técnica aplicada permite evidenciar los flujos de mensajes (commands, events, queries) entre contextos delimitados, asegurando que la arquitectura soporte adecuadamente los escenarios críticos del dominio de gestión de residuos sólidos urbanos.
+
+**_1. Metodología de Domain Message Flow Modeling_**
+
+**Objetivo:** Modelar la colaboración inter-contextual necesaria para resolver casos de negocio completos desde la perspectiva del usuario final.
+
+**Elementos del modelado:**
+- **Actores:** Usuarios que inician los casos de negocio (Citizen, Municipal Administrator, Driver, IoT Sensor, System)
+- **Bounded Contexts:** Representados como nubes que procesan y responden a mensajes
+- **External Systems:** Sistemas de terceros representados como engranajes
+- **Messages:** Commands (azul), Events (naranja), Queries/Responses (verde) con datos específicos
+- **Sequence:** Numeración temporal del flujo de mensajes
+
+**Herramienta utilizada:** Miro para elaboración de diagramas de Domain Message Flow con notación estándar para bounded contexts y sistemas distribuidos.
+
+**_Casos de Negocio Modelados_**
+
+Se seleccionaron 6 escenarios representativos que requieren colaboración entre múltiples bounded contexts y demuestran la arquitectura distribuida del sistema:
+
+**Escenario 1: Container Emergency Response**
+
+**Narrativa del usuario:** Un ciudadano encuentra un contenedor desbordado en su vecindario y lo reporta a través de la aplicación móvil. El sistema debe procesar el reporte, evaluar la criticidad, programar una recolección de emergencia y notificar a todos los actores relevantes.
+
+![1.scenario-1.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/1.scenario-1.jpg)
+
+**Bounded contexts involucrados:** Community Relations, Container Monitoring, Route Planning & Execution, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Citizen reporta problema mediante comando "Report Container Problem"
+2. Community Relations procesa y escalada prioridad del contenedor
+3. Container Monitoring marca contenedor como crítico
+4. Route Planning programa recolección de emergencia
+5. Communication Hub notifica a stakeholders mediante sistemas externos
+
+**Escenario 2: Municipal Operations Setup**
+
+**Narrativa del usuario:** Un nuevo distrito municipal ha sido vendido y necesita configurar sus operaciones iniciales. El administrador debe completar el onboarding, configurar horarios de trabajo y activar el servicio.
+
+![2.scenario-2.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/2.scenario-2.jpg)
+
+**Bounded contexts involucrados:** IAM, Profile, Municipal Operations, Payment & Subscriptions, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Municipal Administrator realiza primer login
+2. IAM autentica y Profile gestiona configuración inicial
+3. Municipal Operations configura operaciones del distrito
+4. Payment & Subscriptions activa suscripción post-setup
+5. Communication Hub confirma configuración exitosa
+
+**Escenario 3: Smart Collection Optimization**
+
+**Narrativa del usuario:** El sistema detecta múltiples contenedores con niveles altos de llenado y debe optimizar automáticamente las rutas de recolección, asignar conductores disponibles y notificar sobre los cambios de programación.
+
+![3.scenario-3.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/3.scenario-3.jpg)
+
+**Bounded contexts involucrados:** Container Monitoring, Route Planning & Execution, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. IoT Sensors envían datos de nivel de llenado
+2. Container Monitoring detecta contenedores críticos
+3. Route Planning consulta recursos disponibles y calcula ruta óptima
+4. Municipal Operations valida asignación de recursos
+5. Communication Hub notifica cambios de ruta a conductores
+
+**Escenario 4: Subscription Lifecycle Management**
+
+**Narrativa del usuario:** El sistema debe procesar la facturación mensual automática de un distrito, manejar fallos de pago, aplicar políticas de gracia y potencialmente suspender servicios mientras mantiene comunicación apropiada.
+
+![4.scenario-4.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/4.scenario-4.jpg)
+
+**Bounded contexts involucrados:** Payment & Subscriptions, Municipal Operations, Container Monitoring, Route Planning & Execution, Communication Hub
+
+**Flujo de mensajes clave:**
+1. System ejecuta ciclo de facturación mensual automático
+2. Payment & Subscriptions procesa pagos con gateway externo
+3. En caso de fallo, Municipal Operations suspende servicios
+4. Container Monitoring y Route Planning restringen acceso
+5. Communication Hub maneja notificaciones de suspensión
+
+**Escenario 5: Route Execution and Real-Time Adaptation**
+
+**Narrativa del usuario:** Un conductor inicia su ruta de recolección y durante la ejecución surge un contenedor de emergencia que requiere modificar la ruta en tiempo real manteniendo eficiencia operativa.
+
+![5.scenario-5.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/5.scenario-5.jpg)
+
+**Bounded contexts involucrados:** Route Planning & Execution, Container Monitoring, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Driver inicia ruta de recolección asignada
+2. Route Planning activa navegación y tracking
+3. Container Monitoring detecta emergencia durante ejecución
+4. Municipal Operations valida modificación de ruta
+5. Route Planning recalcula y Communication Hub notifica cambios
+
+**Escenario 6: Citizen Engagement and Rewards Cycle**
+
+**Narrativa del usuario:** Un ciudadano consulta el estado de sus reportes, accede a contenido educativo, acumula puntos por buen comportamiento y los canjea por beneficios municipales.
+
+![6.scenario-6.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/6.scenario-6.jpg)
+
+**Bounded contexts involucrados:** Community Relations, Profile, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Citizen consulta estado de reportes y accede a contenido educativo
+2. Community Relations otorga puntos por comportamiento positivo
+3. Profile rastrea progreso de milestones de recompensas
+4. Municipal Operations procesa canje de beneficios
+5. Communication Hub confirma otorgamiento de recompensas
+
+**_Análisis de Patrones de Colaboración_**
+
+Los diagramas de Domain Message Flow revelan patrones de colaboración críticos en la arquitectura:
+
+**Patrones identificados:**
+
+- **Hub Communication Pattern:** Communication Hub actúa como orquestador central de notificaciones multi-canal
+- **Event-Driven Cascade:** Eventos en un contexto disparan cadenas de acciones coordinadas en contextos relacionados
+- **Query-Response Validation:** Múltiples contextos validan diferentes aspectos antes de ejecutar operaciones críticas
+- **State Synchronization:** Cambios de estado se propagan consistentemente entre contextos que comparten responsabilidades
+
+**Implicaciones arquitectónicas:**
+
+- **Message Bus:** Necesidad de infraestructura robusta para comunicación asíncrona entre contextos
+- **Saga Patterns:** Requerimiento de coordinación de transacciones distribuidas para casos complejos
+- **Circuit Breakers:** Manejo de fallos en comunicación inter-contextual para mantener resilience
+- **Distributed Tracing:** Observabilidad necesaria para rastrear flujos completos end-to-end
+
+**_Resultados del Modelado_**
+
+Los 6 escenarios modelados demuestran que la separación de bounded contexts propuesta facilita:
+
+- **Evolución independiente** de cada contexto según su dominio específico
+- **Colaboración efectiva** para resolver casos de negocio complejos
+- **Escalabilidad** mediante distribución de responsabilidades
+- **Mantenibilidad** a través de interfaces bien definidas entre contextos
+
+Los flujos de mensajes identificados proporcionan la base para el diseño de APIs, definición de contratos entre servicios y establecimiento de patrones de integración en la implementación del sistema WasteTrack.
+
 #### 4.1.1.3. Bounded Context Canvases
 
+En esta sección se documenta el proceso de diseño detallado de los bounded contexts candidatos identificados para el sistema WasteTrack. El equipo aplicó un enfoque iterativo siguiendo la metodología del Bounded Context Canvas para definir criterios de diseño, responsabilidades, y dependencias de cada contexto delimitado, priorizándolos según su importancia estratégica para el dominio de gestión de residuos sólidos urbanos.
+
+**Metodología de Diseño de Bounded Context Canvas**
+
+**Proceso iterativo aplicado:**
+- **Context Overview Definition:** Establecimiento del propósito y clasificación estratégica de cada contexto
+- **Business Rules Distillation & Ubiquitous Language Capture:** Identificación de reglas de negocio y términos específicos del dominio
+- **Capability Analysis:** Análisis de capacidades y roles que cada contexto desempeña en la arquitectura
+- **Dependencies Capture:** Mapeo de comunicación entrante y saliente con otros contextos y sistemas externos
+- **Design Critique:** Validación de assumptions, métricas de verificación, y identificación de questions abiertas
+
+**Herramienta utilizada:** Miro con plantillas estandarizadas de Bounded Context Canvas para asegurar consistencia en el diseño de todos los contextos.
+
+**Criterios de priorización:** Los bounded contexts se ordenaron según su clasificación estratégica, comenzando con contexts Core que representan la ventaja competitiva del sistema, seguidos por contexts Supporting que habilitan las operaciones del negocio, y finalmente contexts Generic que proporcionan capacidades estándar.
+
+**Bounded Contexts Diseñados**
+
+**Contextos Core (Ventaja Competitiva)**
+
+**Container Monitoring**
+
+![canvas-1](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-1.jpg)
+
+**Propósito:** Proporcionar inteligencia en tiempo real e insights predictivos sobre el estado de contenedores de residuos mediante integración con sensores IoT, habilitando programación proactiva de recolecciones y prevención de situaciones de desbordamiento.
+
+**Clasificación estratégica:** Core Domain, Revenue Generator, Custom Built - Representa la capacidad técnica diferenciadora que justifica el desarrollo interno sobre soluciones comerciales existentes.
+
+**Capacidades principales:**
+- Procesamiento y análisis de datos de sensores IoT en tiempo real
+- Generación de alertas predictivas basadas en algoritmos de llenado
+- Validación y limpieza de datos de sensores para asegurar calidad
+- Generación de analytics de utilización y patrones de uso
+
+**Comunicación clave:** Recibe datos de sensores IoT externos y reportes ciudadanos, genera eventos críticos hacia Route Planning y Municipal Operations para activar respuestas operacionales.
+
+**Route Planning & Execution**
+
+![canvas-2](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-2.jpg)
+
+**Propósito:** Optimizar rutas de recolección de residuos mediante planificación algorítmica y gestionar ejecución de rutas en tiempo real, asegurando utilización eficiente de recursos mientras se adapta a condiciones dinámicas.
+
+**Clasificación estratégica:** Core Domain, Revenue Generator, Custom Built - Los algoritmos de optimización constituyen el diferenciador fundamental que justifica el desarrollo interno.
+
+**Capacidades principales:**
+- Cálculo de rutas optimizadas considerando múltiples constraints
+- Gestión de ejecución de rutas con adaptación en tiempo real
+- Coordinación de asignaciones de conductores y vehículos
+- Manejo de inserciones de emergencia en rutas activas
+
+**Comunicación clave:** Colabora estrechamente con Container Monitoring para responder a alertas críticas, coordina con Municipal Operations para validar recursos, y notifica cambios via Communication Hub.
+
+**Contextos Supporting (Habilitadores del Negocio)**
+
+**Municipal Operations**
+
+![canvas-3](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-3.jpg)
+
+**Propósito:** Gestionar operaciones integrales de distritos municipales incluyendo asignación de recursos, programación operacional, y configuración de servicios específicos del distrito.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Product - Necesario para el modelo B2B pero utiliza patrones conocidos de gestión de clientes.
+
+**Capacidades principales:**
+- Configuración de parámetros operacionales específicos por distrito
+- Gestión de recursos (vehículos, conductores) asignados al distrito
+- Coordinación de operaciones cross-funcionales dentro del distrito
+- Aplicación de políticas y regulaciones locales
+
+**Payment & Subscriptions**
+
+![canvas-4](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-4.jpg)
+
+**Propósito:** Gestionar el ciclo completo de revenue para clientes municipales mediante facturación de suscripciones, procesamiento de pagos, y administración del lifecycle de servicios.
+
+**Clasificación estratégica:** Supporting Domain, Revenue Generator, Product - Crítico para sostenibilidad pero basado en modelos SaaS estándar.
+
+**Capacidades principales:**
+- Gestión de ciclos de facturación y cálculo de cargos
+- Procesamiento de pagos y manejo de fallos transaccionales
+- Administración de estados de suscripción y continuidad de servicio
+- Aplicación de políticas de gracia y suspensión de servicios
+
+**Community Relations**
+
+![canvas-5](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-5.jpg)
+
+**Propósito:** Fomentar engagement y participación ciudadana en gestión de residuos mediante mecanismos de reporte, contenido educativo, y sistemas de recompensas gamificados.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Custom Built - Importante para diferenciación de servicio pero no constituye ventaja competitiva central.
+
+**Capacidades principales:**
+- Procesamiento de reportes y feedback ciudadano
+- Gestión de contenido educativo y programas de engagement
+- Operación de sistema de recompensas y gamificación
+- Tracking de métricas de participación comunitaria
+
+**Profile**
+
+![canvas-6](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-6.jpg)
+
+**Propósito:** Administrar perfiles de usuario, preferencias personales, y configuraciones de notificación para proporcionar experiencias personalizadas manteniendo privacidad de datos.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Product - Facilita experiencia de usuario pero no representa capacidad única del dominio.
+
+**Capacidades principales:**
+- Gestión de información personal y preferencias de usuario
+- Configuración de preferencias de notificación y comunicación
+- Personalización de experiencia basada en datos de perfil
+- Validación de elegibilidad de área de servicio
+
+**Contextos Generic (Capacidades Estándar)**
+
+**Communication Hub**
+
+![canvas-7](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-7.jpg)
+
+**Propósito:** Orquestar entrega de mensajes multi-canal a través de email, push notifications, y SMS asegurando comunicación confiable y oportuna con tracking de entrega.
+
+**Clasificación estratégica:** Generic Domain, Compliance Enforcer, Commodity - Completamente tercerizable con servicios como SendGrid, Firebase.
+
+**Capacidades principales:**
+- Orquestación de entrega de mensajes across múltiples canales
+- Tracking y reporte de estado de entrega de mensajes
+- Gestión de integraciones con servicios de comunicación externos
+- Implementación de políticas de retry y fallback entre canales
+
+**IAM**
+
+![canvas-8](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-8.jpg)
+
+**Propósito:** Proporcionar servicios seguros de gestión de identidad, autenticación, y autorización para todos los usuarios de la plataforma con control de acceso basado en roles.
+
+**Clasificación estratégica:** Generic Domain, Compliance Enforcer, Commodity - Completamente tercerizable con Auth0, AWS Cognito o soluciones similares.
+
+**Capacidades principales:**
+- Verificación de identidad de usuario y gestión de sesiones de login
+- Aplicación de control de acceso basado en roles y permisos
+- Gestión de lifecycle de identidad (creación, actualización, desactivación)
+- Implementación de políticas de seguridad y compliance
+
+**Alineación con Subdominios SaaS Estándar**
+
+Los bounded contexts identificados se alinean coherentemente con los subdominios típicos de plataformas SaaS orientadas a servicios:
+
+- **Subscriptions and Payment Management:** Payment & Subscriptions BC
+- **Identity and Access Management:** IAM BC
+- **Profiles and Preferences Management:** Profile BC
+- **Service Design and Planning:** Route Planning & Execution BC
+- **Resource and Asset Management:** Municipal Operations BC + Container Monitoring BC
+- **Service Execution and Monitoring:** Route Planning & Execution BC + Container Monitoring BC
+- **Loyalty and Engagement:** Community Relations BC
+
+**Criterios de Diseño Aplicados**
+
+- **Separación de responsabilidades:** Cada bounded context tiene una responsabilidad claramente definida sin solapamiento de capacidades con otros contexts.
+- **Autonomía de evolución:** Los contexts pueden evolucionar independientemente según las necesidades específicas de su subdominio.
+- **Cohesión de lenguaje:** Cada context mantiene su propio ubiquitous language específico del área de responsabilidad.
+- **Acoplamiento mínimo:** Las dependencias entre contexts se limitan a interfaces bien definidas mediante message passing.
+
+**Resultados del Diseño**
+
+El proceso de diseño de Bounded Context Canvas resultó en la definición detallada de 8 contexts con responsabilidades claramente delimitadas, dependencies mapeadas, y criteria de verificación establecidos. La clasificación estratégica confirma que 2 contexts constituyen el core diferenciador de WasteTrack (Container Monitoring y Route Planning & Execution), mientras que 6 contexts proporcionan capacidades de soporte y genéricas necesarias para operación completa del sistema.
+
+Los canvases diseñados proporcionan la base arquitectónica para proceder con el Context Mapping detallado y el diseño táctico de cada bounded context, asegurando que la implementación refleje las verdaderas separaciones de responsabilidad del dominio de gestión inteligente de residuos sólidos urbanos.
+
 ### 4.1.2. Context Mapping
+
+En esta sección se documenta el proceso de elaboración del Context Mapping para el sistema WasteTrack, donde el equipo analizó y diseñó las relaciones estructurales entre los bounded contexts identificados. El proceso aplicó un enfoque iterativo de evaluación de alternativas arquitectónicas mediante preguntas estratégicas, culminando en la selección de patrones de relación apropiados basados en los principios de Domain-Driven Design.
+
+**Metodología de Context Mapping**
+
+**Enfoque aplicado:** Análisis iterativo mediante preguntas de diseño estratégico para evaluar múltiples alternativas arquitectónicas antes de seleccionar los patrones de relación definitivos.
+
+**Principios guía:**
+- Minimizar acoplamiento entre bounded contexts
+- Maximizar autonomía de equipos y evolución independiente
+- Seleccionar patrones que reflejen las verdaderas relaciones de poder y dependencia
+- Evitar duplicación innecesaria de funcionalidades
+- Proteger la integridad de modelos de dominio
+
+**Herramienta utilizada:** Miro con plantillas de Context Mapping para visualizar relaciones y patrones entre bounded contexts.
+
+**Proceso Iterativo de Análisis de Alternativas**
+
+**Iteración 1: Evaluación de Communication Hub como Shared Service**
+
+**Pregunta estratégica:** "¿Qué pasaría si creamos un shared service para reducir la duplicación entre múltiples bounded contexts?"
+
+**Análisis:** Inicialmente cada bounded context manejaba sus propias notificaciones, resultando en duplicación de lógica de email, push notifications, y SMS en múltiples contexts.
+
+**Alternativas evaluadas:**
+- Mantener notificaciones distribuidas en cada context
+- Crear Communication Hub como shared service
+- Fusionar notificaciones con otro context existente
+
+**Decisión:** Implementar Communication Hub como Open-Host Service
+**Justificación:** Elimina duplicación de funcionalidad de comunicación, expone protocolo consistente que todos los contexts pueden usar, centraliza gestión de templates y delivery tracking.
+
+**Iteración 2: Análisis de Separación Profile vs IAM**
+
+**Pregunta estratégica:** "¿Qué pasaría si partimos el bounded context en múltiples bounded contexts?"
+
+**Análisis:** Profile inicialmente incluía tanto gestión de identidad como personalización de usuario, creando responsabilidades mixtas.
+
+**Alternativas evaluadas:**
+- Fusionar Profile con IAM en un solo Identity Management context
+- Mantener separación actual entre IAM y Profile
+- Crear tercer context para preferencias de usuario
+
+**Decisión:** Mantener IAM y Profile como contexts separados con relación Customer/Supplier
+**Justificación:** IAM enfocado en autenticación y autorización, Profile enfocado en personalización y preferencias. Responsabilidades claramente diferenciadas con dependencia unidireccional apropiada.
+
+**Iteración 3: Evaluación de Dependencias Core Domain**
+
+**Pregunta estratégica:** "¿Qué pasaría si duplicamos una funcionalidad para romper la dependencia?"
+
+**Análisis:** Route Planning & Execution depende significativamente de Container Monitoring para alertas críticas y priorización de contenedores.
+
+**Alternativas evaluadas:**
+- Duplicar lógica de priorización en Route Planning para independencia
+- Mantener dependencia Customer/Supplier
+- Crear Shared Kernel entre ambos contexts
+
+**Decisión:** Mantener relación Customer/Supplier sin duplicación
+**Justificación:** Container Monitoring es core domain para inteligencia de contenedores. Duplicar lógica violaría principio DRY y crearía inconsistencias. La dependencia refleja correctamente la autoridad de Container Monitoring sobre criticidad de contenedores.
+
+**Iteración 4: Análisis de Community Relations**
+
+**Pregunta estratégica:** "¿Qué pasaría si descomponemos este capability y movemos uno de los sub-capabilities a otro bounded context?"
+
+**Análisis:** Community Relations maneja reportes ciudadanos, sistema de rewards, y contenido educativo. Se evaluó mover rewards a Profile.
+
+**Alternativas evaluadas:**
+- Mover rewards system a Profile context
+- Crear nuevo context específico para gamificación
+- Mantener todo en Community Relations con colaboración estrecha
+
+**Decisión:** Mantener rewards en Community Relations, establecer Partnership con Profile
+**Justificación:** Rewards son parte integral del engagement ciudadano. Partnership permite colaboración bidireccional para gestión de puntos y milestones sin fragmentar la responsabilidad de engagement.
+
+**Iteración 5: Evaluación de Control de Acceso por Pagos**
+
+**Pregunta estratégica:** "¿Qué pasaría si movemos este capability a otro bounded context?"
+
+**Análisis:** Payment & Subscriptions controla suspensión de servicios, pero la ejecución ocurre en Municipal Operations.
+
+**Alternativas evaluadas:**
+- Mover control de suspensión a Municipal Operations
+- Crear shared service para gestión de acceso
+- Mantener autoridad en Payment con ejecución delegada
+
+**Decisión:** Relación Customer/Supplier con Payment como Upstream
+**Justificación:** Payment & Subscriptions tiene autoridad sobre decisiones de facturación y acceso. Municipal Operations ejecuta consecuencias operacionales. Separación apropiada de responsabilidades financieras vs operacionales.
+
+**Iteración 6: Evaluación de Incident Management**
+
+**Pregunta estratégica:** "¿Qué pasaría si tomamos este capability de estos 3 contexts y lo usamos para formar un nuevo context?"
+
+**Análisis:** Reportes ciudadanos (Community Relations) impactan estado de contenedores (Container Monitoring) y pueden generar rutas de emergencia (Route Planning).
+
+**Alternativas evaluadas:**
+- Crear nuevo "Incident Management" context
+- Mantener colaboración entre contexts existentes
+- Centralizar gestión de emergencias en un context
+
+**Decisión:** Mantener Partnership entre Community Relations y Container Monitoring
+**Justificación:** Reportes ciudadanos son inherentemente parte del engagement (Community Relations), pero requieren validación técnica (Container Monitoring). Partnership permite colaboración bidireccional sin crear context artificial.
+
+**Iteración 7: Análisis de Patrones de Comunicación**
+
+**Pregunta estratégica:** "¿Qué pasaría si aislamos los core capabilities y movemos los otros a un context aparte?"
+
+**Análisis:** Todos los contexts requieren capacidades de notificación, pero no es core para ninguno excepto Communication Hub.
+
+**Alternativas evaluadas:**
+- Implementar Anti-Corruption Layers para cada context
+- Usar patrón Conformist para simplificar integración
+- Crear interfaces específicas por context
+
+**Decisión:** Patrón Conformist para todos los contexts que consumen Communication Hub
+**Justificación:** Communication Hub tiene modelo simple y apropiado para notificaciones. Conformist reduce complejidad de integración significativamente. No hay riesgo de corrupción del modelo porque notificaciones son capacidad genérica.
+
+**Context Mapping Resultante**
+
+![context-map.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.2.context-mapping/context-map.jpg)
+
+**Patrones de Relación Implementados**
+
+**Open-Host Service:**
+- **Communication Hub** expone servicios de notificación multi-canal como protocolo abierto
+- Todos los bounded contexts pueden integrar usando interfaz consistente
+- Maneja email, push notifications, SMS de forma unificada
+
+**Customer/Supplier Relationships:**
+- **IAM (U) → Profile (D):** IAM provee identidad validada, Profile consume para gestión de perfiles
+- **Container Monitoring (U) → Route Planning & Execution (D):** Container Monitoring provee alertas críticas, Route Planning consume para optimización
+- **Route Planning & Execution (U) → Municipal Operations (D):** Route Planning provee rutas optimizadas, Municipal Operations valida y ejecuta
+- **Payment & Subscriptions (U) → Municipal Operations (D):** Payment controla estado de suscripción, Municipal Operations ejecuta consecuencias
+
+**Partnership Relationships:**
+- **Community Relations ↔ Container Monitoring:** Colaboración bidireccional para gestión de reportes ciudadanos e impacto en estado de contenedores
+- **Community Relations ↔ Profile:** Colaboración para gestión de rewards system y datos de usuario
+
+**Conformist Relationships:**
+- **Container Monitoring → Communication Hub**
+- **Route Planning & Execution → Communication Hub**
+- **Municipal Operations → Communication Hub**
+- **Payment & Subscriptions → Communication Hub**
+- **Community Relations → Communication Hub**
+
+**Justificación de Patrones Seleccionados**
+
+**Open-Host Service para Communication Hub:**
+Communication Hub expone protocolo simple y consistente para notificaciones. Todos los contexts pueden usar la misma interfaz sin complejidad de traducción. Centraliza gestión de templates, retry logic, y delivery tracking.
+
+**Customer/Supplier sin Anti-Corruption Layer:**
+Todos los bounded contexts fueron diseñados utilizando el mismo lenguaje ubiquo del dominio de gestión de residuos sólidos. Comparten terminología consistente (container_id, district_id, urgency_level) eliminando necesidad de traducción conceptual entre contexts.
+
+**Partnership para Colaboración Bidireccional:**
+Community Relations requiere colaboración estrecha con Container Monitoring y Profile debido a la naturaleza bidireccional de reportes ciudadanos y gestión de rewards. Partnership permite evolución coordinada sin crear dependencias rígidas.
+
+**Conformist para Simplificación:**
+Communication Hub tiene responsabilidad específica y modelo apropiado para notificaciones. Conformist elimina overhead de Anti-Corruption Layers innecesarios mientras mantiene simplicidad de integración.
+
+**Impacto Arquitectónico del Context Mapping**
+
+**Autonomía de Equipos:** Cada bounded context puede evolucionar independientemente dentro de los contratos establecidos por los patrones de relación.
+
+**Gestión de Dependencias:** Las relaciones Customer/Supplier clarifican dirección de influencia y responsabilidad de cambios en interfaces.
+
+**Escalabilidad:** Open-Host Service permite agregar nuevos consumers a Communication Hub sin modificar implementación existente.
+
+**Mantenibilidad:** Partnership relationships habilitan evolución coordinada donde la colaboración bidireccional es esencial para el negocio.
+
+**Resultados del Context Mapping**
+
+El proceso iterativo de Context Mapping resultó en la definición de 8 relaciones estructurales entre bounded contexts utilizando 4 patrones diferentes de Domain-Driven Design. Las decisiones arquitectónicas priorizan autonomía de equipos, simplicidad de integración, y reflejo fiel de las relaciones de negocio reales del dominio de gestión de residuos sólidos urbanos.
+
+El Context Map resultante proporciona la base para implementación de APIs, definición de contratos entre servicios, y establecimiento de governance policies para evolución coordinada del sistema WasteTrack.
 
 ### 4.1.3. Software Architecture
 
@@ -1102,3 +1749,27 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 **Descripción**: Workspace interactivo de Figma donde se desarrolló la sesión completa de Big Picture Event Storming para WasteTrack. Incluye todas las fases del proceso: identificación de eventos, organización temporal, mapeo de actores y sistemas, y identificación de hot spots.
 
 **Acceso**: Enlace público de solo lectura para revisión y validación del trabajo colaborativo realizado por el equipo EcoLutions.
+
+### A.2 Design-Level Event Storming - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJGKek04=/?share_link_id=318269530571](https://miro.com/app/board/uXjVJGKek04=/?share_link_id=318269530571)
+
+**Descripción:** Workspace interactivo de Miro donde se desarrolló la sesión completa de Design-Level Event Storming para WasteTrack. Incluye todas las fases del proceso: eventos de dominio, comandos, actores, políticas, read models, UX mock-ups, sistemas externos, reglas de negocio y agregados identificados.
+
+**Acceso:** Enlace público de solo lectura para revisión detallada del modelado de software y validación del trabajo colaborativo realizado por el equipo EcoLutions.
+
+### A.3 Domain Message Flows Modeling - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJF6enfs=/?share_link_id=443229773466](https://miro.com/app/board/uXjVJF6enfs=/?share_link_id=443229773466)
+
+**Descripción:** Workspace interactivo de Miro donde se desarrollaron los diagramas de Domain Message Flows para WasteTrack. Incluye 6 escenarios completos de colaboración entre bounded contexts: Container Emergency Response, Municipal Operations Setup, Smart Collection Optimization, Subscription Lifecycle Management, Route Execution and Real-Time Adaptation, y Citizen Engagement and Rewards Cycle.
+
+**Acceso:** Enlace público de solo lectura para revisión de los flujos de mensajes inter-contextuales y validación de la arquitectura distribuida del sistema.
+
+### A.4 Bounded Context Canvases - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJF7LtDk=/?share_link_id=426807696302](https://miro.com/app/board/uXjVJF7LtDk=/?share_link_id=426807696302)
+
+**Descripción:** Workspace interactivo de Miro donde se diseñaron los 8 Bounded Context Canvases completos para WasteTrack. Incluye el diseño detallado de cada contexto delimitado: Container Monitoring, Route Planning & Execution, Municipal Operations, Payment & Subscriptions, Community Relations, Communication Hub, Profile, e IAM, con sus respectivas responsabilidades, comunicaciones, y criterios de diseño.
+
+**Acceso:** Enlace público de solo lectura para revisión del diseño estratégico de bounded contexts y validación de la separación de responsabilidades del dominio.
