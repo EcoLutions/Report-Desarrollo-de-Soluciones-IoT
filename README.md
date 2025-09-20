@@ -1770,23 +1770,241 @@ La arquitectura de deployment asegura disponibilidad del 99.9%, escalabilidad au
 
 ## 4.2. Tactical-Level Domain-Driven Design
 
-### 4.2.1. Bounded Context: <Bounded Context Name>
+### 4.2.1. Bounded Context: Container Monitoring
+
+En esta sección se presenta el análisis detallado del bounded context Container Monitoring, que encapsula toda la lógica de negocio relacionada con el monitoreo de contenedores de residuos mediante sensores IoT, la gestión de su estado operacional, y la generación de análisis predictivo para optimizar las operaciones de recolección municipal.
 
 #### 4.2.1.1. Domain Layer
 
+Esta capa contiene las reglas de negocio fundamentales del dominio de monitoreo de contenedores, implementando patrones DDD y de diseño para asegurar un código mantenible y escalable.
+
+**Aggregate Roots:**
+
+1. **`Container` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un contenedor de residuos y sus sensores asociados.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                  | Visibilidad | Descripción                                         |
+|----------------------|-----------------------|-------------|-----------------------------------------------------|
+| `id`                 | `Long`                | `private`   | Identificador único del contenedor en base de datos |
+| `containerId`        | `ContainerId`         | `private`   | Identificador de dominio del contenedor             |
+| `location`           | `Location`            | `private`   | Ubicación geográfica del contenedor                 |
+| `capacity`           | `ContainerCapacity`   | `private`   | Capacidad máxima del contenedor                     |
+| `currentFillLevel`   | `FillLevel`           | `private`   | Nivel actual de llenado del contenedor              |
+| `status`             | `ContainerStatus`     | `private`   | Estado operacional del contenedor                   |
+| `type`               | `ContainerType`       | `private`   | Tipo de residuos que almacena                       |
+| `lastCollectionDate` | `LocalDateTime`       | `private`   | Fecha de la última recolección                      |
+| `sensorReadings`     | `List<SensorReading>` | `private`   | Historial de lecturas de sensores                   |
+| `version`            | `Long`                | `private`   | Control de versión para optimistic locking          |
+
+**Métodos principales:**
+
+| Método                                | Tipo de Retorno | Visibilidad | Descripción                                                   |
+|---------------------------------------|-----------------|-------------|---------------------------------------------------------------|
+| `Container()`                         | `Constructor`   | `protected` | Constructor protegido para repositorio                        |
+| `Container(location, capacity, type)` | `Constructor`   | `public`    | Constructor con parámetros esenciales                         |
+| `Container(command)`                  | `Constructor`   | `public`    | Constructor desde comando usando Factory pattern              |
+| `addSensorReading(reading)`           | `void`          | `public`    | Agrega nueva lectura de sensor validando reglas de negocio    |
+| `updateFillLevel(newLevel)`           | `void`          | `public`    | Actualiza nivel de llenado y publica eventos de dominio       |
+| `markAsCollected()`                   | `void`          | `public`    | Marca contenedor como recolectado y resetea métricas          |
+| `isOverflowing()`                     | `boolean`       | `public`    | Verifica si el contenedor está desbordándose                  |
+| `needsCollection()`                   | `boolean`       | `public`    | Determina si requiere recolección basado en reglas de negocio |
+| `calculateFillRate()`                 | `double`        | `public`    | Calcula tasa de llenado para análisis predictivo              |
+
+2. **`SensorReading` (Entity)**
+
+Entidad que representa una lectura individual de los sensores IoT instalados en los contenedores.
+
+**Atributos principales:**
+
+| Atributo       | Tipo              | Visibilidad | Descripción                            |
+|----------------|-------------------|-------------|----------------------------------------|
+| `id`           | `Long`            | `private`   | Identificador único de la lectura      |
+| `readingId`    | `SensorReadingId` | `private`   | Identificador de dominio de la lectura |
+| `containerId`  | `ContainerId`     | `private`   | Referencia al contenedor asociado      |
+| `sensorId`     | `SensorId`        | `private`   | Identificador del sensor físico        |
+| `timestamp`    | `LocalDateTime`   | `private`   | Momento de la lectura                  |
+| `fillLevel`    | `FillLevel`       | `private`   | Nivel de llenado registrado            |
+| `temperature`  | `Temperature`     | `private`   | Temperatura ambiente registrada        |
+| `sensorHealth` | `SensorHealth`    | `private`   | Estado de salud del sensor             |
+| `isValidated`  | `boolean`         | `private`   | Indica si la lectura ha sido validada  |
+
+**Métodos principales:**
+
+| Método          | Tipo de Retorno    | Visibilidad | Descripción                                    |
+|-----------------|--------------------|-------------|------------------------------------------------|
+| `validate()`    | `ValidationResult` | `public`    | Valida la lectura usando Specification pattern |
+| `isAnomalous()` | `boolean`          | `public`    | Detecta anomalías en los datos del sensor      |
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones de dominio específicas:
+
+- **`ContainerId`**: Identificador único con validaciones de formato
+- **`FillLevel`**: Porcentaje de llenado con métodos `isCritical()`, `isNearFull()`
+- **`ContainerCapacity`**: Volumen y peso máximo con cálculo de utilización
+- **`ContainerStatus`**: Estado operacional con transiciones válidas
+- **`SensorHealth`**: Estado de salud del sensor con indicadores de mantenimiento
+- **`Temperature`**: Temperatura con conversiones y validaciones de rango
+
+**Factories (Creational Pattern):**
+
+1. **`ContainerFactory`**: Implementa Factory pattern para crear contenedores con configuraciones predeterminadas y validaciones complejas
+2. **`SensorReadingFactory`**: Crea lecturas de sensores desde mensajes IoT raw, aplicando transformaciones y validaciones
+
+**Strategies (Behavioral Pattern):**
+
+1. **`FillLevelPredictionStrategy`**: Interface para algoritmos de predicción
+  - **`LinearPredictionStrategy`**: Predicción basada en tendencias lineales
+  - **`MachineLearningPredictionStrategy`**: Predicción usando modelos de ML
+
+**Observers (Behavioral Pattern):**
+
+1. **`ContainerEventObserver`**: Interface para observadores de eventos de contenedores
+2. **`AlertNotificationObserver`**: Implementa notificaciones automáticas para eventos críticos
+
+**Domain Services:**
+
+1. **`ContainerCommandService`**: Orquesta operaciones CQRS de escritura
+2. **`ContainerQueryService`**: Maneja consultas CQRS de lectura
+3. **`ContainerAnalyticsService`**: Genera análisis predictivos usando Strategy pattern
+4. **`SensorValidationService`**: Valida lecturas de sensores y detecta anomalías
+
+**Commands (CQRS Write Side):**
+
+- `CreateContainerCommand`: Creación de nuevos contenedores
+- `UpdateFillLevelCommand`: Actualización de niveles de llenado
+- `MarkContainerCollectedCommand`: Marcado de recolección completada
+- `ScheduleMaintenanceCommand`: Programación de mantenimiento
+
+**Queries (CQRS Read Side):**
+
+- `GetContainerByIdQuery`: Consulta individual por ID
+- `GetContainersByLocationQuery`: Consulta por ubicación geográfica
+- `GetContainersByFillLevelQuery`: Consulta por nivel de llenado
+- `GetContainerAnalyticsQuery`: Generación de análisis específicos
+- `GetAllOverflowingContainersQuery`: Contenedores en estado crítico
+
+**Domain Events:**
+
+- `ContainerOverflowEvent`: Publicado cuando un contenedor se desborda
+- `SensorMalfunctionEvent`: Publicado cuando un sensor falla
+- `MaintenanceRequiredEvent`: Publicado cuando se requiere mantenimiento
+
 #### 4.2.1.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST y consumidores de eventos, implementando patrones de presentación para separar la lógica de interfaz del dominio.
+
+**Controllers:**
+
+1. **`Container Controller`**: Endpoints REST para operaciones CRUD de contenedores, consultas de estado y generación de análisis. Implementa MVC pattern y maneja requests desde dashboard administrativo y aplicaciones móviles.
+
+2. **`Sensor Data Controller`**: Endpoints especializados para recibir datos IoT desde message queue. Implementa Validation pattern para asegurar integridad de datos de sensores.
+
+3. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde otros bounded contexts (Route Planning BC para eventos de recolección, Community Relations BC para reportes ciudadanos). Implementa Consumer pattern para procesamiento asíncrono.
 
 #### 4.2.1.3. Application Layer
 
+Esta capa coordina las operaciones del dominio y orquesta los flujos de trabajo, implementando patrones de aplicación para gestionar la complejidad de las operaciones de negocio.
+
+**Application Services:**
+
+1. **`Container Service`**: Servicio principal que orquesta operaciones de contenedores incluyendo creación, actualizaciones y gestión de estado. Implementa Facade pattern para simplificar interacciones complejas entre agregados.
+
+2. **`Analytics Service`**: Genera análisis de niveles de llenado, patrones de uso e insights predictivos. Implementa Builder pattern para construcción de reportes complejos y Template Method pattern para diferentes tipos de análisis.
+
+3. **`Alert Service`**: Gestiona alertas de contenedores para advertencias de desbordamiento y fallas de sensores. Implementa Observer pattern para manejo reactivo de eventos críticos y State pattern para gestión de escalamiento de alertas.
+
 #### 4.2.1.4. Infrastructure Layer
 
+Esta capa proporciona implementaciones técnicas para persistencia, comunicación externa y servicios de infraestructura, aplicando patrones estructurales para desacoplar el dominio de detalles técnicos.
+
+**Repositories:**
+
+1. **`Container Repository`**: Implementación JPA para persistencia de contenedores con consultas personalizadas para análisis. Implementa Repository pattern con optimizaciones para consultas geoespaciales y análisis de tendencias.
+
+2. **`Sensor Repository`**: Repositorio JPA para lecturas de sensores con optimizaciones time-series para manejo eficiente de grandes volúmenes de datos IoT.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de contenedores a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de contenedores frecuentemente accedidos. Implementa Cache-Aside pattern para optimización de rendimiento.
+
+3. **`Notification Service`**: Envía alertas vía email y push notifications usando servicios externos. Implementa Adapter pattern para integración con múltiples proveedores de notificaciones.
+
 #### 4.2.1.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Container Monitoring bounded context, ilustrando la separación por capas DDD y las interacciones entre componentes. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers y event consumers que manejan comunicación externa
+- **Application Layer** (verde medio): Services que coordinan operaciones de negocio
+- **Infrastructure Layer** (verde oscuro): Repositories y servicios externos
+- **Integraciones externas**: Base de datos PostgreSQL (rojo), Redis Cache (naranja), y Kafka Message Queue (morado)
+
+La arquitectura implementa el patrón de dependencias hacia adentro, donde las capas externas dependen de las internas, asegurando que el dominio permanezca puro y testeable.
 
 #### 4.2.1.6. Bounded Context Software Architecture Code Level Diagrams
 
 ##### 4.2.1.6.1. Bounded Context Domain Layer Class Diagrams
 
+![class-diagram.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Container Monitoring, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Root**: Container como raíz del agregado con invariantes de negocio
+- **Entities**: SensorReading con identidad propia dentro del agregado
+- **Value Objects**: Objetos inmutables para conceptos del dominio
+- **Domain Services**: Servicios para lógica compleja que no pertenece a una entidad específica
+- **Domain Events**: Eventos para comunicación eventual consistency
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: ContainerFactory y SensorReadingFactory para creación compleja
+- **Strategy Pattern**: FillLevelPredictionStrategy para algoritmos intercambiables
+- **Observer Pattern**: ContainerEventObserver para manejo reactivo de eventos
+- **Repository Pattern**: Interfaces para abstracción de persistencia
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de negocio
+- **Queries**: Operaciones de lectura optimizadas por caso de uso
+- **Command/Query Services**: Separación clara de responsabilidades
+
+**Shared Kernel:**
+- Value Objects compartidos entre bounded contexts (Location, MunicipalityId, ContainerType)
+- Contratos estables para integración entre contextos
+
 ##### 4.2.1.6.2. Bounded Context Database Design Diagram
+
+![database-design.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con las siguientes características técnicas:
+
+**Tablas principales:**
+- **containers**: Aggregate root con datos principales y metadatos de auditoría
+- **sensor_readings**: Entity con optimizaciones para datos time-series
+- **maintenance_events**: Gestión de eventos de mantenimiento
+- **container_events**: Almacenamiento de domain events para procesamiento asíncrono
+- **container_analytics_cache**: Cache de análisis para optimización de rendimiento
+
+**Optimizaciones implementadas:**
+- **Índices geoespaciales**: GIST indexes para consultas por ubicación
+- **Índices temporales**: Optimización para consultas de series de tiempo
+- **Triggers automáticos**: Actualización de timestamps y control de versiones
+- **Constraints robustos**: Validación de integridad a nivel de base de datos
+- **Funciones de limpieza**: Retención automática de datos con políticas configurables
+
+**Características técnicas:**
+- **JSONB**: Para datos flexibles de eventos y validaciones
+- **Optimistic locking**: Control de concurrencia con campo version
+- **Auditoría completa**: Timestamps automáticos para trazabilidad
+- **Vistas materializadas**: Para consultas comunes de análisis y reportes
+
+El esquema está optimizado para las operaciones identificadas en el dominio, incluyendo consultas geoespaciales, análisis de tendencias, y procesamiento de grandes volúmenes de datos IoT.
 
 ### 4.2.2. Bounded Context: <Bounded Context Name>
 
