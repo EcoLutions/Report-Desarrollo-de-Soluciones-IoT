@@ -903,6 +903,153 @@ Viviana Caballero, una residente de 39 años en el distrito de Ate, describe su 
 
 ### 2.2.3. Análisis de entrevistas
 
+### Segmento 1: Administradores de Residuos Municipales
+
+#### 1. Perfil y Herramientas Actuales
+
+- **Alejandro:** Usa Android.
+- **Angie:** Usa iPhone.
+- **Pamela:** Usa Android.
+
+**Sistemas Digitales:**  
+Los tres administradores coinciden en que usan **Excel** como su principal herramienta de trabajo para control, reportes y análisis. Los sistemas municipales oficiales son percibidos como antiguos, lentos y poco amigables.
+
+**Comunicación:**  
+Se basa en métodos manuales, como reuniones, reportes de campo y grupos de **WhatsApp** para emergencias.
+
+**Información y Desactualización:**  
+La información con la que trabajan **no está en tiempo real**. Pamela menciona un desfase de **24 a 48 horas**, lo que los obliga a depender de llamadas y mensajes para gestionar urgencias.
+
+#### 2. Principales Frustraciones y Problemas
+
+**Infraestructura Deficiente:**
+- Alejandro y Angie comparten una frustración común: la **falta de un relleno sanitario adecuado** en sus distritos.
+    - *Totora (Alejandro):* Está al 75% de su capacidad sin un plan de reemplazo.
+    - *Chachapoyas (Angie):* No tener relleno encarece la gestión y genera retrasos.
+
+**Flota Vehicular Antigua:**
+- Pamela señala que el **mantenimiento de la flota** es su mayor "dolor de cabeza".
+    - Los camiones son antiguos y fallan constantemente.
+    - Obliga a alquilar unidades de emergencia a **alto costo**.
+
+#### 3. Métricas de Éxito e Indicadores Clave
+
+- **Satisfacción Ciudadana:** Alejandro mide el éxito en la satisfacción de la población con el servicio.
+- **Cumplimiento de Rutas:** Pamela usa el porcentaje de cumplimiento de rutas a tiempo.
+- **Reducción de Quejas:** Angie y Pamela se enfocan en este indicador.
+- **Eficiencia:** Pamela también mide el **tonelaje de residuos recogidos**.
+
+#### 4. Soluciones Deseadas y Visión de Futuro
+
+**Monitoreo en Tiempo Real:**
+- Los tres administradores desean una herramienta digital con información en tiempo real.
+- Alejandro y Angie: Quieren saber cuándo los contenedores están llenos para optimizar recolección.
+- Pamela: Afirma que sería un *"cambio radical"* que permitiría pasar de ser reactivos a proactivos.
+
+**Mantenimiento Predictivo:**
+- Pamela propone un sistema de mantenimiento predictivo para la flota vehicular.
+
+**Inversión Prioritaria (recursos ilimitados):**
+- **Angie:** Relleno sanitario provincial + modernización de la flota.
+- **Alejandro:** Construcción de un nuevo relleno sanitario.
+- **Pamela:** Renovación completa de la flota con unidades modernas y ecológicas + software de gestión logística.
+
+---
+
+### Segmento 2: Conductores de Recolección
+
+#### 1. Perfil y Dispositivos
+
+- **Irving Allca:** 26 años, 4 años de experiencia, San Juan de Lurigancho. Usa Android.
+- **Mateo Sánchez:** 21 años, 1 año de experiencia, vive en Lince, trabaja en Lima. Usa Android.
+- **Giancarlo Dávila:** 21 años, 2 años de experiencia, Santiago de Surco. Usa Android.
+
+> Se observa una clara preferencia por **Android** entre los tres conductores.
+
+#### 2. Gestión del Trabajo y Herramientas
+
+- **Rutas:** Tienen rutas fijas que conocen de memoria, pero pueden cambiar por tráfico o desvíos.
+- **Comunicación:** Principalmente por llamadas o WhatsApp.
+- **Navegación:** Usan apps genéricas como **Waze** o **Google Maps**. No cuentan con una herramienta específica para su trabajo.
+
+#### 3. Principales Frustraciones y Problemas
+
+- **Tráfico:**
+    - Principal fuente de estrés y pérdida de tiempo.
+    - Lo describen como "demasiado", "pesado" y "bullicioso".
+
+- **Contenedores:**
+    - Desbordados, bloqueados o inaccesibles.
+    - Obliga a desviarse, reportar, y perder tiempo.
+    - Mateo: A veces tiene que bajarse él mismo a solucionar el problema.
+
+- **Falta de Información en Tiempo Real:**
+    - Giancarlo y Mateo lo identifican como causa de ineficiencia.
+
+#### 4. Motivación y Sentido del Valor
+
+- Se sienten motivados al saber que están **ayudando a la comunidad**.
+- Mateo: A veces no se siente valorado porque su trabajo pasa desapercibido.
+
+#### 5. Soluciones Deseadas
+
+Todos coinciden en que una **aplicación (APP)** sería útil.
+
+**Funcionalidades más deseadas:**
+- Rutas optimizadas en tiempo real.
+- Alertas de tráfico y desvíos.
+- Información sobre el estado de los contenedores (llenos/vacíos).
+- Irving y Mateo: La información debe ser en **tiempo real** para ser más eficientes.
+
+---
+
+### Segmento 3: Ciudadanos Residentes
+
+#### 1. Perfil y Dispositivos
+
+- **Leonardo Meléndez:** 21 años, estudiante, San Borja. Usa iPhone.
+- **Miguel López:** 24 años, estudiante, Surco. Usa iPhone.
+- **Viviana Caballero:** 39 años, trabaja, Ate. Usa iPhone.
+
+> Todos usan **iPhone**.  
+> Ninguno participa en grupos de WhatsApp barriales, salvo Viviana en uno vecinal directo.
+
+#### 2. Experiencia con los Servicios Públicos
+
+**Percepción del Servicio de Basura:**
+- **Leonardo:** Ineficiente; el camión "a veces no pasa".
+- **Miguel:** Frecuente y regular, pero frustrado por basura en las calles.
+- **Viviana:** Satisfecha; el camión pasa puntualmente a las 7 p.m.
+
+**Falta de Información sobre Otros Servicios:**
+- Viviana quiere saber sobre riego de plantas, seguridad y presencia policial/serenazgo.
+
+#### 3. Comunicación y Quejas
+
+**Canales Inefectivos:**
+- **Leonardo:** “No nos hacen caso.”
+- **Miguel:** Se comunica por una vecina, pero la respuesta puede tardar más de un día.
+- **Viviana:** Usa WhatsApp vecinal; quejas generales no son atendidas.
+
+**Preferencias de Comunicación:**
+- **Leonardo y Viviana:** Prefieren recibir información por **WhatsApp, Facebook, Instagram** o una app dedicada.
+- **Miguel:** Prefiere alertas por mensaje de texto.
+
+#### 4. Soluciones Deseadas
+
+Estarían dispuestos a usar una **aplicación informativa ciudadana**.
+
+**Funcionalidades más útiles:**
+
+- **Información en Tiempo Real:**
+    - Leonardo y Miguel: Saber cuándo pasa el camión.
+    - Viviana: Ver puntos de inseguridad, presencia de serenazgo/policía, contactos de emergencia.
+
+- **Reporte Directo de Problemas:**
+    - Miguel: Reportar directamente con una persona.
+    - Leonardo: Función para que visitantes sepan dónde botar basura.
+    - Viviana: Saber dónde quejarse sobre delincuencia o basura arrojada por terceros.
+
 ## 2.3. Need finding
 
 ### 2.3.1. User personas
