@@ -1069,6 +1069,18 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 
 ## 3.2. Impact Mapping
 
+- Conductor Recolector 
+
+![Conductor Recolector Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/conductorRecolectorImpactMapping.png)
+
+- Ciudadano Residente 
+
+![Ciudadano Residente Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/ciudadanoResidenteImpactMapping.png)
+
+- Admin Municipal 
+
+![Admin Municipal Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/adminMunicipalImpactMapping.png)
+
 ## 3.3. Product Backlog
 
 # Capítulo IV: Solution Software Design
