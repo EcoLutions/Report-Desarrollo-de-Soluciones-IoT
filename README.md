@@ -1289,6 +1289,170 @@ Los flujos de mensajes identificados proporcionan la base para el diseño de API
 
 #### 4.1.1.3. Bounded Context Canvases
 
+En esta sección se documenta el proceso de diseño detallado de los bounded contexts candidatos identificados para el sistema WasteTrack. El equipo aplicó un enfoque iterativo siguiendo la metodología del Bounded Context Canvas para definir criterios de diseño, responsabilidades, y dependencias de cada contexto delimitado, priorizándolos según su importancia estratégica para el dominio de gestión de residuos sólidos urbanos.
+
+**Metodología de Diseño de Bounded Context Canvas**
+
+**Proceso iterativo aplicado:**
+- **Context Overview Definition:** Establecimiento del propósito y clasificación estratégica de cada contexto
+- **Business Rules Distillation & Ubiquitous Language Capture:** Identificación de reglas de negocio y términos específicos del dominio
+- **Capability Analysis:** Análisis de capacidades y roles que cada contexto desempeña en la arquitectura
+- **Dependencies Capture:** Mapeo de comunicación entrante y saliente con otros contextos y sistemas externos
+- **Design Critique:** Validación de assumptions, métricas de verificación, y identificación de questions abiertas
+
+**Herramienta utilizada:** Miro con plantillas estandarizadas de Bounded Context Canvas para asegurar consistencia en el diseño de todos los contextos.
+
+**Criterios de priorización:** Los bounded contexts se ordenaron según su clasificación estratégica, comenzando con contexts Core que representan la ventaja competitiva del sistema, seguidos por contexts Supporting que habilitan las operaciones del negocio, y finalmente contexts Generic que proporcionan capacidades estándar.
+
+**Bounded Contexts Diseñados**
+
+**Contextos Core (Ventaja Competitiva)**
+
+**Container Monitoring**
+
+![canvas-1](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-1.jpg)
+
+**Propósito:** Proporcionar inteligencia en tiempo real e insights predictivos sobre el estado de contenedores de residuos mediante integración con sensores IoT, habilitando programación proactiva de recolecciones y prevención de situaciones de desbordamiento.
+
+**Clasificación estratégica:** Core Domain, Revenue Generator, Custom Built - Representa la capacidad técnica diferenciadora que justifica el desarrollo interno sobre soluciones comerciales existentes.
+
+**Capacidades principales:**
+- Procesamiento y análisis de datos de sensores IoT en tiempo real
+- Generación de alertas predictivas basadas en algoritmos de llenado
+- Validación y limpieza de datos de sensores para asegurar calidad
+- Generación de analytics de utilización y patrones de uso
+
+**Comunicación clave:** Recibe datos de sensores IoT externos y reportes ciudadanos, genera eventos críticos hacia Route Planning y Municipal Operations para activar respuestas operacionales.
+
+**Route Planning & Execution**
+
+![canvas-2](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-2.jpg)
+
+**Propósito:** Optimizar rutas de recolección de residuos mediante planificación algorítmica y gestionar ejecución de rutas en tiempo real, asegurando utilización eficiente de recursos mientras se adapta a condiciones dinámicas.
+
+**Clasificación estratégica:** Core Domain, Revenue Generator, Custom Built - Los algoritmos de optimización constituyen el diferenciador fundamental que justifica el desarrollo interno.
+
+**Capacidades principales:**
+- Cálculo de rutas optimizadas considerando múltiples constraints
+- Gestión de ejecución de rutas con adaptación en tiempo real
+- Coordinación de asignaciones de conductores y vehículos
+- Manejo de inserciones de emergencia en rutas activas
+
+**Comunicación clave:** Colabora estrechamente con Container Monitoring para responder a alertas críticas, coordina con Municipal Operations para validar recursos, y notifica cambios via Communication Hub.
+
+**Contextos Supporting (Habilitadores del Negocio)**
+
+**Municipal Operations**
+
+![canvas-3](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-3.jpg)
+
+**Propósito:** Gestionar operaciones integrales de distritos municipales incluyendo asignación de recursos, programación operacional, y configuración de servicios específicos del distrito.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Product - Necesario para el modelo B2B pero utiliza patrones conocidos de gestión de clientes.
+
+**Capacidades principales:**
+- Configuración de parámetros operacionales específicos por distrito
+- Gestión de recursos (vehículos, conductores) asignados al distrito
+- Coordinación de operaciones cross-funcionales dentro del distrito
+- Aplicación de políticas y regulaciones locales
+
+**Payment & Subscriptions**
+
+![canvas-4](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-4.jpg)
+
+**Propósito:** Gestionar el ciclo completo de revenue para clientes municipales mediante facturación de suscripciones, procesamiento de pagos, y administración del lifecycle de servicios.
+
+**Clasificación estratégica:** Supporting Domain, Revenue Generator, Product - Crítico para sostenibilidad pero basado en modelos SaaS estándar.
+
+**Capacidades principales:**
+- Gestión de ciclos de facturación y cálculo de cargos
+- Procesamiento de pagos y manejo de fallos transaccionales
+- Administración de estados de suscripción y continuidad de servicio
+- Aplicación de políticas de gracia y suspensión de servicios
+
+**Community Relations**
+
+![canvas-5](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-5.jpg)
+
+**Propósito:** Fomentar engagement y participación ciudadana en gestión de residuos mediante mecanismos de reporte, contenido educativo, y sistemas de recompensas gamificados.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Custom Built - Importante para diferenciación de servicio pero no constituye ventaja competitiva central.
+
+**Capacidades principales:**
+- Procesamiento de reportes y feedback ciudadano
+- Gestión de contenido educativo y programas de engagement
+- Operación de sistema de recompensas y gamificación
+- Tracking de métricas de participación comunitaria
+
+**Profile**
+
+![canvas-6](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-6.jpg)
+
+**Propósito:** Administrar perfiles de usuario, preferencias personales, y configuraciones de notificación para proporcionar experiencias personalizadas manteniendo privacidad de datos.
+
+**Clasificación estratégica:** Supporting Domain, Engagement Creator, Product - Facilita experiencia de usuario pero no representa capacidad única del dominio.
+
+**Capacidades principales:**
+- Gestión de información personal y preferencias de usuario
+- Configuración de preferencias de notificación y comunicación
+- Personalización de experiencia basada en datos de perfil
+- Validación de elegibilidad de área de servicio
+
+**Contextos Generic (Capacidades Estándar)**
+
+**Communication Hub**
+
+![canvas-7](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-7.jpg)
+
+**Propósito:** Orquestar entrega de mensajes multi-canal a través de email, push notifications, y SMS asegurando comunicación confiable y oportuna con tracking de entrega.
+
+**Clasificación estratégica:** Generic Domain, Compliance Enforcer, Commodity - Completamente tercerizable con servicios como SendGrid, Firebase.
+
+**Capacidades principales:**
+- Orquestación de entrega de mensajes across múltiples canales
+- Tracking y reporte de estado de entrega de mensajes
+- Gestión de integraciones con servicios de comunicación externos
+- Implementación de políticas de retry y fallback entre canales
+
+**IAM**
+
+![canvas-8](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.3.bounded-context-canvases/canvas-8.jpg)
+
+**Propósito:** Proporcionar servicios seguros de gestión de identidad, autenticación, y autorización para todos los usuarios de la plataforma con control de acceso basado en roles.
+
+**Clasificación estratégica:** Generic Domain, Compliance Enforcer, Commodity - Completamente tercerizable con Auth0, AWS Cognito o soluciones similares.
+
+**Capacidades principales:**
+- Verificación de identidad de usuario y gestión de sesiones de login
+- Aplicación de control de acceso basado en roles y permisos
+- Gestión de lifecycle de identidad (creación, actualización, desactivación)
+- Implementación de políticas de seguridad y compliance
+
+**Alineación con Subdominios SaaS Estándar**
+
+Los bounded contexts identificados se alinean coherentemente con los subdominios típicos de plataformas SaaS orientadas a servicios:
+
+- **Subscriptions and Payment Management:** Payment & Subscriptions BC
+- **Identity and Access Management:** IAM BC
+- **Profiles and Preferences Management:** Profile BC
+- **Service Design and Planning:** Route Planning & Execution BC
+- **Resource and Asset Management:** Municipal Operations BC + Container Monitoring BC
+- **Service Execution and Monitoring:** Route Planning & Execution BC + Container Monitoring BC
+- **Loyalty and Engagement:** Community Relations BC
+
+**Criterios de Diseño Aplicados**
+
+- **Separación de responsabilidades:** Cada bounded context tiene una responsabilidad claramente definida sin solapamiento de capacidades con otros contexts.
+- **Autonomía de evolución:** Los contexts pueden evolucionar independientemente según las necesidades específicas de su subdominio.
+- **Cohesión de lenguaje:** Cada context mantiene su propio ubiquitous language específico del área de responsabilidad.
+- **Acoplamiento mínimo:** Las dependencias entre contexts se limitan a interfaces bien definidas mediante message passing.
+
+**Resultados del Diseño**
+
+El proceso de diseño de Bounded Context Canvas resultó en la definición detallada de 8 contexts con responsabilidades claramente delimitadas, dependencies mapeadas, y criteria de verificación establecidos. La clasificación estratégica confirma que 2 contexts constituyen el core diferenciador de WasteTrack (Container Monitoring y Route Planning & Execution), mientras que 6 contexts proporcionan capacidades de soporte y genéricas necesarias para operación completa del sistema.
+
+Los canvases diseñados proporcionan la base arquitectónica para proceder con el Context Mapping detallado y el diseño táctico de cada bounded context, asegurando que la implementación refleje las verdaderas separaciones de responsabilidad del dominio de gestión inteligente de residuos sólidos urbanos.
+
 ### 4.1.2. Context Mapping
 
 ### 4.1.3. Software Architecture
