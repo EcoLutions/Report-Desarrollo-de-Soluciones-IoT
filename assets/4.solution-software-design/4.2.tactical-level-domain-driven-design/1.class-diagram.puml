@@ -1,0 +1,345 @@
+@startuml Container Monitoring: Domain Layer Class Diagram
+
+title Container Monitoring: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/E1BEE7
+    BackgroundColor<<Strategy>> #FFFFFF/E8F5E8
+    BackgroundColor<<Observer>> #FFFFFF/FFF3E0
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Container Monitoring Context" {
+    package "Domain Layer" {
+        ' ===================== AGGREGATES =====================
+        class "Container" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - containerId : ContainerId
+            - location : Location
+            - capacity : ContainerCapacity
+            - currentFillLevel : FillLevel
+            - status : ContainerStatus
+            - type : ContainerType
+            - lastCollectionDate : LocalDateTime
+            - sensorReadings : List<SensorReading>
+            - version : Long
+
+            # Container()
+            + Container(location : Location, capacity : ContainerCapacity, type : ContainerType)
+            + Container(command : CreateContainerCommand)
+            + addSensorReading(reading : SensorReading) : void
+            + updateFillLevel(newLevel : FillLevel) : void
+            + markAsCollected() : void
+            + isOverflowing() : boolean
+            + needsCollection() : boolean
+            + calculateFillRate() : double
+        }
+
+        class "SensorReading" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - readingId : SensorReadingId
+            - containerId : ContainerId
+            - sensorId : SensorId
+            - timestamp : LocalDateTime
+            - fillLevel : FillLevel
+            - temperature : Temperature
+            - sensorHealth : SensorHealth
+            - isValidated : boolean
+
+            # SensorReading()
+            + SensorReading(containerId : ContainerId, sensorId : SensorId, fillLevel : FillLevel)
+            + validate() : ValidationResult
+            + isAnomalous() : boolean
+        }
+
+        ' ===================== COMMANDS (CQRS Write Side) =====================
+        class "CreateContainerCommand" <<(C, #BA68C8) Command>> {
+            + location : Location
+            + capacity : ContainerCapacity
+            + type : ContainerType
+            + municipalityId : MunicipalityId
+        }
+
+        class "UpdateFillLevelCommand" <<(C, #BA68C8) Command>> {
+            + containerId : ContainerId
+            + fillLevel : FillLevel
+            + sensorId : SensorId
+            + timestamp : LocalDateTime
+        }
+
+        class "MarkContainerCollectedCommand" <<(C, #BA68C8) Command>> {
+            + containerId : ContainerId
+            + collectionDate : LocalDateTime
+            + driverId : DriverId
+        }
+
+        class "ScheduleMaintenanceCommand" <<(C, #BA68C8) Command>> {
+            + containerId : ContainerId
+            + maintenanceType : MaintenanceType
+            + scheduledDate : LocalDateTime
+        }
+
+        ' ===================== QUERIES (CQRS Read Side) =====================
+        class "GetContainerByIdQuery" <<(Q, #C5E1A5) Query>> {
+            + containerId : Long
+        }
+
+        class "GetContainersByLocationQuery" <<(Q, #C5E1A5) Query>> {
+            + location : Location
+            + radiusKm : double
+        }
+
+        class "GetContainersByFillLevelQuery" <<(Q, #C5E1A5) Query>> {
+            + minFillLevel : double
+            + maxFillLevel : double
+        }
+
+        class "GetContainerAnalyticsQuery" <<(Q, #C5E1A5) Query>> {
+            + containerId : ContainerId
+            + startDate : LocalDateTime
+            + endDate : LocalDateTime
+        }
+
+        class "GetAllOverflowingContainersQuery" <<(Q, #C5E1A5) Query>> {
+            + municipalityId : MunicipalityId
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "ContainerOverflowEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + containerId : Long
+            + location : Location
+            + fillLevel : double
+            + timestamp : LocalDateTime
+            + ContainerOverflowEvent(source : Object, containerId : Long, location : Location, fillLevel : double)
+        }
+
+        class "SensorMalfunctionEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + containerId : Long
+            + sensorId : Long
+            + malfunctionType : String
+            + timestamp : LocalDateTime
+        }
+
+        class "MaintenanceRequiredEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + containerId : Long
+            + maintenanceType : String
+            + urgency : String
+        }
+
+        ' ===================== VALUE OBJECTS (LOCAL) =====================
+        class "ContainerId" <<(V, #FFD700) Value Object>> {
+            - containerId : Long
+            + isValid() : boolean
+        }
+
+        class "SensorReadingId" <<(V, #FFD700) Value Object>> {
+            - readingId : Long
+        }
+
+        class "SensorId" <<(V, #FFD700) Value Object>> {
+            - sensorId : Long
+        }
+
+        class "FillLevel" <<(V, #FFD700) Value Object>> {
+            - percentage : double
+            - lastUpdated : LocalDateTime
+            + isCritical() : boolean
+            + isNearFull() : boolean
+        }
+
+        class "ContainerCapacity" <<(V, #FFD700) Value Object>> {
+            - volumeInLiters : double
+            - maxWeight : double
+            + calculateUtilization(currentFill : FillLevel) : double
+        }
+
+        class "ContainerStatus" <<(V, #FFD700) Value Object>> {
+            - status : String
+            - lastStatusChange : LocalDateTime
+            + isActive() : boolean
+            + canTransitionTo(newStatus : String) : boolean
+        }
+
+        class "SensorHealth" <<(V, #FFD700) Value Object>> {
+            - healthStatus : String
+            - batteryLevel : double
+            - signalStrength : double
+            + isHealthy() : boolean
+            + needsMaintenance() : boolean
+        }
+
+        class "Temperature" <<(V, #FFD700) Value Object>> {
+            - celsius : double
+            + toFahrenheit() : double
+            + isWithinNormalRange() : boolean
+        }
+
+        ' ===================== FACTORIES (Creational Pattern) =====================
+        class "ContainerFactory" <<(F, #BA68C8) Factory>> {
+            + createContainer(command : CreateContainerCommand) : Container
+            + createWithDefaults(location : Location, type : ContainerType) : Container
+        }
+
+        class "SensorReadingFactory" <<(F, #BA68C8) Factory>> {
+            + createFromSensorData(containerId : ContainerId, sensorData : String) : SensorReading
+            + createFromIoTMessage(message : IoTMessage) : SensorReading
+        }
+
+        ' ===================== STRATEGIES (Behavioral Pattern) =====================
+        interface "FillLevelPredictionStrategy" <<(S, #81C784) Strategy>> {
+            + predictNextCollection(container : Container) : LocalDateTime
+        }
+
+        class "LinearPredictionStrategy" <<(S, #81C784) Strategy>> {
+            + predictNextCollection(container : Container) : LocalDateTime
+        }
+
+        class "MachineLearningPredictionStrategy" <<(S, #81C784) Strategy>> {
+            + predictNextCollection(container : Container) : LocalDateTime
+        }
+
+        ' ===================== OBSERVERS (Behavioral Pattern) =====================
+        interface "ContainerEventObserver" <<(O, #FFB74D) Observer>> {
+            + onContainerOverflow(event : ContainerOverflowEvent) : void
+            + onSensorMalfunction(event : SensorMalfunctionEvent) : void
+        }
+
+        class "AlertNotificationObserver" <<(O, #FFB74D) Observer>> {
+            + onContainerOverflow(event : ContainerOverflowEvent) : void
+            + onSensorMalfunction(event : SensorMalfunctionEvent) : void
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "ContainerCommandService" <<(S, #FF8A65) Domain Service>> {
+            + handle(command : CreateContainerCommand) : Optional<Container>
+            + handle(command : UpdateFillLevelCommand) : void
+            + handle(command : MarkContainerCollectedCommand) : void
+            + handle(command : ScheduleMaintenanceCommand) : void
+        }
+
+        class "ContainerQueryService" <<(S, #FF8A65) Domain Service>> {
+            + handle(query : GetContainerByIdQuery) : Optional<Container>
+            + handle(query : GetContainersByLocationQuery) : List<Container>
+            + handle(query : GetContainersByFillLevelQuery) : List<Container>
+            + handle(query : GetAllOverflowingContainersQuery) : List<Container>
+        }
+
+        class "ContainerAnalyticsService" <<(S, #FF8A65) Domain Service>> {
+            - predictionStrategy : FillLevelPredictionStrategy
+            + handle(query : GetContainerAnalyticsQuery) : ContainerAnalytics
+            + calculateFillTrend(container : Container) : FillTrend
+            + setPredictionStrategy(strategy : FillLevelPredictionStrategy) : void
+        }
+
+        class "SensorValidationService" <<(S, #FF8A65) Domain Service>> {
+            + validateReading(reading : SensorReading) : ValidationResult
+            + detectAnomalies(readings : List<SensorReading>) : List<Anomaly>
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "Location" <<(V, #FFD700) Value Object>> {
+            - latitude : double
+            - longitude : double
+            - address : String
+            - district : String
+            + distanceTo(other : Location) : double
+        }
+
+        class "MunicipalityId" <<(V, #FFD700) Value Object>> {
+            - municipalityId : Long
+        }
+
+        class "DriverId" <<(V, #FFD700) Value Object>> {
+            - driverId : Long
+        }
+
+        class "ContainerType" <<(V, #FFD700) Value Object>> {
+            - type : String
+            + isOrganic() : boolean
+            + isRecyclable() : boolean
+        }
+
+        class "MaintenanceType" <<(V, #FFD700) Value Object>> {
+            - type : String
+            - estimatedDuration : Duration
+        }
+
+        class "ValidationResult" <<(V, #FFD700) Value Object>> {
+            - isValid : boolean
+            - errors : List<String>
+            - warnings : List<String>
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate Root Compositions ---
+Container *-- ContainerId
+Container *-- ContainerCapacity
+Container *-- FillLevel
+Container *-- ContainerStatus
+Container o-- SensorReading
+
+' --- Entity Compositions ---
+SensorReading *-- SensorReadingId
+SensorReading *-- SensorId
+SensorReading *-- SensorHealth
+SensorReading *-- Temperature
+
+' --- Shared Kernel Usage ---
+Container ..> Location : uses >
+Container ..> ContainerType : uses >
+Container ..> MunicipalityId : belongs to >
+SensorReading ..> ValidationResult : validates with >
+
+' --- Factory Relationships ---
+ContainerFactory ..> Container : creates >
+ContainerFactory ..> CreateContainerCommand : uses >
+SensorReadingFactory ..> SensorReading : creates >
+
+' --- Strategy Relationships ---
+FillLevelPredictionStrategy <|.. LinearPredictionStrategy : implements >
+FillLevelPredictionStrategy <|.. MachineLearningPredictionStrategy : implements >
+ContainerAnalyticsService o-- FillLevelPredictionStrategy : uses >
+
+' --- Observer Relationships ---
+ContainerEventObserver <|.. AlertNotificationObserver : implements >
+Container ..> ContainerEventObserver : notifies >
+
+' --- Command/Query Services ---
+ContainerCommandService ..> Container : manages >
+ContainerCommandService ..> CreateContainerCommand
+ContainerCommandService ..> UpdateFillLevelCommand
+ContainerCommandService ..> MarkContainerCollectedCommand
+ContainerCommandService ..> ScheduleMaintenanceCommand
+
+ContainerQueryService ..> Container : queries >
+ContainerQueryService ..> GetContainerByIdQuery
+ContainerQueryService ..> GetContainersByLocationQuery
+ContainerQueryService ..> GetContainersByFillLevelQuery
+ContainerQueryService ..> GetAllOverflowingContainersQuery
+
+ContainerAnalyticsService ..> Container : analyzes >
+ContainerAnalyticsService ..> GetContainerAnalyticsQuery
+
+SensorValidationService ..> SensorReading : validates >
+
+' --- Domain Events ---
+Container ..> ContainerOverflowEvent : publishes >
+Container ..> SensorMalfunctionEvent : publishes >
+Container ..> MaintenanceRequiredEvent : publishes >
+
+@enduml
