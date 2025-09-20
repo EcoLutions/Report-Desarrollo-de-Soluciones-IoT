@@ -1632,13 +1632,141 @@ El Context Map resultante proporciona la base para implementación de APIs, defi
 
 ### 4.1.3. Software Architecture
 
+En esta sección se presenta la representación de la Arquitectura de Software para WasteTrack aplicando el modelo C4 y utilizando Structurizr como herramienta de modelado. La arquitectura refleja las decisiones de diseño estratégico identificadas en los bounded contexts y context mapping, proporcionando una vista técnica detallada de la implementación del sistema IoT de gestión inteligente de residuos sólidos urbanos.
+
+**Enfoque Arquitectónico**
+
+La arquitectura de WasteTrack implementa un enfoque híbrido que combina edge computing para el procesamiento local de datos IoT con servicios cloud para la gestión centralizada y análisis a gran escala. Las decisiones arquitectónicas priorizan escalabilidad, disponibilidad, y eficiencia operacional mientras mantienen costos controlados para el modelo de negocio SaaS municipal.
+
+**Herramientas y Metodología**
+
+- **Modelado:** Structurizr con notación C4 Model
+- **Documentación:** Diagramas generados automáticamente desde código DSL
+- **Versionado:** Arquitectura como código para facilitar evolución y mantenimiento
+
 #### 4.1.3.1. Software Architecture System Landscape Diagram
+
+El System Landscape Diagram presenta la vista de más alto nivel, mostrando cómo WasteTrack se integra dentro del ecosistema completo de sistemas municipales y urbanos de Lima Metropolitana. Esta vista proporciona contexto sobre las integraciones futuras y el valor estratégico del sistema dentro de una iniciativa de ciudad inteligente más amplia.
+
+![system-landscape.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/landscape-diagram.png)
+
+**Elementos del Landscape:**
+
+**People:**
+- Citizens of Lima: Residentes que interactúan con servicios municipales de gestión de residuos
+- Municipal Administrators: Administradores distritales responsables de operaciones de recolección
+- EcoLutions Support Staff: Equipo técnico de soporte y gestión de la plataforma
+
+**Software Systems dentro del ecosistema municipal:**
+- WasteTrack System: Plataforma central de gestión inteligente de residuos
+- SEACE System: Sistema electrónico de contrataciones del Estado
+- SIAF System: Sistema integrado de administración financiera municipal
+- RENIEC System: Registro nacional de identificación y estado civil
+- SIAT System: Sistema de administración tributaria municipal
+- Metropolitan Traffic Management System: Sistema de gestión de tráfico de Lima
+- Environmental Monitoring System: Sistema de monitoreo ambiental municipal
+
+**External Services:**
+- Email Service Provider, Payment Gateway (Culqi), Google Maps API, Firebase Cloud Messaging, Weather Service API, IoT Container Sensors
+
+**Integraciones Estratégicas:**
+El diagrama muestra integraciones bidireccionales clave como WasteTrack ↔ SIAF para datos de facturación, WasteTrack ↔ Traffic System para optimización de rutas considerando tráfico, y WasteTrack ↔ Environmental System para reportes de cumplimiento ambiental.
 
 #### 4.1.3.2. Software Architecture Context Level Diagrams
 
+El Context Level Diagram se enfoca específicamente en WasteTrack como sistema central, mostrando sus usuarios directos y sistemas externos con los que interactúa, presentando el sistema como una caja negra sin detalles internos.
+
+![context-diagram.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/context-level-diagram.png)
+
+**Usuarios Principales:**
+- **Citizen:** Residentes de Lima que reportan problemas de contenedores, acceden a contenido educativo, y participan en programa de recompensas
+- **Municipal Administrator:** Administradores distritales que gestionan operaciones, configuran horarios, y monitorean métricas de rendimiento
+- **Collection Driver:** Operadores de vehículos que reciben asignaciones de rutas, navegan rutas optimizadas, y reportan estado de recolección
+- **EcoLutions Support Staff:** Equipo de soporte técnico que monitorea salud del sistema y proporciona soporte al cliente
+
+**Sistemas Externos:**
+- **IoT Container Sensors:** Sensores físicos que monitorean niveles de llenado y reportan estado
+- **Payment Gateway (Culqi):** Servicio de procesamiento de pagos para facturación de suscripciones municipales
+- **Email Service Provider:** Servicio cloud para emails transaccionales y comunicaciones administrativas
+- **Google Maps API:** Servicio de mapas y navegación para cálculo de rutas y datos de tráfico
+- **Push Notification Service:** Firebase Cloud Messaging para notificaciones móviles y alertas
+- **Weather Service API:** Proveedor de datos meteorológicos para adaptación de planificación de rutas
+
+**Interacciones Clave:**
+Las interacciones muestran flujos bidireccionales donde WasteTrack recibe datos de sensores IoT y envía comandos de optimización, procesa pagos de suscripciones municipales, y orquesta comunicaciones multi-canal con stakeholders.
+
 #### 4.1.3.3. Software Architecture Container Level Diagrams
 
+El Container Level Diagram revela la estructura interna de WasteTrack, mostrando los contenedores de alto nivel, decisiones tecnológicas principales, y cómo se distribuyen las responsabilidades arquitectónicas.
+
+![container-diagram.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/container-level-diagram.png)
+
+**Decisiones Tecnológicas Principales:**
+
+**Frontend Applications:**
+- **Citizen Mobile App:** React Native para experiencia nativa cross-platform
+- **Admin Web Application:** React + TypeScript para dashboard administrativo responsivo
+- **Driver Mobile App:** React Native optimizada para uso en campo con capacidades offline
+
+**Backend Architecture:**
+- **API Gateway:** AWS API Gateway para routing de requests y manejo de cross-cutting concerns
+- **WasteTrack Backend Service:** Java Spring Boot como servicio principal monolítico
+- **PostgreSQL Database:** Base de datos relacional única para simplicidad operacional
+- **Redis Cache:** Cache distribuido para datos de alta frecuencia de acceso
+- **Message Queue:** Apache Kafka para ingesta de datos IoT y comunicación asíncrona
+
+**Edge Computing Layer:**
+- **IoT Gateway Application:** Python para procesamiento local de datos de sensores
+- **Edge SQLite Database:** Almacenamiento local de datos de sensores para operación offline
+
+**Arquitectura de Comunicación:**
+- **Frontend → Backend:** HTTPS/REST API calls via API Gateway
+- **IoT → Cloud:** MQTT/HTTP para transmisión de datos de sensores
+- **Backend → External:** REST APIs para integración con servicios de terceros
+- **Internal:** Kafka para eventos asíncronos, Redis para caching, SQL para persistencia
+
+**Distribución de Responsabilidades:**
+Cada container maneja responsabilidades específicas alineadas con los bounded contexts identificados: IoT Gateway procesa datos de sensores, Backend Service implementa lógica de negocio core, Mobile Apps proporcionan interfaces optimizadas por tipo de usuario.
+
 #### 4.1.3.4. Software Architecture Deployment Diagrams
+
+El Deployment Diagram muestra cómo los containers se despliegan en infraestructura física y cloud, incluyendo decisiones de escalabilidad, disponibilidad, y distribución geográfica.
+
+![deployment-diagram.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/deployment-diagram.png)
+
+**Infraestructura de Deployment:**
+
+**Edge Computing Layer:**
+- **IoT Field Deployment:** Raspberry Pi 4 con 4GB RAM desplegados cerca de clusters de contenedores
+- **Edge Gateway Device:** ARM64 con 32GB storage para procesamiento local y cache de datos
+- **Conectividad:** MQTT/LoRaWAN para comunicación con sensores IoT físicos
+
+**Cloud Infrastructure (AWS South America - São Paulo):**
+- **Application Load Balancer:** AWS ALB para distribución de tráfico y terminación SSL
+- **ECS Fargate Cluster:** Orquestación serverless de containers con auto-scaling 2-10 instancias
+- **Backend Service Tasks:** ECS Tasks con 2 vCPU, 4GB RAM para el servicio principal
+- **Managed Database Services:** RDS PostgreSQL Multi-AZ (db.t3.large) para alta disponibilidad
+- **ElastiCache:** Redis cluster (cache.t3.medium) para rendimiento de cache distribuido
+- **MSK Cluster:** Managed Kafka (kafka.t3.small, 3 brokers) para streaming de datos IoT
+
+**Client Infrastructure:**
+- **Mobile Devices:** Android/iOS smartphones ejecutando React Native runtime
+- **Admin Workstations:** PC/Laptop con browsers modernos para dashboard web
+
+**Conectividad y Protocolos:**
+- **Edge → Cloud:** HTTPS para datos procesados de sensores
+- **Clients → Cloud:** HTTPS REST API calls a través de Load Balancer
+- **Internal Cloud:** SQL connection pooling, Redis protocol, Kafka streaming
+- **External Services:** REST APIs para payment, email, maps, weather, push notifications
+
+**Características de Deployment:**
+- **High Availability:** Multi-AZ deployment para base de datos y servicios críticos
+- **Scalability:** Auto-scaling automático basado en métricas de CPU y requests
+- **Security:** VPC isolation, security groups, IAM roles, SSL/TLS encryption
+- **Monitoring:** CloudWatch integration para métricas y alertas operacionales
+- **Cost Optimization:** Serverless containers y managed services para optimizar costos operacionales
+
+La arquitectura de deployment asegura disponibilidad del 99.9%, escalabilidad automática para picos de demanda municipal, y distribución geográfica apropiada para latencia óptima en el mercado peruano.
 
 ## 4.2. Tactical-Level Domain-Driven Design
 
