@@ -2006,23 +2006,272 @@ El diseño de base de datos implementa el modelo de dominio con las siguientes c
 
 El esquema está optimizado para las operaciones identificadas en el dominio, incluyendo consultas geoespaciales, análisis de tendencias, y procesamiento de grandes volúmenes de datos IoT.
 
-### 4.2.2. Bounded Context: <Bounded Context Name>
+### 4.2.2. Bounded Context: Route Planning
+
+En esta sección se presenta el análisis detallado del bounded context Route Planning, que encapsula toda la lógica de negocio relacionada con la optimización de rutas de recolección, la planificación inteligente de recorridos, y el seguimiento en tiempo real de la ejecución de rutas para maximizar la eficiencia operacional y minimizar costos ambientales.
 
 #### 4.2.2.1. Domain Layer
 
+Esta capa contiene las reglas de negocio fundamentales del dominio de planificación de rutas, implementando algoritmos de optimización avanzados y patrones de diseño para asegurar flexibilidad y escalabilidad en las operaciones de recolección.
+
+**Aggregate Roots:**
+
+1. **`Route` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una ruta de recolección, sus waypoints, y métricas de optimización.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                  | Visibilidad | Descripción                                     |
+|-----------------------|-----------------------|-------------|-------------------------------------------------|
+| `id`                  | `Long`                | `private`   | Identificador único de la ruta en base de datos |
+| `routeId`             | `RouteId`             | `private`   | Identificador de dominio de la ruta             |
+| `name`                | `String`              | `private`   | Nombre descriptivo de la ruta                   |
+| `municipalityId`      | `MunicipalityId`      | `private`   | Municipalidad propietaria de la ruta            |
+| `driverId`            | `DriverId`            | `private`   | Conductor asignado a la ruta                    |
+| `vehicleId`           | `VehicleId`           | `private`   | Vehículo asignado para la ejecución             |
+| `routeType`           | `RouteType`           | `private`   | Tipo de ruta (regular, emergencia, especial)    |
+| `status`              | `RouteStatus`         | `private`   | Estado actual de la ruta                        |
+| `scheduledDate`       | `LocalDateTime`       | `private`   | Fecha programada de ejecución                   |
+| `waypoints`           | `List<Waypoint>`      | `private`   | Lista ordenada de puntos de recolección         |
+| `optimizationMetrics` | `OptimizationMetrics` | `private`   | Métricas de optimización y rendimiento          |
+| `version`             | `Long`                | `private`   | Control de versión para optimistic locking      |
+
+**Métodos principales:**
+
+| Método                                   | Tipo de Retorno | Visibilidad | Descripción                                           |
+|------------------------------------------|-----------------|-------------|-------------------------------------------------------|
+| `Route()`                                | `Constructor`   | `protected` | Constructor protegido para repositorio                |
+| `Route(name, municipalityId, routeType)` | `Constructor`   | `public`    | Constructor con parámetros esenciales                 |
+| `addWaypoint(waypoint)`                  | `void`          | `public`    | Agrega waypoint validando restricciones de capacidad  |
+| `removeWaypoint(waypointId)`             | `void`          | `public`    | Elimina waypoint y recalcula secuencia                |
+| `startExecution()`                       | `void`          | `public`    | Inicia ejecución publicando eventos de dominio        |
+| `completeExecution()`                    | `void`          | `public`    | Marca ruta como completada y calcula métricas finales |
+| `optimizeWaypoints(strategy)`            | `void`          | `public`    | Optimiza orden de waypoints usando Strategy pattern   |
+| `updateProgress(currentLocation)`        | `void`          | `public`    | Actualiza progreso de ejecución en tiempo real        |
+| `isExecutable()`                         | `boolean`       | `public`    | Verifica si la ruta puede ser ejecutada               |
+| `canBeModified()`                        | `boolean`       | `public`    | Determina si la ruta permite modificaciones           |
+
+2. **`Waypoint` (Entity)**
+
+Entidad que representa un punto individual de recolección dentro de una ruta, con información específica del contenedor y métricas de servicio.
+
+**Atributos principales:**
+
+| Atributo               | Tipo             | Visibilidad | Descripción                           |
+|------------------------|------------------|-------------|---------------------------------------|
+| `id`                   | `Long`           | `private`   | Identificador único del waypoint      |
+| `waypointId`           | `WaypointId`     | `private`   | Identificador de dominio del waypoint |
+| `containerId`          | `ContainerId`    | `private`   | Referencia al contenedor a recolectar |
+| `location`             | `Location`       | `private`   | Ubicación geográfica del waypoint     |
+| `priority`             | `Priority`       | `private`   | Nivel de prioridad para optimización  |
+| `estimatedArrivalTime` | `LocalDateTime`  | `private`   | Hora estimada de llegada              |
+| `actualArrivalTime`    | `LocalDateTime`  | `private`   | Hora real de llegada registrada       |
+| `sequenceOrder`        | `Integer`        | `private`   | Orden en la secuencia de la ruta      |
+| `waypointStatus`       | `WaypointStatus` | `private`   | Estado actual del waypoint            |
+
+**Métodos principales:**
+
+| Método                        | Tipo de Retorno | Visibilidad | Descripción                                |
+|-------------------------------|-----------------|-------------|--------------------------------------------|
+| `markAsVisited()`             | `void`          | `public`    | Marca waypoint como visitado con timestamp |
+| `updateServiceTime(duration)` | `void`          | `public`    | Actualiza tiempo de servicio real          |
+| `canBeVisited()`              | `boolean`       | `public`    | Verifica si el waypoint puede ser visitado |
+| `isCompleted()`               | `boolean`       | `public`    | Determina si el waypoint está completado   |
+
+3. **`OptimizationResult` (Entity)**
+
+Entidad que almacena los resultados de algoritmos de optimización aplicados a rutas, permitiendo análisis comparativo y mejora continua.
+
+**Atributos principales:**
+
+| Atributo                   | Tipo                    | Visibilidad | Descripción                              |
+|----------------------------|-------------------------|-------------|------------------------------------------|
+| `algorithmUsed`            | `OptimizationAlgorithm` | `private`   | Algoritmo utilizado para optimización    |
+| `executionTime`            | `Duration`              | `private`   | Tiempo de ejecución del algoritmo        |
+| `optimizationScore`        | `Double`                | `private`   | Puntuación de calidad de la optimización |
+| `totalDistance`            | `Distance`              | `private`   | Distancia total de la ruta optimizada    |
+| `estimatedFuelConsumption` | `Double`                | `private`   | Consumo estimado de combustible          |
+| `co2Emissions`             | `Double`                | `private`   | Emisiones de CO2 estimadas               |
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio:
+
+- **`RouteId`**: Identificador único con validaciones de formato
+- **`RouteStatus`**: Estado con transiciones válidas y restricciones de modificación
+- **`WaypointStatus`**: Estado del waypoint con validaciones de progreso
+- **`Priority`**: Nivel de prioridad comparable para algoritmos de optimización
+- **`Distance`**: Distancia con operaciones matemáticas y conversiones
+- **`OptimizationMetrics`**: Métricas complejas con cálculos de eficiencia
+
+**Factories (Creational Pattern):**
+
+1. **`RouteFactory`**: Implementa Factory pattern para crear rutas con diferentes configuraciones (regular, emergencia, optimizada) aplicando validaciones complejas y configuraciones predeterminadas.
+
+2. **`WaypointFactory`**: Crea waypoints desde datos de contenedores, aplicando transformaciones de prioridad y cálculos de tiempo estimado.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de optimización dinámicamente:
+
+1. **`TravelingSalesmanStrategy`**: Implementa algoritmo TSP para optimización exacta en rutas pequeñas
+2. **`NearestNeighborStrategy`**: Algoritmo heurístico rápido para rutas grandes
+3. **`GeneticAlgorithmStrategy`**: Optimización evolutiva para problemas complejos
+4. **`HybridOptimizationStrategy`**: Combina múltiples estrategias para resultados óptimos
+
+**State Pattern:**
+
+Gestiona los diferentes estados de una ruta con comportamientos específicos:
+
+1. **`DraftRouteState`**: Permite modificaciones completas y optimización
+2. **`OptimizedRouteState`**: Permite asignación pero restricciones de modificación
+3. **`ExecutingRouteState`**: Solo permite actualizaciones de progreso
+4. **`CompletedRouteState`**: Estado inmutable con métricas finales
+
+**Domain Services:**
+
+1. **`RouteCommandService`**: Orquesta operaciones CQRS de escritura con validaciones complejas
+2. **`RouteQueryService`**: Maneja consultas CQRS optimizadas por caso de uso específico
+3. **`RouteOptimizationService`**: Coordina algoritmos de optimización usando Strategy pattern
+4. **`RouteValidationService`**: Valida restricciones complejas de rutas y capacidades
+
+**Commands (CQRS Write Side):**
+
+- `CreateRouteCommand`: Creación de rutas con validación de recursos
+- `OptimizeRouteCommand`: Optimización con parámetros configurables
+- `StartRouteExecutionCommand`: Inicio de ejecución con validaciones previas
+- `UpdateRouteProgressCommand`: Actualización de progreso en tiempo real
+- `CompleteRouteCommand`: Finalización con cálculo de métricas
+
+**Queries (CQRS Read Side):**
+
+- `GetRouteByIdQuery`: Consulta individual con datos completos
+- `GetRoutesByDriverQuery`: Rutas asignadas a conductor específico
+- `GetOptimizedRoutesQuery`: Rutas optimizadas por criterios específicos
+- `GetRouteOptimizationHistoryQuery`: Historial de optimizaciones para análisis
+- `GetActiveRoutesQuery`: Rutas en ejecución para monitoring
+
+**Domain Events:**
+
+- `RouteOptimizationCompletedEvent`: Publicado al completar optimización exitosa
+- `RouteExecutionStartedEvent`: Publicado al iniciar ejecución de ruta
+- `WaypointCompletedEvent`: Publicado al completar cada waypoint
+- `RouteDeviationDetectedEvent`: Publicado al detectar desviaciones significativas
+
 #### 4.2.2.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados y consumidores de eventos, implementando patrones de presentación para manejar la complejidad de las operaciones de optimización.
+
+**Controllers:**
+
+1. **`Route Controller`**: Endpoints REST para operaciones CRUD de rutas, optimización bajo demanda, y actualizaciones de progreso en tiempo real. Implementa MVC pattern y maneja requests desde aplicaciones móviles de conductores y dashboard administrativo.
+
+2. **`Optimization Controller`**: Endpoints especializados para algoritmos de optimización y métricas de rendimiento. Proporciona interfaz de configuración de parámetros de optimización y análisis comparativo de resultados.
+
+3. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Container Monitoring BC (actualizaciones de fill level) y Municipal Operations BC (disponibilidad de vehículos). Implementa Consumer pattern para procesamiento asíncrono y actualización automática de prioridades.
 
 #### 4.2.2.3. Application Layer
 
+Esta capa coordina las operaciones complejas del dominio y orquesta los flujos de trabajo de optimización, implementando patrones de aplicación para gestionar la complejidad algorítmica y operacional.
+
+**Application Services:**
+
+1. **`Route Service`**: Servicio principal que orquesta operaciones de rutas incluyendo creación, asignaciones, y seguimiento de ejecución. Implementa Command pattern para operaciones de ruta y Facade pattern para simplificar interacciones complejas entre agregados.
+
+2. **`Optimization Service`**: Genera rutas optimizadas usando múltiples algoritmos y datos en tiempo real. Implementa Strategy pattern para diferentes enfoques de optimización y Builder pattern para construcción de configuraciones complejas de optimización.
+
+3. **`Tracking Service`**: Gestiona seguimiento en tiempo real de ejecución de rutas, monitoreo de progreso, y manejo de desviaciones. Implementa State pattern para gestión de estados de ruta y Observer pattern para notificaciones automáticas de eventos críticos.
+
 #### 4.2.2.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de algoritmos, integración con servicios de mapas, y comunicación con otros bounded contexts, aplicando patrones estructurales para optimizar rendimiento.
+
+**Repositories:**
+
+1. **`Route Repository`**: Implementación JPA para persistencia de rutas con consultas geoespaciales y optimizaciones para histórico de rutas. Implementa Repository pattern con índices especializados para consultas de optimización.
+
+2. **`Optimization Repository`**: Repositorio especializado para resultados de algoritmos con métricas de rendimiento para análisis comparativo y mejora continua de algoritmos.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de rutas a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para cálculos de rutas y datos de optimización frecuentemente accedidos. Implementa Cache-Aside pattern para optimización de rendimiento de algoritmos.
+
+3. **`External Maps Service`**: Integración con Google Maps API para cálculo de rutas reales y datos de tráfico. Implementa Adapter pattern para abstracción de proveedores de mapas y Circuit Breaker pattern para resiliencia.
 
 #### 4.2.2.5. Bounded Context Software Architecture Component Level Diagrams
 
+![component-diagram-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Route Planning bounded context, ilustrando la separación por capas DDD y las integraciones especializadas para optimización de rutas. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para rutas y optimización, plus event consumers para datos en tiempo real
+- **Application Layer** (verde medio): Services que coordinan algoritmos de optimización y seguimiento de ejecución
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para consultas geoespaciales y servicios externos especializados
+- **Integraciones críticas**: Google Maps API para cálculos reales, Weather Service para adaptación climática
+
+La arquitectura implementa patrones avanzados como Strategy para algoritmos intercambiables, State para gestión de estados de ruta, y Circuit Breaker para integraciones externas resilientes.
+
 #### 4.2.2.6. Bounded Context Software Architecture Code Level Diagrams
 
-##### 4.2.2.6.1. Bounded Context Domain Layer Class Diagrams
+#### 4.2.2.6.1. Bounded Context Domain Layer Class Diagrams
 
-##### 4.2.2.6.2. Bounded Context Database Design Diagram
+![class-diagram-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Route Planning, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Root**: Route como raíz del agregado con invariantes de optimización
+- **Entities**: Waypoint y OptimizationResult con identidad y ciclo de vida propios
+- **Value Objects**: Objetos inmutables para conceptos de optimización y geolocalización
+- **Domain Services**: Servicios para algoritmos complejos de optimización
+- **Domain Events**: Eventos para coordinación con otros BCs y tracking en tiempo real
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: RouteFactory y WaypointFactory para creación con validaciones complejas
+- **Strategy Pattern**: OptimizationStrategy con múltiples algoritmos (TSP, Genetic, Hybrid)
+- **State Pattern**: RouteState para gestión de estados con transiciones válidas
+- **Repository Pattern**: Interfaces para abstracción de persistencia geoespacial
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de optimización
+- **Queries**: Operaciones de lectura optimizadas para análisis y reporting
+- **Command/Query Services**: Separación clara con especialización en algoritmos
+
+**Algoritmos de optimización:**
+- **Traveling Salesman**: Para rutas pequeñas con solución exacta
+- **Genetic Algorithm**: Para optimización evolutiva en problemas complejos
+- **Hybrid Strategy**: Combinación inteligente de múltiples enfoques
+
+#### 4.2.2.6.2. Bounded Context Database Design Diagram
+
+![database-design-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para algoritmos de rutas:
+
+**Tablas principales:**
+- **routes**: Aggregate root con métricas de optimización y control de ejecución
+- **waypoints**: Entity con índices geoespaciales para consultas de proximidad
+- **optimization_results**: Histórico de algoritmos con métricas de rendimiento
+- **route_progress**: Seguimiento en tiempo real con actualizaciones frecuentes
+- **algorithm_performance_cache**: Cache de rendimiento para selección automática de algoritmos
+
+**Optimizaciones especializadas:**
+- **Índices geoespaciales**: GIST indexes para consultas de ubicación y proximidad
+- **Índices compuestos**: Para consultas de secuencia y optimización
+- **Triggers de progreso**: Actualización automática de métricas de ejecución
+- **Funciones de eficiencia**: Cálculos complejos de rendimiento de rutas
+- **Particionamiento temporal**: Para datos históricos de optimización
+
+**Características técnicas:**
+- **JSONB**: Para parámetros complejos de algoritmos y métricas detalladas
+- **Geolocalización avanzada**: Con validaciones de coordenadas y cálculos de distancia
+- **Cache de algoritmos**: Para optimización de selección de estrategias
+- **Limpieza inteligente**: Retención de mejores resultados por algoritmo
+
+El esquema está optimizado para las operaciones algorítmicas identificadas en el dominio, incluyendo cálculos de rutas óptimas, análisis de rendimiento de algoritmos, y seguimiento GPS en tiempo real con alta frecuencia de actualizaciones.
 
 # Capítulo V: Solution UI/UX Design
 
