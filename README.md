@@ -1166,6 +1166,34 @@ Estos componentes se basan en los principios de Material Design para asegurar un
 
 ### IoT Style Guidelines
 
+Estas directrices definen las características físicas y visuales del hardware (dispositivo IoT) para asegurar su durabilidad, funcionalidad y coherencia con la identidad del sistema.
+
+#### Diseño físico y carcasa
+
+El diseño del dispositivo prioriza la robustez y la discreción para su instalación en contenedores de basura en entornos urbanos.
+
+* **Material:** La carcasa está construida con plástico **ABS de alto impacto**, resistente a condiciones climáticas adversas (sol, lluvia, temperaturas extremas) y a posibles actos de vandalismo.
+* **Color:** Se utiliza un color **gris neutro (Hex: #333333)** para que el dispositivo se integre discretamente con la mayoría de los diseños de contenedores sin llamar la atención.
+* **Forma:** El diseño es compacto y de bajo perfil para minimizar su exposición. Las esquinas son redondeadas para evitar enganches durante la recole-cción de basura.
+* **Certificación de Resistencia:** El dispositivo debe contar con una **certificación IP67**, garantizando que es completamente hermético al polvo y resistente a la inmersión temporal en agua.
+
+#### Componentes visuales en campo
+
+Son los elementos que permiten la interacción y el diagnóstico del dispositivo en el sitio de instalación.
+
+* **Identificador Físico (QR / ID Numérico):** Es la etiqueta principal del dispositivo y sirve como su identificador único. Se implementa como una etiqueta de policarbonato grabada con láser para máxima durabilidad. Contiene un código QR para un escaneo rápido y un ID alfanumérico (ej. IOT-007) legible por humanos.
+* **Indicadores de Estado (LED):** Proporciona feedback visual inmediato sobre el estado operativo. Utiliza luces LED de alta visibilidad protegidas por una cubierta transparente y sellada.
+  * **Luz Verde Intermitente:** Funcionamiento normal y conexión a la red.
+  * **Luz Roja Fija:** Error crítico de hardware o fallo de conexión.
+  * **Luz Azul:** Modo de transmisión de datos activo.
+
+#### Montaje e instalación
+
+Define el método estándar para fijar el dispositivo al contenedor, asegurando su estabilidad y la precisión de sus mediciones.
+
+* **Ubicación:** El dispositivo se debe montar en la parte interna superior de la tapa del contenedor, centrado para obtener una lectura ultrasónica precisa del nivel de llenado.
+* **Fijación:** La instalación se realiza utilizando **tornillos de seguridad** (anti-manipulación) para prevenir robos o daños intencionados. Se debe utilizar una junta de goma para asegurar un sellado correcto.
+
 ## 5.2. Information Architecture
 
 ### 5.2.1. Organization Systems
@@ -1224,6 +1252,21 @@ Las etiquetas para elementos interactivos se han estandarizado para ser claras, 
 
 #### **Etiquetas de contenido y datos**
 Para la representación de datos dentro de formularios, tablas y vistas de detalle, se utilizan etiquetas descriptivas breves que definen claramente la información mostrada. Encabezados como **Nivel de Llenado**, **Estado del Dispositivo** o **Rol** son consistentes a través de toda la plataforma, asegurando que el usuario pueda escanear y comprender la información rápidamente, independientemente de la sección en la que se encuentre.
+
+### Etiquetas del Dispositivo Físico (IoT)
+Para crear un puente claro entre el hardware instalado en campo y la plataforma digital, los dispositivos IoT utilizan un sistema de etiquetado físico simple y funcional.
+
+#### **Identificador Único (QR / ID Numérico)**
+
+Cada sensor físico lleva una etiqueta indeleble con un **código QR** y un **ID alfanumérico único** (ej. *IOT-007*). Esta etiqueta es el identificador primario que asocia el dispositivo físico con su representación digital en el panel de administración. Durante el registro, el administrador escanea o introduce este código para vincular el sensor a un contenedor y ubicación específicos.
+
+#### **Indicadores de Estado (LED)**
+
+El propio dispositivo utiliza un sistema de **luces LED** como etiquetas visuales para comunicar su estado operativo a los técnicos en campo, sin necesidad de consultar la aplicación. Este sistema se define por:
+
+*  **Luz Verde Intermitente:** Indica que el dispositivo está conectado a la red y funcionando correctamente.
+*  **Luz Roja Fija:** Representa un error de hardware o un problema de conexión que requiere atención.
+*  **Luz Azul:** Señaliza que el dispositivo está en proceso de transmitir datos al servidor.
 
 ### 5.2.3. SEO Tags and Meta Tags
 A continuación se detallan los valores para las etiquetas SEO y Meta Tags recomendadas para las páginas clave del proyecto.
