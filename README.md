@@ -157,6 +157,8 @@ En esta sección se documenta la colaboración del equipo en la elaboración del
   * [Anexo A: Enlaces de Herramientas Colaborativas](#anexo-a-enlaces-de-herramientas-colaborativas)
     * [A.1 Big Picture Event Storming - Workspace Figma](#a1-big-picture-event-storming---workspace-figma)
     * [A.2 Design-Level Event Storming - Workspace Miro](#a2-design-level-event-storming---workspace-miro)
+    * [A.3 Domain Message Flows Modeling - Workspace Miro](#a3-domain-message-flows-modeling---workspace-miro)
+    * [A.4 Bounded Context Canvases - Workspace Miro](#a4-bounded-context-canvases---workspace-miro)
 <!-- TOC -->
 
 <div style="page-break-before: always"></div>
@@ -1582,3 +1584,19 @@ Los canvases diseñados proporcionan la base arquitectónica para proceder con e
 **Descripción:** Workspace interactivo de Miro donde se desarrolló la sesión completa de Design-Level Event Storming para WasteTrack. Incluye todas las fases del proceso: eventos de dominio, comandos, actores, políticas, read models, UX mock-ups, sistemas externos, reglas de negocio y agregados identificados.
 
 **Acceso:** Enlace público de solo lectura para revisión detallada del modelado de software y validación del trabajo colaborativo realizado por el equipo EcoLutions.
+
+### A.3 Domain Message Flows Modeling - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJF6enfs=/?share_link_id=443229773466](https://miro.com/app/board/uXjVJF6enfs=/?share_link_id=443229773466)
+
+**Descripción:** Workspace interactivo de Miro donde se desarrollaron los diagramas de Domain Message Flows para WasteTrack. Incluye 6 escenarios completos de colaboración entre bounded contexts: Container Emergency Response, Municipal Operations Setup, Smart Collection Optimization, Subscription Lifecycle Management, Route Execution and Real-Time Adaptation, y Citizen Engagement and Rewards Cycle.
+
+**Acceso:** Enlace público de solo lectura para revisión de los flujos de mensajes inter-contextuales y validación de la arquitectura distribuida del sistema.
+
+### A.4 Bounded Context Canvases - Workspace Miro
+
+**Enlace:** [https://miro.com/app/board/uXjVJF7LtDk=/?share_link_id=426807696302](https://miro.com/app/board/uXjVJF7LtDk=/?share_link_id=426807696302)
+
+**Descripción:** Workspace interactivo de Miro donde se diseñaron los 8 Bounded Context Canvases completos para WasteTrack. Incluye el diseño detallado de cada contexto delimitado: Container Monitoring, Route Planning & Execution, Municipal Operations, Payment & Subscriptions, Community Relations, Communication Hub, Profile, e IAM, con sus respectivas responsabilidades, comunicaciones, y criterios de diseño.
+
+**Acceso:** Enlace público de solo lectura para revisión del diseño estratégico de bounded contexts y validación de la separación de responsabilidades del dominio.
