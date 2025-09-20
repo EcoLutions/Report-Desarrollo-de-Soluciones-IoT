@@ -753,6 +753,16 @@ Identificar procesos actuales, herramientas utilizadas y puntos de dolor especí
 
 ### 2.3.4. Empathy Mapping
 
+![Administrador Municipal Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/adminMunicipalEmpathy.png)
+
+### Conductor de Recoleccion
+
+![Conductor de Recoleccion Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/conductorRecolectorEmpathy.png)
+
+### Ciudadano Residente
+
+![Ciudadano Residente Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/ciudadanoResidenteEmpathy.png)
+
 ## 2.4. Big Picture EventStorming
 
 ### 2.4.1. Introduction and Methodology
