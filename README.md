@@ -1648,7 +1648,7 @@ La arquitectura de WasteTrack implementa un enfoque híbrido que combina edge co
 
 El System Landscape Diagram presenta la vista de más alto nivel, mostrando cómo WasteTrack se integra dentro del ecosistema completo de sistemas municipales y urbanos de Lima Metropolitana. Esta vista proporciona contexto sobre las integraciones futuras y el valor estratégico del sistema dentro de una iniciativa de ciudad inteligente más amplia.
 
-![system-landscape.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/landscape-diagram.dsl)
+![system-landscape.png](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.3.software-architecture/landscape-diagram.png)
 
 **Elementos del Landscape:**
 
