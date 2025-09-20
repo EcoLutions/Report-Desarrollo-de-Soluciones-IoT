@@ -1645,6 +1645,42 @@ Esta pantalla se muestra cuando el conductor ha completado todas las paradas asi
 
 ### Web Applications Mock-ups
 
+### Flujo de Super Administrador
+Este flujo está diseñado como una herramienta interna y segura, accesible únicamente para los desarrolladores o administradores del sistema. Su única finalidad es la creación y gestión de las cuentas maestras de las municipalidades, siguiendo un modelo de negocio B2B.
+
+#### Acceso de Super Administrador
+Representa un portal de inicio de sesión de alta seguridad, completamente separado del de los administradores municipales. Esta pantalla es el único punto de entrada para la gestión global de las cuentas de clientes. Se incluyen las vistas para un ingreso exitoso y para un intento fallido, mostrando un mensaje de error claro.
+
+![login.png](assets/images/chapter5/webApplicationUxUi/mockUps/login.png)
+![loginError.png](assets/images/chapter5/webApplicationUxUi/mockUps/loginError.png)
+
+#### Dashboard de Municipalidades
+Es la pantalla principal del super administrador. Muestra un listado de todas las cuentas de municipalidades creadas en el sistema, con información clave como el nombre, el email del administrador principal y su estado (Activa/Inactiva). Se ha diseñado tanto el estado ideal (con datos) como el estado vacío, que guía al usuario a crear la primera cuenta.
+
+![municipalitiesList.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalitiesList.png)
+![nothingToShow.png](assets/images/chapter5/webApplicationUxUi/mockUps/nothingToShow.png)
+
+#### Creación de Cuenta Municipal
+Muestra el formulario completo que utiliza el super administrador para registrar una nueva municipalidad en el sistema. Incluye campos para los datos de la municipalidad, la asignación de su ubicación geográfica mediante un mapa, y la creación de la cuenta inicial para el administrador principal de dicha municipalidad. Se contempla también el estado de error del formulario.
+
+![registerNewMunicipalAccount.png](assets/images/chapter5/webApplicationUxUi/mockUps/registerNewMunicipalAccount.png)
+![registerNewMunicipalAccountError.png](assets/images/chapter5/webApplicationUxUi/mockUps/registerNewMunicipalAccountError.png)
+
+#### Gestión de Cuenta Municipal
+Representa la pantalla de edición y gestión de una cuenta municipal existente. Desde aquí, el super administrador puede modificar datos, ver los administradores asociados y, crucialmente, acceder a la "Zona de Peligro" para desactivar temporalmente una cuenta en caso de ser necesario.
+
+![editMunicipalAccount.png](assets/images/chapter5/webApplicationUxUi/mockUps/editMunicipalAccount.png)
+
+#### Modal de Confirmación
+Esta vista modal aparece cuando el super administrador intenta realizar una acción crítica, como desactivar una cuenta. Su propósito es prevenir acciones accidentales, forzando al usuario a confirmar su decisión antes de que se aplique el cambio.
+
+![deactivation.png](assets/images/chapter5/webApplicationUxUi/mockUps/deactivation.png)
+
+#### Notificación toast
+Debe aparecer como confirmación o feedback inmediato después de que el super administrador realiza una acción clave, como crear o actualizar una cuenta. Es un mensaje breve que asegura al usuario que su acción fue exitosa sin interrumpir su flujo de trabajo. También, se utiliza para notificar errores críticos, como problemas de conexión a internet.
+
+![toastNotification.png](assets/images/chapter5/webApplicationUxUi/mockUps/toastNotification.png)
+
 ### 5.4.4. Applications User Flow Diagrams
 
 ## 5.5. Applications Prototyping
