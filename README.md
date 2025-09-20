@@ -1149,6 +1149,144 @@ Estos boundaries proporcionan la base arquitectónica para el **Context Mapping*
 
 #### 4.1.1.2. Domain Message Flows Modeling
 
+En esta sección se documenta el proceso seguido para visualizar cómo los bounded contexts identificados deben colaborar para resolver casos específicos que se presentan en el negocio para los usuarios del sistema WasteTrack. La técnica aplicada permite evidenciar los flujos de mensajes (commands, events, queries) entre contextos delimitados, asegurando que la arquitectura soporte adecuadamente los escenarios críticos del dominio de gestión de residuos sólidos urbanos.
+
+**_1. Metodología de Domain Message Flow Modeling_**
+
+**Objetivo:** Modelar la colaboración inter-contextual necesaria para resolver casos de negocio completos desde la perspectiva del usuario final.
+
+**Elementos del modelado:**
+- **Actores:** Usuarios que inician los casos de negocio (Citizen, Municipal Administrator, Driver, IoT Sensor, System)
+- **Bounded Contexts:** Representados como nubes que procesan y responden a mensajes
+- **External Systems:** Sistemas de terceros representados como engranajes
+- **Messages:** Commands (azul), Events (naranja), Queries/Responses (verde) con datos específicos
+- **Sequence:** Numeración temporal del flujo de mensajes
+
+**Herramienta utilizada:** Miro para elaboración de diagramas de Domain Message Flow con notación estándar para bounded contexts y sistemas distribuidos.
+
+**_Casos de Negocio Modelados_**
+
+Se seleccionaron 6 escenarios representativos que requieren colaboración entre múltiples bounded contexts y demuestran la arquitectura distribuida del sistema:
+
+**Escenario 1: Container Emergency Response**
+
+**Narrativa del usuario:** Un ciudadano encuentra un contenedor desbordado en su vecindario y lo reporta a través de la aplicación móvil. El sistema debe procesar el reporte, evaluar la criticidad, programar una recolección de emergencia y notificar a todos los actores relevantes.
+
+![1.scenario-1.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/1.scenario-1.jpg)
+
+**Bounded contexts involucrados:** Community Relations, Container Monitoring, Route Planning & Execution, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Citizen reporta problema mediante comando "Report Container Problem"
+2. Community Relations procesa y escalada prioridad del contenedor
+3. Container Monitoring marca contenedor como crítico
+4. Route Planning programa recolección de emergencia
+5. Communication Hub notifica a stakeholders mediante sistemas externos
+
+**Escenario 2: Municipal Operations Setup**
+
+**Narrativa del usuario:** Un nuevo distrito municipal ha sido vendido y necesita configurar sus operaciones iniciales. El administrador debe completar el onboarding, configurar horarios de trabajo y activar el servicio.
+
+![2.scenario-2.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/2.scenario-2.jpg)
+
+**Bounded contexts involucrados:** IAM, Profile, Municipal Operations, Payment & Subscriptions, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Municipal Administrator realiza primer login
+2. IAM autentica y Profile gestiona configuración inicial
+3. Municipal Operations configura operaciones del distrito
+4. Payment & Subscriptions activa suscripción post-setup
+5. Communication Hub confirma configuración exitosa
+
+**Escenario 3: Smart Collection Optimization**
+
+**Narrativa del usuario:** El sistema detecta múltiples contenedores con niveles altos de llenado y debe optimizar automáticamente las rutas de recolección, asignar conductores disponibles y notificar sobre los cambios de programación.
+
+![3.scenario-3.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/3.scenario-3.jpg)
+
+**Bounded contexts involucrados:** Container Monitoring, Route Planning & Execution, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. IoT Sensors envían datos de nivel de llenado
+2. Container Monitoring detecta contenedores críticos
+3. Route Planning consulta recursos disponibles y calcula ruta óptima
+4. Municipal Operations valida asignación de recursos
+5. Communication Hub notifica cambios de ruta a conductores
+
+**Escenario 4: Subscription Lifecycle Management**
+
+**Narrativa del usuario:** El sistema debe procesar la facturación mensual automática de un distrito, manejar fallos de pago, aplicar políticas de gracia y potencialmente suspender servicios mientras mantiene comunicación apropiada.
+
+![4.scenario-4.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/4.scenario-4.jpg)
+
+**Bounded contexts involucrados:** Payment & Subscriptions, Municipal Operations, Container Monitoring, Route Planning & Execution, Communication Hub
+
+**Flujo de mensajes clave:**
+1. System ejecuta ciclo de facturación mensual automático
+2. Payment & Subscriptions procesa pagos con gateway externo
+3. En caso de fallo, Municipal Operations suspende servicios
+4. Container Monitoring y Route Planning restringen acceso
+5. Communication Hub maneja notificaciones de suspensión
+
+**Escenario 5: Route Execution and Real-Time Adaptation**
+
+**Narrativa del usuario:** Un conductor inicia su ruta de recolección y durante la ejecución surge un contenedor de emergencia que requiere modificar la ruta en tiempo real manteniendo eficiencia operativa.
+
+![5.scenario-5.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/5.scenario-5.jpg)
+
+**Bounded contexts involucrados:** Route Planning & Execution, Container Monitoring, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Driver inicia ruta de recolección asignada
+2. Route Planning activa navegación y tracking
+3. Container Monitoring detecta emergencia durante ejecución
+4. Municipal Operations valida modificación de ruta
+5. Route Planning recalcula y Communication Hub notifica cambios
+
+**Escenario 6: Citizen Engagement and Rewards Cycle**
+
+**Narrativa del usuario:** Un ciudadano consulta el estado de sus reportes, accede a contenido educativo, acumula puntos por buen comportamiento y los canjea por beneficios municipales.
+
+![6.scenario-6.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.1.design-level-eventstorming/4.1.1.2.domain-message-flows-modeling/6.scenario-6.jpg)
+
+**Bounded contexts involucrados:** Community Relations, Profile, Municipal Operations, Communication Hub
+
+**Flujo de mensajes clave:**
+1. Citizen consulta estado de reportes y accede a contenido educativo
+2. Community Relations otorga puntos por comportamiento positivo
+3. Profile rastrea progreso de milestones de recompensas
+4. Municipal Operations procesa canje de beneficios
+5. Communication Hub confirma otorgamiento de recompensas
+
+**_Análisis de Patrones de Colaboración_**
+
+Los diagramas de Domain Message Flow revelan patrones de colaboración críticos en la arquitectura:
+
+**Patrones identificados:**
+
+- **Hub Communication Pattern:** Communication Hub actúa como orquestador central de notificaciones multi-canal
+- **Event-Driven Cascade:** Eventos en un contexto disparan cadenas de acciones coordinadas en contextos relacionados
+- **Query-Response Validation:** Múltiples contextos validan diferentes aspectos antes de ejecutar operaciones críticas
+- **State Synchronization:** Cambios de estado se propagan consistentemente entre contextos que comparten responsabilidades
+
+**Implicaciones arquitectónicas:**
+
+- **Message Bus:** Necesidad de infraestructura robusta para comunicación asíncrona entre contextos
+- **Saga Patterns:** Requerimiento de coordinación de transacciones distribuidas para casos complejos
+- **Circuit Breakers:** Manejo de fallos en comunicación inter-contextual para mantener resilience
+- **Distributed Tracing:** Observabilidad necesaria para rastrear flujos completos end-to-end
+
+**_Resultados del Modelado_**
+
+Los 6 escenarios modelados demuestran que la separación de bounded contexts propuesta facilita:
+
+- **Evolución independiente** de cada contexto según su dominio específico
+- **Colaboración efectiva** para resolver casos de negocio complejos
+- **Escalabilidad** mediante distribución de responsabilidades
+- **Mantenibilidad** a través de interfaces bien definidas entre contextos
+
+Los flujos de mensajes identificados proporcionan la base para el diseño de APIs, definición de contratos entre servicios y establecimiento de patrones de integración en la implementación del sistema WasteTrack.
+
 #### 4.1.1.3. Bounded Context Canvases
 
 ### 4.1.2. Context Mapping
