@@ -1,0 +1,535 @@
+@startuml Municipal Operations: Domain Layer Class Diagram
+
+title Municipal Operations: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/E1BEE7
+    BackgroundColor<<Strategy>> #FFFFFF/E8F5E8
+    BackgroundColor<<Builder>> #FFFFFF/FFF3E0
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Municipal Operations Context" {
+    package "Domain Layer" {
+        ' ===================== AGGREGATES =====================
+        class "District" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - districtId : DistrictId
+            - name : String
+            - municipalityId : MunicipalityId
+            - administratorId : AdministratorId
+            - boundaries : GeographicBoundary
+            - population : Population
+            - budget : Budget
+            - operationalStatus : OperationalStatus
+            - resources : List<Resource>
+            - performanceMetrics : PerformanceMetrics
+            - version : Long
+
+            # District()
+            + District(name : String, municipalityId : MunicipalityId, boundaries : GeographicBoundary)
+            + District(command : CreateDistrictCommand)
+            + allocateResource(resource : Resource) : void
+            + deallocateResource(resourceId : ResourceId) : void
+            + updateBudget(newBudget : Budget) : void
+            + assignAdministrator(administratorId : AdministratorId) : void
+            + calculateOperationalCost() : MonetaryAmount
+            + isWithinBoundaries(location : Location) : boolean
+            + hasAvailableCapacity() : boolean
+            + getResourceUtilization() : ResourceUtilization
+        }
+
+        class "Vehicle" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - vehicleId : VehicleId
+            - registrationNumber : String
+            - vehicleType : VehicleType
+            - capacity : VehicleCapacity
+            - fuelType : FuelType
+            - status : VehicleStatus
+            - districtId : DistrictId
+            - currentDriverId : DriverId
+            - maintenanceHistory : List<MaintenanceRecord>
+            - operationalMetrics : OperationalMetrics
+            - gpsTracker : GPSTracker
+            - lastInspectionDate : LocalDateTime
+            - nextMaintenanceDate : LocalDateTime
+            - version : Long
+
+            # Vehicle()
+            + Vehicle(registrationNumber : String, vehicleType : VehicleType, capacity : VehicleCapacity)
+            + Vehicle(command : RegisterVehicleCommand)
+            + assignToDistrict(districtId : DistrictId) : void
+            + assignDriver(driverId : DriverId) : void
+            + scheduleMaintenance(maintenanceType : MaintenanceType, scheduledDate : LocalDateTime) : void
+            + recordMaintenance(record : MaintenanceRecord) : void
+            + updateStatus(newStatus : VehicleStatus) : void
+            + isAvailableForRoute() : boolean
+            + requiresMaintenance() : boolean
+            + calculateOperationalCost() : MonetaryAmount
+            + updateLocation(location : Location) : void
+        }
+
+        class "Driver" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - driverId : DriverId
+            - personalInfo : PersonalInfo
+            - licenseInfo : LicenseInfo
+            - employmentStatus : EmploymentStatus
+            - districtId : DistrictId
+            - assignedVehicleId : VehicleId
+            - workSchedule : WorkSchedule
+            - performanceRecord : PerformanceRecord
+            - certifications : List<Certification>
+            - contactInfo : ContactInfo
+            - hireDate : LocalDateTime
+            - version : Long
+
+            # Driver()
+            + Driver(personalInfo : PersonalInfo, licenseInfo : LicenseInfo)
+            + Driver(command : RegisterDriverCommand)
+            + assignToDistrict(districtId : DistrictId) : void
+            + assignVehicle(vehicleId : VehicleId) : void
+            + updateWorkSchedule(schedule : WorkSchedule) : void
+            + recordPerformance(metrics : PerformanceMetrics) : void
+            + addCertification(certification : Certification) : void
+            + isAvailableForAssignment() : boolean
+            + canOperateVehicle(vehicleType : VehicleType) : boolean
+            + calculateWorkingHours(period : DateRange) : Duration
+        }
+
+        class "Resource" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - resourceId : ResourceId
+            - resourceType : ResourceType
+            - name : String
+            - description : String
+            - capacity : ResourceCapacity
+            - currentUtilization : ResourceUtilization
+            - status : ResourceStatus
+            - acquisitionCost : MonetaryAmount
+            - maintenanceCost : MonetaryAmount
+            - location : Location
+
+            + Resource(resourceType : ResourceType, name : String, capacity : ResourceCapacity)
+            + allocate(amount : Double) : void
+            + deallocate(amount : Double) : void
+            + isAvailable() : boolean
+            + getUtilizationPercentage() : Double
+        }
+
+        class "MaintenanceRecord" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - recordId : MaintenanceRecordId
+            - vehicleId : VehicleId
+            - maintenanceType : MaintenanceType
+            - scheduledDate : LocalDateTime
+            - completedDate : LocalDateTime
+            - description : String
+            - cost : MonetaryAmount
+            - technicianId : TechnicianId
+            - status : MaintenanceStatus
+            - notes : String
+
+            + MaintenanceRecord(vehicleId : VehicleId, maintenanceType : MaintenanceType)
+            + complete(completedDate : LocalDateTime, cost : MonetaryAmount) : void
+            + addNotes(notes : String) : void
+            + isOverdue() : boolean
+        }
+
+        ' ===================== COMMANDS (CQRS Write Side) =====================
+        class "CreateDistrictCommand" <<(C, #BA68C8) Command>> {
+            + name : String
+            + municipalityId : MunicipalityId
+            + boundaries : GeographicBoundary
+            + population : Population
+            + initialBudget : Budget
+            + administratorId : AdministratorId
+        }
+
+        class "RegisterVehicleCommand" <<(C, #BA68C8) Command>> {
+            + registrationNumber : String
+            + vehicleType : VehicleType
+            + capacity : VehicleCapacity
+            + fuelType : FuelType
+            + districtId : DistrictId
+            + acquisitionDate : LocalDateTime
+        }
+
+        class "RegisterDriverCommand" <<(C, #BA68C8) Command>> {
+            + personalInfo : PersonalInfo
+            + licenseInfo : LicenseInfo
+            + districtId : DistrictId
+            + hireDate : LocalDateTime
+            + initialCertifications : List<Certification>
+        }
+
+        class "AllocateResourceCommand" <<(C, #BA68C8) Command>> {
+            + districtId : DistrictId
+            + resourceType : ResourceType
+            + amount : Double
+            + allocationPeriod : DateRange
+        }
+
+        class "ScheduleMaintenanceCommand" <<(C, #BA68C8) Command>> {
+            + vehicleId : VehicleId
+            + maintenanceType : MaintenanceType
+            + scheduledDate : LocalDateTime
+            + priority : MaintenancePriority
+        }
+
+        ' ===================== QUERIES (CQRS Read Side) =====================
+        class "GetDistrictByIdQuery" <<(Q, #C5E1A5) Query>> {
+            + districtId : Long
+        }
+
+        class "GetDistrictsByMunicipalityQuery" <<(Q, #C5E1A5) Query>> {
+            + municipalityId : MunicipalityId
+        }
+
+        class "GetVehiclesByDistrictQuery" <<(Q, #C5E1A5) Query>> {
+            + districtId : DistrictId
+            + status : VehicleStatus
+        }
+
+        class "GetAvailableDriversQuery" <<(Q, #C5E1A5) Query>> {
+            + districtId : DistrictId
+            + shiftDate : LocalDate
+        }
+
+        class "GetMaintenanceScheduleQuery" <<(Q, #C5E1A5) Query>> {
+            + districtId : DistrictId
+            + dateRange : DateRange
+        }
+
+        class "GetResourceUtilizationQuery" <<(Q, #C5E1A5) Query>> {
+            + districtId : DistrictId
+            + resourceType : ResourceType
+            + period : DateRange
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "DistrictCreatedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + districtId : Long
+            + municipalityId : Long
+            + administratorId : Long
+            + initialBudget : Double
+            + timestamp : LocalDateTime
+        }
+
+        class "VehicleAssignedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + vehicleId : Long
+            + districtId : Long
+            + driverId : Long
+            + assignmentDate : LocalDateTime
+        }
+
+        class "MaintenanceScheduledEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + vehicleId : Long
+            + maintenanceType : String
+            + scheduledDate : LocalDateTime
+            + priority : String
+        }
+
+        class "ResourceAllocatedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + districtId : Long
+            + resourceType : String
+            + allocatedAmount : Double
+            + allocationDate : LocalDateTime
+        }
+
+        ' ===================== VALUE OBJECTS (LOCAL) =====================
+        class "DistrictId" <<(V, #FFD700) Value Object>> {
+            - districtId : Long
+            + isValid() : Boolean
+        }
+
+        class "VehicleId" <<(V, #FFD700) Value Object>> {
+            - vehicleId : Long
+        }
+
+        class "DriverId" <<(V, #FFD700) Value Object>> {
+            - driverId : Long
+        }
+
+        class "ResourceId" <<(V, #FFD700) Value Object>> {
+            - resourceId : Long
+        }
+
+        class "GeographicBoundary" <<(V, #FFD700) Value Object>> {
+            - coordinates : List<Coordinate>
+            - area : Double
+            + contains(location : Location) : Boolean
+            + calculateArea() : Double
+            + getCenter() : Location
+        }
+
+        class "VehicleCapacity" <<(V, #FFD700) Value Object>> {
+            - volumeInCubicMeters : Double
+            - weightInKilograms : Double
+            + canAccommodate(load : Load) : Boolean
+            + getRemainingCapacity(currentLoad : Load) : VehicleCapacity
+        }
+
+        class "Budget" <<(V, #FFD700) Value Object>> {
+            - amount : MonetaryAmount
+            - fiscalYear : Year
+            - categories : Map<BudgetCategory, MonetaryAmount>
+            + allocate(category : BudgetCategory, amount : MonetaryAmount) : Budget
+            + hasAvailableFunds(amount : MonetaryAmount) : Boolean
+        }
+
+        class "PerformanceMetrics" <<(V, #FFD700) Value Object>> {
+            - efficiency : Double
+            - costEffectiveness : Double
+            - customerSatisfaction : Double
+            + calculateOverallScore() : Double
+            + compare(other : PerformanceMetrics) : ComparisonResult
+        }
+
+        class "WorkSchedule" <<(V, #FFD700) Value Object>> {
+            - shifts : List<WorkShift>
+            - workingDays : Set<DayOfWeek>
+            - totalHoursPerWeek : Duration
+            + isWorkingDay(date : LocalDate) : Boolean
+            + getShiftForDate(date : LocalDate) : Optional<WorkShift>
+        }
+
+        ' ===================== FACTORIES (Creational Pattern) =====================
+        class "DistrictFactory" <<(F, #BA68C8) Factory>> {
+            + createDistrict(command : CreateDistrictCommand) : District
+            + createUrbanDistrict(name : String, population : Population) : District
+            + createRuralDistrict(name : String, area : Double) : District
+        }
+
+        class "VehicleFactory" <<(F, #BA68C8) Factory>> {
+            + createVehicle(command : RegisterVehicleCommand) : Vehicle
+            + createCollectionTruck(registrationNumber : String, capacity : VehicleCapacity) : Vehicle
+            + createMaintenanceVehicle(registrationNumber : String) : Vehicle
+        }
+
+        class "ResourceAllocationFactory" <<(F, #BA68C8) Factory>> {
+            + createResourceAllocation(district : District, resourceType : ResourceType, amount : Double) : Resource
+            + createBudgetAllocation(district : District, budget : Budget) : BudgetAllocation
+        }
+
+        ' ===================== STRATEGIES (Behavioral Pattern) =====================
+        interface "MaintenanceStrategy" <<(S, #81C784) Strategy>> {
+            + scheduleMaintenance(vehicle : Vehicle, currentDate : LocalDateTime) : MaintenanceSchedule
+            + calculateMaintenanceCost(vehicle : Vehicle, maintenanceType : MaintenanceType) : MonetaryAmount
+        }
+
+        class "PreventiveMaintenanceStrategy" <<(S, #81C784) Strategy>> {
+            + scheduleMaintenance(vehicle : Vehicle, currentDate : LocalDateTime) : MaintenanceSchedule
+            + calculateMaintenanceCost(vehicle : Vehicle, maintenanceType : MaintenanceType) : MonetaryAmount
+        }
+
+        class "CorrectiveMaintenanceStrategy" <<(S, #81C784) Strategy>> {
+            + scheduleMaintenance(vehicle : Vehicle, currentDate : LocalDateTime) : MaintenanceSchedule
+            + calculateMaintenanceCost(vehicle : Vehicle, maintenanceType : MaintenanceType) : MonetaryAmount
+        }
+
+        class "PredictiveMaintenanceStrategy" <<(S, #81C784) Strategy>> {
+            + scheduleMaintenance(vehicle : Vehicle, currentDate : LocalDateTime) : MaintenanceSchedule
+            + calculateMaintenanceCost(vehicle : Vehicle, maintenanceType : MaintenanceType) : MonetaryAmount
+        }
+
+        ' ===================== BUILDER PATTERN =====================
+        class "DistrictBuilder" <<(B, #FFB74D) Builder>> {
+            - district : District
+            + setName(name : String) : DistrictBuilder
+            + setBoundaries(boundaries : GeographicBoundary) : DistrictBuilder
+            + setPopulation(population : Population) : DistrictBuilder
+            + setBudget(budget : Budget) : DistrictBuilder
+            + addResource(resource : Resource) : DistrictBuilder
+            + build() : District
+        }
+
+        class "VehicleConfigurationBuilder" <<(B, #FFB74D) Builder>> {
+            - vehicle : Vehicle
+            + setBasicInfo(registrationNumber : String, type : VehicleType) : VehicleConfigurationBuilder
+            + setCapacity(capacity : VehicleCapacity) : VehicleConfigurationBuilder
+            + setMaintenanceSchedule(schedule : MaintenanceSchedule) : VehicleConfigurationBuilder
+            + addEquipment(equipment : Equipment) : VehicleConfigurationBuilder
+            + build() : Vehicle
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "MunicipalCommandService" <<(S, #FF8A65) Domain Service>> {
+            + handle(command : CreateDistrictCommand) : Optional<District>
+            + handle(command : RegisterVehicleCommand) : Optional<Vehicle>
+            + handle(command : RegisterDriverCommand) : Optional<Driver>
+            + handle(command : AllocateResourceCommand) : void
+            + handle(command : ScheduleMaintenanceCommand) : void
+        }
+
+        class "MunicipalQueryService" <<(S, #FF8A65) Domain Service>> {
+            + handle(query : GetDistrictByIdQuery) : Optional<District>
+            + handle(query : GetDistrictsByMunicipalityQuery) : List<District>
+            + handle(query : GetVehiclesByDistrictQuery) : List<Vehicle>
+            + handle(query : GetAvailableDriversQuery) : List<Driver>
+            + handle(query : GetMaintenanceScheduleQuery) : List<MaintenanceRecord>
+            + handle(query : GetResourceUtilizationQuery) : ResourceUtilizationReport
+        }
+
+        class "ResourceAllocationService" <<(S, #FF8A65) Domain Service>> {
+            + allocateResources(district : District, requirements : ResourceRequirements) : AllocationResult
+            + optimizeResourceDistribution(districts : List<District>) : OptimizationResult
+            + calculateResourceNeeds(district : District, projectedDemand : Demand) : ResourceRequirements
+        }
+
+        class "FleetManagementService" <<(S, #FF8A65) Domain Service>> {
+            - maintenanceStrategy : MaintenanceStrategy
+            + assignVehicleToRoute(vehicleId : VehicleId, routeId : RouteId) : AssignmentResult
+            + scheduleFleetMaintenance(vehicles : List<Vehicle>) : MaintenanceSchedule
+            + calculateFleetUtilization(district : District) : FleetUtilizationReport
+            + setMaintenanceStrategy(strategy : MaintenanceStrategy) : void
+        }
+
+        class "PerformanceAnalysisService" <<(S, #FF8A65) Domain Service>> {
+            + analyzeDistrictPerformance(district : District, period : DateRange) : PerformanceReport
+            + compareDistrictPerformance(districts : List<District>) : ComparisonReport
+            + calculateKPIs(district : District) : Map<KPI, Double>
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "Location" <<(V, #FFD700) Value Object>> {
+            - latitude : Double
+            - longitude : Double
+            - address : String
+            - district : String
+            + distanceTo(other : Location) : Double
+            + isWithinRadius(center : Location, radius : Double) : Boolean
+        }
+
+        class "MunicipalityId" <<(V, #FFD700) Value Object>> {
+            - municipalityId : Long
+        }
+
+        class "AdministratorId" <<(V, #FFD700) Value Object>> {
+            - administratorId : Long
+        }
+
+        class "MonetaryAmount" <<(V, #FFD700) Value Object>> {
+            - amount : BigDecimal
+            - currency : String
+            + add(other : MonetaryAmount) : MonetaryAmount
+            + multiply(factor : Double) : MonetaryAmount
+            + isGreaterThan(other : MonetaryAmount) : Boolean
+        }
+
+        class "DateRange" <<(V, #FFD700) Value Object>> {
+            - startDate : LocalDate
+            - endDate : LocalDate
+            + contains(date : LocalDate) : Boolean
+            + getDurationInDays() : Long
+            + overlaps(other : DateRange) : Boolean
+        }
+
+        class "Population" <<(V, #FFD700) Value Object>> {
+            - count : Long
+            - density : Double
+            + calculateDemand(demandFactor : Double) : Double
+        }
+
+        class "ValidationResult" <<(V, #FFD700) Value Object>> {
+            - isValid : Boolean
+            - errors : List<String>
+            - warnings : List<String>
+            + hasErrors() : Boolean
+            + hasWarnings() : Boolean
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate Root Compositions ---
+District *-- DistrictId
+District *-- GeographicBoundary
+District *-- Budget
+District *-- PerformanceMetrics
+District o-- Resource
+
+Vehicle *-- VehicleId
+Vehicle *-- VehicleCapacity
+Vehicle o-- MaintenanceRecord
+
+Driver *-- DriverId
+Driver *-- WorkSchedule
+
+' --- Entity Compositions ---
+Resource *-- ResourceId
+MaintenanceRecord *-- MaintenanceRecordId
+
+' --- Shared Kernel Usage ---
+District ..> Location : uses >
+District ..> MunicipalityId : belongs to >
+District ..> AdministratorId : managed by >
+District ..> Population : serves >
+Vehicle ..> Location : tracked at >
+Resource ..> MonetaryAmount : costs >
+
+' --- Factory Relationships ---
+DistrictFactory ..> District : creates >
+DistrictFactory ..> CreateDistrictCommand : uses >
+VehicleFactory ..> Vehicle : creates >
+VehicleFactory ..> RegisterVehicleCommand : uses >
+ResourceAllocationFactory ..> Resource : creates >
+
+' --- Strategy Relationships ---
+MaintenanceStrategy <|.. PreventiveMaintenanceStrategy : implements >
+MaintenanceStrategy <|.. CorrectiveMaintenanceStrategy : implements >
+MaintenanceStrategy <|.. PredictiveMaintenanceStrategy : implements >
+FleetManagementService o-- MaintenanceStrategy : uses >
+
+' --- Builder Relationships ---
+DistrictBuilder ..> District : builds >
+VehicleConfigurationBuilder ..> Vehicle : builds >
+
+' --- Command/Query Services ---
+MunicipalCommandService ..> District : manages >
+MunicipalCommandService ..> Vehicle : manages >
+MunicipalCommandService ..> Driver : manages >
+MunicipalCommandService ..> CreateDistrictCommand
+MunicipalCommandService ..> RegisterVehicleCommand
+MunicipalCommandService ..> RegisterDriverCommand
+MunicipalCommandService ..> AllocateResourceCommand
+MunicipalCommandService ..> ScheduleMaintenanceCommand
+
+MunicipalQueryService ..> District : queries >
+MunicipalQueryService ..> Vehicle : queries >
+MunicipalQueryService ..> Driver : queries >
+MunicipalQueryService ..> GetDistrictByIdQuery
+MunicipalQueryService ..> GetVehiclesByDistrictQuery
+MunicipalQueryService ..> GetAvailableDriversQuery
+
+ResourceAllocationService ..> District : allocates resources to >
+ResourceAllocationService ..> Resource : manages >
+
+FleetManagementService ..> Vehicle : manages >
+FleetManagementService ..> MaintenanceRecord : schedules >
+
+PerformanceAnalysisService ..> District : analyzes >
+PerformanceAnalysisService ..> PerformanceMetrics : calculates >
+
+' --- Domain Events ---
+District ..> DistrictCreatedEvent : publishes >
+Vehicle ..> VehicleAssignedEvent : publishes >
+Vehicle ..> MaintenanceScheduledEvent : publishes >
+District ..> ResourceAllocatedEvent : publishes >
+
+@enduml

@@ -2216,7 +2216,7 @@ La arquitectura implementa patrones avanzados como Strategy para algoritmos inte
 
 #### 4.2.2.6. Bounded Context Software Architecture Code Level Diagrams
 
-#### 4.2.2.6.1. Bounded Context Domain Layer Class Diagrams
+##### 4.2.2.6.1. Bounded Context Domain Layer Class Diagrams
 
 ![class-diagram-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.class-diagram.png)
 
@@ -2245,7 +2245,7 @@ El diagrama de clases del Domain Layer presenta la estructura completa del domin
 - **Genetic Algorithm**: Para optimización evolutiva en problemas complejos
 - **Hybrid Strategy**: Combinación inteligente de múltiples enfoques
 
-#### 4.2.2.6.2. Bounded Context Database Design Diagram
+##### 4.2.2.6.2. Bounded Context Database Design Diagram
 
 ![database-design-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.database-design-diagram.png)
 
@@ -2272,6 +2272,303 @@ El diseño de base de datos implementa el modelo de dominio con optimizaciones e
 - **Limpieza inteligente**: Retención de mejores resultados por algoritmo
 
 El esquema está optimizado para las operaciones algorítmicas identificadas en el dominio, incluyendo cálculos de rutas óptimas, análisis de rendimiento de algoritmos, y seguimiento GPS en tiempo real con alta frecuencia de actualizaciones.
+
+### 4.2.3. Bounded Context: Municipal Operations
+
+En esta sección se presenta el análisis detallado del bounded context Municipal Operations, que encapsula toda la lógica de negocio relacionada con la gestión de operaciones municipales, administración de distritos, gestión de flotas vehiculares, y coordinación de recursos humanos para optimizar la eficiencia operacional y el control presupuestario municipal.
+
+#### 4.2.3.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de operaciones municipales, implementando patrones avanzados de gestión de recursos y estrategias de mantenimiento para asegurar eficiencia operacional y control de costos.
+
+**Aggregate Roots:**
+
+1. **`District` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un distrito municipal, sus recursos asignados, presupuesto, y métricas de rendimiento operacional.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                 | Visibilidad | Descripción                                       |
+|----------------------|----------------------|-------------|---------------------------------------------------|
+| `id`                 | `Long`               | `private`   | Identificador único del distrito en base de datos |
+| `districtId`         | `DistrictId`         | `private`   | Identificador de dominio del distrito             |
+| `name`               | `String`             | `private`   | Nombre oficial del distrito municipal             |
+| `municipalityId`     | `MunicipalityId`     | `private`   | Municipalidad a la que pertenece                  |
+| `administratorId`    | `AdministratorId`    | `private`   | Administrador responsable del distrito            |
+| `boundaries`         | `GeographicBoundary` | `private`   | Límites geográficos del distrito                  |
+| `population`         | `Population`         | `private`   | Datos demográficos del distrito                   |
+| `budget`             | `Budget`             | `private`   | Presupuesto asignado con categorías               |
+| `operationalStatus`  | `OperationalStatus`  | `private`   | Estado operacional actual                         |
+| `resources`          | `List<Resource>`     | `private`   | Recursos asignados al distrito                    |
+| `performanceMetrics` | `PerformanceMetrics` | `private`   | Métricas de rendimiento operacional               |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno       | Visibilidad | Descripción                                            |
+|----------------------------------------|-----------------------|-------------|--------------------------------------------------------|
+| `allocateResource(resource)`           | `void`                | `public`    | Asigna recurso validando disponibilidad presupuestaria |
+| `deallocateResource(resourceId)`       | `void`                | `public`    | Libera recurso y actualiza utilización                 |
+| `updateBudget(newBudget)`              | `void`                | `public`    | Actualiza presupuesto con validaciones fiscales        |
+| `assignAdministrator(administratorId)` | `void`                | `public`    | Asigna administrador con verificación de autorización  |
+| `calculateOperationalCost()`           | `MonetaryAmount`      | `public`    | Calcula costo operacional total del distrito           |
+| `isWithinBoundaries(location)`         | `boolean`             | `public`    | Verifica si ubicación está dentro de límites           |
+| `hasAvailableCapacity()`               | `boolean`             | `public`    | Determina si hay capacidad para nuevos recursos        |
+| `getResourceUtilization()`             | `ResourceUtilization` | `public`    | Calcula utilización actual de recursos                 |
+
+2. **`Vehicle` (Aggregate Root)**
+
+Representa un vehículo de la flota municipal con capacidades de tracking GPS, historial de mantenimiento, y métricas operacionales para optimización de costos.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                      | Visibilidad | Descripción                                      |
+|-----------------------|---------------------------|-------------|--------------------------------------------------|
+| `vehicleId`           | `VehicleId`               | `private`   | Identificador de dominio del vehículo            |
+| `registrationNumber`  | `String`                  | `private`   | Número de placa único                            |
+| `vehicleType`         | `VehicleType`             | `private`   | Tipo de vehículo (recolector, compactador, etc.) |
+| `capacity`            | `VehicleCapacity`         | `private`   | Capacidad de carga del vehículo                  |
+| `status`              | `VehicleStatus`           | `private`   | Estado operacional actual                        |
+| `maintenanceHistory`  | `List<MaintenanceRecord>` | `private`   | Historial completo de mantenimiento              |
+| `operationalMetrics`  | `OperationalMetrics`      | `private`   | Métricas de eficiencia y costo                   |
+| `gpsTracker`          | `GPSTracker`              | `private`   | Sistema de tracking GPS                          |
+| `nextMaintenanceDate` | `LocalDateTime`           | `private`   | Fecha programada de próximo mantenimiento        |
+
+**Métodos principales:**
+
+| Método                            | Tipo de Retorno  | Visibilidad | Descripción                                     |
+|-----------------------------------|------------------|-------------|-------------------------------------------------|
+| `assignToDistrict(districtId)`    | `void`           | `public`    | Asigna vehículo a distrito específico           |
+| `assignDriver(driverId)`          | `void`           | `public`    | Asigna conductor validando certificaciones      |
+| `scheduleMaintenance(type, date)` | `void`           | `public`    | Programa mantenimiento usando Strategy pattern  |
+| `recordMaintenance(record)`       | `void`           | `public`    | Registra mantenimiento completado               |
+| `isAvailableForRoute()`           | `boolean`        | `public`    | Verifica disponibilidad para asignación de ruta |
+| `requiresMaintenance()`           | `boolean`        | `public`    | Determina si requiere mantenimiento             |
+| `calculateOperationalCost()`      | `MonetaryAmount` | `public`    | Calcula costo operacional por período           |
+| `updateLocation(location)`        | `void`           | `public`    | Actualiza ubicación GPS en tiempo real          |
+
+3. **`Driver` (Aggregate Root)**
+
+Representa un conductor municipal con información personal, certificaciones, horarios de trabajo, y métricas de rendimiento para gestión de recursos humanos.
+
+**Atributos principales:**
+
+| Atributo            | Tipo                  | Visibilidad | Descripción                            |
+|---------------------|-----------------------|-------------|----------------------------------------|
+| `driverId`          | `DriverId`            | `private`   | Identificador de dominio del conductor |
+| `personalInfo`      | `PersonalInfo`        | `private`   | Información personal y documentos      |
+| `licenseInfo`       | `LicenseInfo`         | `private`   | Información de licencia de conducir    |
+| `employmentStatus`  | `EmploymentStatus`    | `private`   | Estado laboral actual                  |
+| `workSchedule`      | `WorkSchedule`        | `private`   | Horario de trabajo detallado           |
+| `performanceRecord` | `PerformanceRecord`   | `private`   | Registro de rendimiento laboral        |
+| `certifications`    | `List<Certification>` | `private`   | Certificaciones y capacitaciones       |
+
+**Métodos principales:**
+
+| Método                           | Tipo de Retorno | Visibilidad | Descripción                                  |
+|----------------------------------|-----------------|-------------|----------------------------------------------|
+| `assignToDistrict(districtId)`   | `void`          | `public`    | Asigna conductor a distrito específico       |
+| `assignVehicle(vehicleId)`       | `void`          | `public`    | Asigna vehículo verificando compatibilidad   |
+| `updateWorkSchedule(schedule)`   | `void`          | `public`    | Actualiza horario con validaciones laborales |
+| `recordPerformance(metrics)`     | `void`          | `public`    | Registra métricas de rendimiento             |
+| `isAvailableForAssignment()`     | `boolean`       | `public`    | Verifica disponibilidad para asignación      |
+| `canOperateVehicle(vehicleType)` | `boolean`       | `public`    | Verifica si puede operar tipo de vehículo    |
+| `calculateWorkingHours(period)`  | `Duration`      | `public`    | Calcula horas trabajadas en período          |
+
+**Entities:**
+
+4. **`Resource` (Entity)**
+
+Entidad que representa recursos asignados a distritos con seguimiento de utilización y costos operacionales.
+
+5. **`MaintenanceRecord` (Entity)**
+
+Entidad que registra eventos de mantenimiento vehicular con costos, técnicos, y resultados.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio municipal:
+
+- **`GeographicBoundary`**: Límites geográficos con validaciones de contención
+- **`Budget`**: Presupuesto con categorías y validaciones fiscales
+- **`VehicleCapacity`**: Capacidad con validaciones de carga
+- **`WorkSchedule`**: Horarios con validaciones laborales
+- **`PerformanceMetrics`**: Métricas con cálculos de eficiencia
+
+**Factories (Creational Pattern):**
+
+1. **`DistrictFactory`**: Implementa Factory pattern para crear distritos con configuraciones específicas (urbanos con alta densidad, rurales con grandes áreas) aplicando validaciones presupuestarias.
+
+2. **`VehicleFactory`**: Crea diferentes tipos de vehículos (recolectores, compactadores, mantenimiento) con configuraciones específicas y equipamiento.
+
+3. **`ResourceAllocationFactory`**: Gestiona creación de asignaciones de recursos con validaciones de capacidad y presupuesto.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar políticas de mantenimiento dinámicamente:
+
+1. **`PreventiveMaintenanceStrategy`**: Mantenimiento programado basado en tiempo/kilometraje
+2. **`CorrectiveMaintenanceStrategy`**: Mantenimiento reactivo para reparaciones
+3. **`PredictiveMaintenanceStrategy`**: Mantenimiento basado en análisis de datos IoT
+
+**Builder Pattern:**
+
+1. **`DistrictBuilder`**: Construcción compleja de distritos con múltiples recursos y configuraciones
+2. **`VehicleConfigurationBuilder`**: Configuración detallada de vehículos con equipamiento especializado
+
+**Domain Services:**
+
+1. **`MunicipalCommandService`**: Orquesta operaciones CQRS de escritura para entidades municipales
+2. **`MunicipalQueryService`**: Maneja consultas CQRS optimizadas para reportes municipales
+3. **`ResourceAllocationService`**: Optimiza distribución de recursos entre distritos
+4. **`FleetManagementService`**: Coordina operaciones de flota usando Strategy pattern
+5. **`PerformanceAnalysisService`**: Genera análisis de rendimiento operacional
+
+**Commands (CQRS Write Side):**
+
+- `CreateDistrictCommand`: Creación de distritos con validaciones geográficas
+- `RegisterVehicleCommand`: Registro de vehículos con validaciones técnicas
+- `RegisterDriverCommand`: Registro de conductores con verificación de certificaciones
+- `AllocateResourceCommand`: Asignación de recursos con validaciones presupuestarias
+- `ScheduleMaintenanceCommand`: Programación de mantenimiento vehicular
+
+**Queries (CQRS Read Side):**
+
+- `GetDistrictsByMunicipalityQuery`: Consulta de distritos por municipalidad
+- `GetVehiclesByDistrictQuery`: Consulta de vehículos por distrito y estado
+- `GetAvailableDriversQuery`: Consulta de conductores disponibles por turno
+- `GetMaintenanceScheduleQuery`: Cronograma de mantenimiento por período
+- `GetResourceUtilizationQuery`: Análisis de utilización de recursos
+
+**Domain Events:**
+
+- `DistrictCreatedEvent`: Publicado al crear nuevos distritos municipales
+- `VehicleAssignedEvent`: Publicado al asignar vehículos a distritos o conductores
+- `MaintenanceScheduledEvent`: Publicado al programar mantenimiento vehicular
+- `ResourceAllocatedEvent`: Publicado al asignar recursos a distritos
+
+#### 4.2.3.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en gestión municipal y consumidores de eventos para coordinación operacional.
+
+**Controllers:**
+
+1. **`District Controller`**: Endpoints REST para operaciones CRUD de distritos, asignación de recursos, y monitoreo de rendimiento. Maneja requests desde dashboard administrativo con validaciones de autorización municipal.
+
+2. **`Vehicle Controller`**: Endpoints especializados para gestión de flota vehicular, programación de mantenimiento, y seguimiento de disponibilidad. Proporciona interfaces para tracking GPS y gestión de asignaciones.
+
+3. **`Driver Controller`**: Endpoints para gestión de conductores, programación de turnos, y seguimiento de rendimiento. Implementa validaciones de certificaciones y horarios laborales.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Route Planning BC (finalización de rutas) y Payment & Subscriptions BC (actualizaciones de facturación municipal). Implementa Consumer pattern para procesamiento asíncrono.
+
+#### 4.2.3.3. Application Layer
+
+Esta capa coordina las operaciones municipales complejas y orquesta los flujos de trabajo de gestión de recursos, implementando patrones para optimizar eficiencia operacional.
+
+**Application Services:**
+
+1. **`Municipal Service`**: Servicio principal que orquesta operaciones municipales incluyendo gestión de distritos, coordinación de recursos, y coordinación operacional. Implementa Command pattern para operaciones municipales y Facade pattern para simplificar interacciones complejas.
+
+2. **`Fleet Service`**: Gestiona operaciones de flota vehicular, programación de mantenimiento, y optimización de disponibilidad. Implementa Strategy pattern para políticas de mantenimiento y Template Method pattern para diferentes tipos de análisis de flota.
+
+3. **`Resource Service`**: Maneja asignación de recursos, planificación de capacidad, y optimización de eficiencia operacional. Implementa Factory pattern para creación de recursos y Builder pattern para configuraciones complejas de asignación.
+
+#### 4.2.3.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos municipales, notificaciones operacionales, y comunicación con otros bounded contexts.
+
+**Repositories:**
+
+1. **`District Repository`**: Implementación JPA para persistencia de distritos con consultas jerárquicas y límites geográficos. Implementa Repository pattern con optimizaciones para consultas geoespaciales complejas.
+
+2. **`Vehicle Repository`**: Repositorio especializado para datos de flota con historial de mantenimiento y seguimiento de disponibilidad. Incluye optimizaciones para consultas de tracking GPS.
+
+3. **`Driver Repository`**: Repositorio para datos de conductores con métricas de rendimiento y gestión de horarios. Optimizado para consultas de disponibilidad y certificaciones.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de operaciones municipales a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos municipales frecuentemente accedidos y disponibilidad de recursos. Implementa Cache-Aside pattern para optimización de consultas geográficas.
+
+3. **`Notification Service`**: Envía notificaciones operacionales vía email y SMS para alertas de mantenimiento y actualizaciones de horarios. Implementa Adapter pattern para múltiples proveedores de notificaciones.
+
+#### 4.2.3.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Municipal Operations bounded context, ilustrando la separación por capas DDD y las especializaciones para gestión municipal. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para distritos, vehículos y conductores, plus event consumers para coordinación operacional
+- **Application Layer** (verde medio): Services que coordinan operaciones municipales, gestión de flotas, y asignación de recursos
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos geográficos y servicios de notificación especializados
+- **Integraciones operacionales**: Email y SMS services para notificaciones críticas, comunicación con Route Planning BC y Payment BC
+
+La arquitectura implementa patrones avanzados como Strategy para políticas de mantenimiento, Builder para configuraciones complejas, y Factory para diferentes tipos de recursos municipales.
+
+#### 4.2.3.6. Bounded Context Software Architecture Code Level Diagrams
+
+#### 4.2.3.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Municipal Operations, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: District, Vehicle, Driver como raíces con invariantes municipales
+- **Entities**: Resource y MaintenanceRecord con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos municipales complejos
+- **Domain Services**: Servicios para operaciones municipales complejas
+- **Domain Events**: Eventos para coordinación operacional entre distritos
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: DistrictFactory, VehicleFactory, ResourceAllocationFactory para creación especializada
+- **Strategy Pattern**: MaintenanceStrategy con múltiples políticas (Preventivo, Correctivo, Predictivo)
+- **Builder Pattern**: DistrictBuilder y VehicleConfigurationBuilder para construcción compleja
+- **Repository Pattern**: Interfaces para abstracción de persistencia municipal
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones municipales
+- **Queries**: Operaciones de lectura optimizadas para reportes y análisis
+- **Command/Query Services**: Separación clara con especialización municipal
+
+**Gestión de recursos:**
+- **Resource allocation**: Algoritmos de asignación con validaciones presupuestarias
+- **Fleet management**: Gestión completa de flotas con mantenimiento predictivo
+- **Performance tracking**: Métricas operacionales con análisis temporal
+
+#### 4.2.3.6.2. Bounded Context Database Design Diagram
+
+![database-design-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para operaciones municipales:
+
+**Tablas principales:**
+- **districts**: Aggregate root con límites geográficos, presupuestos y métricas de rendimiento
+- **vehicles**: Aggregate root con tracking GPS, historial de mantenimiento y asignaciones
+- **drivers**: Aggregate root con certificaciones, horarios de trabajo y rendimiento
+- **resources**: Entity para gestión de recursos con utilización y costos
+- **maintenance_records**: Historial completo de mantenimiento con técnicos y costos
+
+**Tablas auxiliares especializadas:**
+- **driver_certifications**: Gestión de certificaciones con fechas de vencimiento
+- **work_schedules**: Horarios detallados por día de la semana
+- **performance_history**: Historial temporal de métricas operacionales
+
+**Optimizaciones municipales:**
+- **Índices geoespaciales**: GIST indexes para límites distritales y tracking vehicular
+- **Índices GIN**: Para consultas complejas en datos JSONB de límites geográficos
+- **Triggers bidireccionales**: Sincronización automática entre conductores y vehículos
+- **Funciones de eficiencia**: Cálculos operacionales complejos por distrito
+- **Constraints municipales**: Validaciones específicas para operaciones municipales
+
+**Características técnicas:**
+- **JSONB avanzado**: Para límites geográficos complejos y configuraciones vehiculares
+- **Tracking GPS completo**: Con validaciones de coordenadas y historial de ubicaciones
+- **Gestión de horarios**: Sistema completo de turnos y disponibilidad
+- **Análisis de rendimiento**: Métricas temporales con agregaciones optimizadas
+
+El esquema está optimizado para las operaciones municipales identificadas en el dominio, incluyendo gestión de flotas con GPS en tiempo real, programación de mantenimiento predictivo, análisis de eficiencia operacional, y gestión presupuestaria con validaciones fiscales.
 
 # Capítulo V: Solution UI/UX Design
 
