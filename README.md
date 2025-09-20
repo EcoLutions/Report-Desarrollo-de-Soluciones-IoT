@@ -1681,6 +1681,74 @@ Debe aparecer como confirmación o feedback inmediato después de que el super a
 
 ![toastNotification.png](assets/images/chapter5/webApplicationUxUi/mockUps/toastNotification.png)
 
+### Flujo de Colaborador Municipal (Administrador)
+Este es el panel de control principal para el personal administrativo de cada municipalidad. Está diseñado como una herramienta de gestión operativa completa que permite monitorear y controlar todos los aspectos del sistema de recolección de residuos.
+
+#### Acceso de Administrador Municipal
+Representa el portal de inicio de sesión para el personal administrativo. A diferencia del super admin, este flujo permite la creación de una cuenta a través de una invitación, como se ve en la vista de "Activación de Cuenta".
+
+![invitationActivation.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/invitationActivation.png)
+![login.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/login.png)
+
+#### Dashboard Principal
+Es la vista central del administrador. Ofrece un resumen de alto nivel de las operaciones del día con métricas clave (contenedores llenos, rutas activas), una alerta de dispositivos para problemas urgentes y un gráfico de barras que visualiza la eficiencia de la recolección, permitiendo una toma de decisiones rápida e informada.
+
+![dashboard.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/dashboard.png)
+
+#### Gestión de Flota (Vehículos)
+Muestra un inventario completo de todos los vehículos (camiones) de la municipalidad. Permite al administrador registrar nuevos vehículos, especificando datos cruciales como su capacidad de carga, y editar los existentes. Esta sección es la base para la generación de rutas optimizadas.
+
+![fleetManagement.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/fleetManagement.png)
+![addVehicle.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/addVehicle.png)
+![editVehicle.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/editVehicle.png)
+
+#### Gestión de Colaboradores
+Presenta una lista de todo el personal registrado (conductores, otros administradores). Desde aquí, el administrador puede invitar a nuevos miembros y, fundamentalmente, asignar un vehículo específico a cada conductor, vinculando al personal con la flota.
+
+![noEmployees.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/noEmployees.png)
+![employeesList.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/employeesList.png)
+![inviteNewEmployee.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/inviteNewEmployee.png)
+![editEmployee.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/editEmployee.png)
+
+#### Gestión de Dispositivos IoT
+Muestra un listado de todos los sensores IoT instalados en los contenedores. El administrador puede ver su estado en tiempo real (nivel de llenado, batería) y acceder al modal de configuración para ajustar parámetros operativos como el umbral de "contenedor lleno". También puede registrar nuevos dispositivos mediante un proceso guiado.
+
+![iotDevices.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/iotDevices.png)
+![noIotDevices.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/noIotDevices.png)
+![registerIotDevice.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/registerIotDevice.png)
+![configIotDevice.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/configIotDevice.png)
+
+#### Gestión de Rutas (Multi-Conductor)
+Este es el centro de control operativo. La pantalla principal es un Dashboard de Monitoreo que muestra en un mapa las rutas que ya están activas. Un panel lateral informa sobre las Rutas Pendientes (generadas pero no asignadas), permitiendo al administrador acceder al Panel de Asignación en cualquier momento para distribuir el trabajo entre los conductores disponibles, cuya capacidad de vehículo se muestra para una mejor planificación. También incluye una vista de Historial para auditorías.
+
+![routeManagementNoAction.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/routeManagementNoAction.png)
+![routeManagement.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/routeManagement.png)
+![routeAssignation.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/routeAssignation.png)
+![selectDriver.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/selectDriver.png)
+![mainWindowWithCompleteActions.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/mainWindowWithCompleteActions.png)
+![routesHistory.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/routesHistory.png)
+
+#### Reportes Ciudadanos
+Funciona como una bandeja de entrada para todas las incidencias reportadas por los ciudadanos. El administrador puede ver una lista de los reportes, filtrarlos y hacer clic en "Ver Detalles" para acceder a una vista detallada con el mapa de ubicación, la foto adjunta y las opciones para cambiar el estado del reporte.
+
+![peopleReport.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/peopleReport.png)
+![noCitizensReports.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/noCitizensReports.png)
+![citizenReportDetail.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/citizenReportDetail.png)
+
+#### Perfil y Configuración
+Permite al administrador ver y editar su información personal, cambiar su contraseña. También incluye la opción de cerrar sesión de manera segura.
+
+![profileConfig.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/profileConfig.png)
+![logOutConfirmation.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/logOutConfirmation.png)
+
+#### Notificación toast
+Debe aparecer como confirmación o feedback inmediato después de que el administrador realiza una acción clave, como crear una ruta o asignar un conductor. Es un mensaje breve que asegura al usuario que su acción fue exitosa sin interrumpir su flujo de trabajo. También, se utiliza para notificar errores críticos, como problemas de conexión a internet.
+
+![updateNotificationToast.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/updateNotificationToast.png)
+![updatedReportToastNotification.png](assets/images/chapter5/webApplicationUxUi/mockUps/municipalAdmin/updatedReportToastNotification.png)
+
+
+
 ### 5.4.4. Applications User Flow Diagrams
 
 ## 5.5. Applications Prototyping
