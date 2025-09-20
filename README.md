@@ -1457,6 +1457,179 @@ Los canvases diseñados proporcionan la base arquitectónica para proceder con e
 
 ### 4.1.2. Context Mapping
 
+En esta sección se documenta el proceso de elaboración del Context Mapping para el sistema WasteTrack, donde el equipo analizó y diseñó las relaciones estructurales entre los bounded contexts identificados. El proceso aplicó un enfoque iterativo de evaluación de alternativas arquitectónicas mediante preguntas estratégicas, culminando en la selección de patrones de relación apropiados basados en los principios de Domain-Driven Design.
+
+**Metodología de Context Mapping**
+
+**Enfoque aplicado:** Análisis iterativo mediante preguntas de diseño estratégico para evaluar múltiples alternativas arquitectónicas antes de seleccionar los patrones de relación definitivos.
+
+**Principios guía:**
+- Minimizar acoplamiento entre bounded contexts
+- Maximizar autonomía de equipos y evolución independiente
+- Seleccionar patrones que reflejen las verdaderas relaciones de poder y dependencia
+- Evitar duplicación innecesaria de funcionalidades
+- Proteger la integridad de modelos de dominio
+
+**Herramienta utilizada:** Miro con plantillas de Context Mapping para visualizar relaciones y patrones entre bounded contexts.
+
+**Proceso Iterativo de Análisis de Alternativas**
+
+**Iteración 1: Evaluación de Communication Hub como Shared Service**
+
+**Pregunta estratégica:** "¿Qué pasaría si creamos un shared service para reducir la duplicación entre múltiples bounded contexts?"
+
+**Análisis:** Inicialmente cada bounded context manejaba sus propias notificaciones, resultando en duplicación de lógica de email, push notifications, y SMS en múltiples contexts.
+
+**Alternativas evaluadas:**
+- Mantener notificaciones distribuidas en cada context
+- Crear Communication Hub como shared service
+- Fusionar notificaciones con otro context existente
+
+**Decisión:** Implementar Communication Hub como Open-Host Service
+**Justificación:** Elimina duplicación de funcionalidad de comunicación, expone protocolo consistente que todos los contexts pueden usar, centraliza gestión de templates y delivery tracking.
+
+**Iteración 2: Análisis de Separación Profile vs IAM**
+
+**Pregunta estratégica:** "¿Qué pasaría si partimos el bounded context en múltiples bounded contexts?"
+
+**Análisis:** Profile inicialmente incluía tanto gestión de identidad como personalización de usuario, creando responsabilidades mixtas.
+
+**Alternativas evaluadas:**
+- Fusionar Profile con IAM en un solo Identity Management context
+- Mantener separación actual entre IAM y Profile
+- Crear tercer context para preferencias de usuario
+
+**Decisión:** Mantener IAM y Profile como contexts separados con relación Customer/Supplier
+**Justificación:** IAM enfocado en autenticación y autorización, Profile enfocado en personalización y preferencias. Responsabilidades claramente diferenciadas con dependencia unidireccional apropiada.
+
+**Iteración 3: Evaluación de Dependencias Core Domain**
+
+**Pregunta estratégica:** "¿Qué pasaría si duplicamos una funcionalidad para romper la dependencia?"
+
+**Análisis:** Route Planning & Execution depende significativamente de Container Monitoring para alertas críticas y priorización de contenedores.
+
+**Alternativas evaluadas:**
+- Duplicar lógica de priorización en Route Planning para independencia
+- Mantener dependencia Customer/Supplier
+- Crear Shared Kernel entre ambos contexts
+
+**Decisión:** Mantener relación Customer/Supplier sin duplicación
+**Justificación:** Container Monitoring es core domain para inteligencia de contenedores. Duplicar lógica violaría principio DRY y crearía inconsistencias. La dependencia refleja correctamente la autoridad de Container Monitoring sobre criticidad de contenedores.
+
+**Iteración 4: Análisis de Community Relations**
+
+**Pregunta estratégica:** "¿Qué pasaría si descomponemos este capability y movemos uno de los sub-capabilities a otro bounded context?"
+
+**Análisis:** Community Relations maneja reportes ciudadanos, sistema de rewards, y contenido educativo. Se evaluó mover rewards a Profile.
+
+**Alternativas evaluadas:**
+- Mover rewards system a Profile context
+- Crear nuevo context específico para gamificación
+- Mantener todo en Community Relations con colaboración estrecha
+
+**Decisión:** Mantener rewards en Community Relations, establecer Partnership con Profile
+**Justificación:** Rewards son parte integral del engagement ciudadano. Partnership permite colaboración bidireccional para gestión de puntos y milestones sin fragmentar la responsabilidad de engagement.
+
+**Iteración 5: Evaluación de Control de Acceso por Pagos**
+
+**Pregunta estratégica:** "¿Qué pasaría si movemos este capability a otro bounded context?"
+
+**Análisis:** Payment & Subscriptions controla suspensión de servicios, pero la ejecución ocurre en Municipal Operations.
+
+**Alternativas evaluadas:**
+- Mover control de suspensión a Municipal Operations
+- Crear shared service para gestión de acceso
+- Mantener autoridad en Payment con ejecución delegada
+
+**Decisión:** Relación Customer/Supplier con Payment como Upstream
+**Justificación:** Payment & Subscriptions tiene autoridad sobre decisiones de facturación y acceso. Municipal Operations ejecuta consecuencias operacionales. Separación apropiada de responsabilidades financieras vs operacionales.
+
+**Iteración 6: Evaluación de Incident Management**
+
+**Pregunta estratégica:** "¿Qué pasaría si tomamos este capability de estos 3 contexts y lo usamos para formar un nuevo context?"
+
+**Análisis:** Reportes ciudadanos (Community Relations) impactan estado de contenedores (Container Monitoring) y pueden generar rutas de emergencia (Route Planning).
+
+**Alternativas evaluadas:**
+- Crear nuevo "Incident Management" context
+- Mantener colaboración entre contexts existentes
+- Centralizar gestión de emergencias en un context
+
+**Decisión:** Mantener Partnership entre Community Relations y Container Monitoring
+**Justificación:** Reportes ciudadanos son inherentemente parte del engagement (Community Relations), pero requieren validación técnica (Container Monitoring). Partnership permite colaboración bidireccional sin crear context artificial.
+
+**Iteración 7: Análisis de Patrones de Comunicación**
+
+**Pregunta estratégica:** "¿Qué pasaría si aislamos los core capabilities y movemos los otros a un context aparte?"
+
+**Análisis:** Todos los contexts requieren capacidades de notificación, pero no es core para ninguno excepto Communication Hub.
+
+**Alternativas evaluadas:**
+- Implementar Anti-Corruption Layers para cada context
+- Usar patrón Conformist para simplificar integración
+- Crear interfaces específicas por context
+
+**Decisión:** Patrón Conformist para todos los contexts que consumen Communication Hub
+**Justificación:** Communication Hub tiene modelo simple y apropiado para notificaciones. Conformist reduce complejidad de integración significativamente. No hay riesgo de corrupción del modelo porque notificaciones son capacidad genérica.
+
+**Context Mapping Resultante**
+
+![context-map.jpg](assets/4.solution-software-design/4.1.strategic-level-domain-driven-design/4.1.2.context-mapping/context-map.jpg)
+
+**Patrones de Relación Implementados**
+
+**Open-Host Service:**
+- **Communication Hub** expone servicios de notificación multi-canal como protocolo abierto
+- Todos los bounded contexts pueden integrar usando interfaz consistente
+- Maneja email, push notifications, SMS de forma unificada
+
+**Customer/Supplier Relationships:**
+- **IAM (U) → Profile (D):** IAM provee identidad validada, Profile consume para gestión de perfiles
+- **Container Monitoring (U) → Route Planning & Execution (D):** Container Monitoring provee alertas críticas, Route Planning consume para optimización
+- **Route Planning & Execution (U) → Municipal Operations (D):** Route Planning provee rutas optimizadas, Municipal Operations valida y ejecuta
+- **Payment & Subscriptions (U) → Municipal Operations (D):** Payment controla estado de suscripción, Municipal Operations ejecuta consecuencias
+
+**Partnership Relationships:**
+- **Community Relations ↔ Container Monitoring:** Colaboración bidireccional para gestión de reportes ciudadanos e impacto en estado de contenedores
+- **Community Relations ↔ Profile:** Colaboración para gestión de rewards system y datos de usuario
+
+**Conformist Relationships:**
+- **Container Monitoring → Communication Hub**
+- **Route Planning & Execution → Communication Hub**
+- **Municipal Operations → Communication Hub**
+- **Payment & Subscriptions → Communication Hub**
+- **Community Relations → Communication Hub**
+
+**Justificación de Patrones Seleccionados**
+
+**Open-Host Service para Communication Hub:**
+Communication Hub expone protocolo simple y consistente para notificaciones. Todos los contexts pueden usar la misma interfaz sin complejidad de traducción. Centraliza gestión de templates, retry logic, y delivery tracking.
+
+**Customer/Supplier sin Anti-Corruption Layer:**
+Todos los bounded contexts fueron diseñados utilizando el mismo lenguaje ubiquo del dominio de gestión de residuos sólidos. Comparten terminología consistente (container_id, district_id, urgency_level) eliminando necesidad de traducción conceptual entre contexts.
+
+**Partnership para Colaboración Bidireccional:**
+Community Relations requiere colaboración estrecha con Container Monitoring y Profile debido a la naturaleza bidireccional de reportes ciudadanos y gestión de rewards. Partnership permite evolución coordinada sin crear dependencias rígidas.
+
+**Conformist para Simplificación:**
+Communication Hub tiene responsabilidad específica y modelo apropiado para notificaciones. Conformist elimina overhead de Anti-Corruption Layers innecesarios mientras mantiene simplicidad de integración.
+
+**Impacto Arquitectónico del Context Mapping**
+
+**Autonomía de Equipos:** Cada bounded context puede evolucionar independientemente dentro de los contratos establecidos por los patrones de relación.
+
+**Gestión de Dependencias:** Las relaciones Customer/Supplier clarifican dirección de influencia y responsabilidad de cambios en interfaces.
+
+**Escalabilidad:** Open-Host Service permite agregar nuevos consumers a Communication Hub sin modificar implementación existente.
+
+**Mantenibilidad:** Partnership relationships habilitan evolución coordinada donde la colaboración bidireccional es esencial para el negocio.
+
+**Resultados del Context Mapping**
+
+El proceso iterativo de Context Mapping resultó en la definición de 8 relaciones estructurales entre bounded contexts utilizando 4 patrones diferentes de Domain-Driven Design. Las decisiones arquitectónicas priorizan autonomía de equipos, simplicidad de integración, y reflejo fiel de las relaciones de negocio reales del dominio de gestión de residuos sólidos urbanos.
+
+El Context Map resultante proporciona la base para implementación de APIs, definición de contratos entre servicios, y establecimiento de governance policies para evolución coordinada del sistema WasteTrack.
+
 ### 4.1.3. Software Architecture
 
 #### 4.1.3.1. Software Architecture System Landscape Diagram
