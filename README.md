@@ -672,6 +672,71 @@ Identificar procesos actuales, herramientas utilizadas y puntos de dolor especí
 
 ### 2.3.2. User Task Matrix
 
+<table>
+  <tr>
+    <th rowspan="2">Tarea</th>
+    <th colspan="2">Administrador Municipal</th>
+    <th colspan="2">Conductor de Recolección</th>
+    <th colspan="2">Ciudadano Residente</th>
+  </tr>
+  <tr>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+  </tr>
+  <tr>
+    <td>Reportar Contenedores Llenos</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Reportar Problemas de Recolección</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>MEDIA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Monitorear el Progreso de la Recolección</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Acceder a Información de Servicios Municipales</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Reportar Problemas de Seguridad</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Enviar y recibir quejas de la comunidad</td>
+    <td>OCACIONAL</td><td>MEDIA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Analizar y Generar Informes</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Comunicarse con el equipo o municipalidad</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+</table>
+
 ### 2.3.3. User Journey Mapping
 
 ### 2.3.4. Empathy Mapping
