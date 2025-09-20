@@ -739,6 +739,18 @@ Identificar procesos actuales, herramientas utilizadas y puntos de dolor especí
 
 ### 2.3.3. User Journey Mapping
 
+### Administrador Municipal
+
+![Administrador Municipal Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/adminMunicipalJourney.png)
+
+### Conductor de Recoleccion
+
+![Conductor de Recoleccion Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/conductorRecoleccionJourney.png)
+
+### Ciudadano Residente
+
+![Ciudadano Residente Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/ciudadanoResidenteJourney.png)
+
 ### 2.3.4. Empathy Mapping
 
 ## 2.4. Big Picture EventStorming
