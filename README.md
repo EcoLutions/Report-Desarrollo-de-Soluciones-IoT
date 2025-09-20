@@ -2508,7 +2508,7 @@ La arquitectura implementa patrones avanzados como Strategy para políticas de m
 
 #### 4.2.3.6. Bounded Context Software Architecture Code Level Diagrams
 
-#### 4.2.3.6.1. Bounded Context Domain Layer Class Diagrams
+##### 4.2.3.6.1. Bounded Context Domain Layer Class Diagrams
 
 ![class-diagram-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.class-diagram.png)
 
@@ -2537,7 +2537,7 @@ El diagrama de clases del Domain Layer presenta la estructura completa del domin
 - **Fleet management**: Gestión completa de flotas con mantenimiento predictivo
 - **Performance tracking**: Métricas operacionales con análisis temporal
 
-#### 4.2.3.6.2. Bounded Context Database Design Diagram
+##### 4.2.3.6.2. Bounded Context Database Design Diagram
 
 ![database-design-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.database-design-diagram.png)
 
@@ -2569,6 +2569,304 @@ El diseño de base de datos implementa el modelo de dominio con optimizaciones e
 - **Análisis de rendimiento**: Métricas temporales con agregaciones optimizadas
 
 El esquema está optimizado para las operaciones municipales identificadas en el dominio, incluyendo gestión de flotas con GPS en tiempo real, programación de mantenimiento predictivo, análisis de eficiencia operacional, y gestión presupuestaria con validaciones fiscales.
+
+### 4.2.4. Bounded Context: Community Relations
+
+En esta sección se presenta el análisis detallado del bounded context Community Relations, que encapsula toda la lógica de negocio relacionada con el engagement ciudadano, gestión de reportes comunitarios, sistemas de recompensas gamificados, y comunicación omnicanal para fomentar la participación activa de los ciudadanos en la gestión municipal de residuos.
+
+#### 4.2.4.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de relaciones comunitarias, implementando patrones avanzados de gamificación y engagement para maximizar la participación ciudadana y mejorar la calidad del servicio municipal.
+
+**Aggregate Roots:**
+
+1. **`Citizen` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un ciudadano, su nivel de engagement, historial de participación, y acumulación de recompensas en el sistema gamificado.
+
+**Atributos principales:**
+
+| Atributo            | Tipo                 | Visibilidad | Descripción                                            |
+|---------------------|----------------------|-------------|--------------------------------------------------------|
+| `id`                | `Long`               | `private`   | Identificador único del ciudadano en base de datos     |
+| `citizenId`         | `CitizenId`          | `private`   | Identificador de dominio del ciudadano                 |
+| `personalInfo`      | `PersonalInfo`       | `private`   | Información personal y documentos de identidad         |
+| `contactInfo`       | `ContactInfo`        | `private`   | Información de contacto y preferencias de comunicación |
+| `membershipLevel`   | `MembershipLevel`    | `private`   | Nivel de membresía en programa de recompensas          |
+| `engagementLevel`   | `EngagementLevel`    | `private`   | Nivel de participación ciudadana calculado             |
+| `engagementScore`   | `EngagementScore`    | `private`   | Puntuación numérica de engagement                      |
+| `totalRewardPoints` | `RewardPoints`       | `private`   | Puntos acumulados en sistema de recompensas            |
+| `preferences`       | `CitizenPreferences` | `private`   | Preferencias de notificación y privacidad              |
+| `registrationDate`  | `LocalDateTime`      | `private`   | Fecha de registro en la plataforma                     |
+| `lastActivity`      | `LocalDateTime`      | `private`   | Timestamp de última actividad                          |
+
+**Métodos principales:**
+
+| Método                             | Tipo de Retorno   | Visibilidad | Descripción                                         |
+|------------------------------------|-------------------|-------------|-----------------------------------------------------|
+| `submitReport(report)`             | `void`            | `public`    | Envía reporte ciudadano validando reglas de negocio |
+| `earnRewardPoints(points, reason)` | `void`            | `public`    | Acumula puntos de recompensa con auditoría          |
+| `redeemRewards(redemption)`        | `void`            | `public`    | Canjea recompensas validando disponibilidad         |
+| `updateEngagementLevel()`          | `void`            | `public`    | Recalcula nivel de engagement basado en actividad   |
+| `canSubmitReport()`                | `boolean`         | `public`    | Verifica si puede enviar reportes según reglas      |
+| `calculateEngagementScore()`       | `EngagementScore` | `public`    | Calcula puntuación de engagement actual             |
+| `getActiveReports()`               | `List<Report>`    | `public`    | Obtiene reportes pendientes del ciudadano           |
+| `updatePreferences(preferences)`   | `void`            | `public`    | Actualiza preferencias de comunicación              |
+
+2. **`Report` (Aggregate Root)**
+
+Representa un reporte ciudadano con workflow de estados, geolocalización, y sistema de feedback para asegurar resolución efectiva de problemas comunitarios.
+
+**Atributos principales:**
+
+| Atributo         | Tipo                | Visibilidad | Descripción                             |
+|------------------|---------------------|-------------|-----------------------------------------|
+| `reportId`       | `ReportId`          | `private`   | Identificador de dominio del reporte    |
+| `citizenId`      | `CitizenId`         | `private`   | Ciudadano que envió el reporte          |
+| `reportType`     | `ReportType`        | `private`   | Tipo de problema reportado              |
+| `title`          | `String`            | `private`   | Título descriptivo del reporte          |
+| `description`    | `String`            | `private`   | Descripción detallada del problema      |
+| `location`       | `Location`          | `private`   | Ubicación geográfica del problema       |
+| `priority`       | `Priority`          | `private`   | Nivel de prioridad del reporte          |
+| `status`         | `ReportStatus`      | `private`   | Estado actual en workflow               |
+| `images`         | `List<ReportImage>` | `private`   | Evidencia fotográfica del problema      |
+| `feedback`       | `CitizenFeedback`   | `private`   | Feedback del ciudadano sobre resolución |
+| `resolutionTime` | `Duration`          | `private`   | Tiempo total de resolución              |
+
+**Métodos principales:**
+
+| Método                      | Tipo de Retorno | Visibilidad | Descripción                                   |
+|-----------------------------|-----------------|-------------|-----------------------------------------------|
+| `acknowledge()`             | `void`          | `public`    | Marca reporte como reconocido por autoridades |
+| `startProcessing()`         | `void`          | `public`    | Inicia procesamiento usando State pattern     |
+| `resolve(resolution)`       | `void`          | `public`    | Resuelve reporte con descripción de solución  |
+| `addFeedback(feedback)`     | `void`          | `public`    | Agrega feedback ciudadano sobre resolución    |
+| `calculateResolutionTime()` | `Duration`      | `public`    | Calcula tiempo total de resolución            |
+| `canBeResolved()`           | `boolean`       | `public`    | Verifica si reporte puede ser resuelto        |
+| `isOverdue()`               | `boolean`       | `public`    | Determina si reporte excede tiempo esperado   |
+
+3. **`RewardsProgram` (Aggregate Root)**
+
+Representa un programa de recompensas configurable con reglas específicas, opciones de canje, y métricas de participación para incentivar engagement ciudadano.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                     | Visibilidad | Descripción                                    |
+|----------------------|--------------------------|-------------|------------------------------------------------|
+| `programId`          | `ProgramId`              | `private`   | Identificador del programa de recompensas      |
+| `name`               | `String`                 | `private`   | Nombre del programa                            |
+| `rules`              | `RewardRules`            | `private`   | Reglas configurables de otorgamiento de puntos |
+| `redemptionOptions`  | `List<RedemptionOption>` | `private`   | Opciones disponibles para canje                |
+| `isActive`           | `boolean`                | `private`   | Estado de activación del programa              |
+| `participants`       | `Integer`                | `private`   | Número total de participantes                  |
+| `totalPointsAwarded` | `Long`                   | `private`   | Puntos totales otorgados                       |
+
+**Entities:**
+
+4. **`ReportImage` (Entity)**
+
+Entidad que representa evidencia fotográfica adjunta a reportes ciudadanos con validaciones de formato y tamaño.
+
+5. **`Notification` (Entity)**
+
+Entidad que gestiona comunicaciones dirigidas a ciudadanos con soporte multi-canal y tracking de entrega.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio de engagement:
+
+- **`PersonalInfo`**: Información personal con validaciones de documentos de identidad
+- **`EngagementLevel`**: Nivel de participación con cálculos automáticos de progreso
+- **`RewardPoints`**: Puntos con fecha de expiración y operaciones matemáticas
+- **`CitizenPreferences`**: Preferencias de notificación y configuración de privacidad
+- **`CitizenFeedback`**: Feedback estructurado con ratings y comentarios
+
+**Factories (Creational Pattern):**
+
+1. **`CitizenFactory`**: Implementa Factory pattern para crear ciudadanos con diferentes configuraciones (registrados con datos completos, invitados con información mínima) aplicando validaciones específicas por tipo.
+
+2. **`ReportFactory`**: Crea diferentes tipos de reportes (emergencia con alta prioridad, contenedores con geolocalización automática, sugerencias con workflow simplificado) con configuraciones predeterminadas.
+
+3. **`NotificationFactory`**: Genera notificaciones contextuales según tipo de evento y preferencias ciudadanas, aplicando templates y canales apropiados.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de cálculo de recompensas dinámicamente:
+
+1. **`BasicRewardStrategy`**: Algoritmo simple basado en acciones básicas ciudadanas
+2. **`TieredRewardStrategy`**: Recompensas escalonadas según nivel de membresía
+3. **`SeasonalRewardStrategy`**: Bonificaciones especiales por campañas temporales
+4. **`CommunityRewardStrategy`**: Recompensas por actividades colaborativas comunitarias
+
+**State Pattern:**
+
+Gestiona los diferentes estados de un reporte con comportamientos y transiciones específicas:
+
+1. **`SubmittedReportState`**: Permite edición limitada y asignación de prioridad
+2. **`AcknowledgedReportState`**: En proceso de validación por autoridades
+3. **`InProgressReportState`**: Siendo atendido con actualizaciones de progreso
+4. **`ResolvedReportState`**: Resuelto pendiente de feedback ciudadano
+5. **`ClosedReportState`**: Estado final con métricas de resolución
+
+**Domain Services:**
+
+1. **`CitizenCommandService`**: Orquesta operaciones CQRS de escritura para gestión ciudadana
+2. **`CitizenQueryService`**: Maneja consultas CQRS optimizadas para análisis de engagement
+3. **`EngagementAnalysisService`**: Analiza patrones de participación y calcula métricas de engagement
+4. **`RewardsManagementService`**: Gestiona lógica compleja de recompensas y gamificación
+5. **`ReportRoutingService`**: Enruta reportes a servicios apropiados según tipo y ubicación
+
+**Commands (CQRS Write Side):**
+
+- `RegisterCitizenCommand`: Registro de ciudadanos con validación de datos
+- `SubmitReportCommand`: Envío de reportes con validaciones geográficas
+- `EarnRewardsCommand`: Otorgamiento de puntos con auditoría
+- `RedeemRewardsCommand`: Canje de recompensas con validación de disponibilidad
+- `UpdateEngagementCommand`: Actualización de métricas de participación
+
+**Queries (CQRS Read Side):**
+
+- `GetCitizenByIdQuery`: Consulta individual de ciudadano con engagement
+- `GetCitizensByEngagementLevelQuery`: Consulta por nivel de participación
+- `GetReportsByLocationQuery`: Consulta geoespacial de reportes
+- `GetCitizenRewardsHistoryQuery`: Historial completo de recompensas
+- `GetEngagementAnalyticsQuery`: Análisis agregado de participación comunitaria
+
+**Domain Events:**
+
+- `CitizenRegisteredEvent`: Publicado al registrar nuevos ciudadanos
+- `ReportSubmittedEvent`: Publicado al enviar reportes ciudadanos
+- `ReportResolvedEvent`: Publicado al resolver problemas reportados
+- `RewardsEarnedEvent`: Publicado al otorgar puntos de recompensas
+- `EngagementLevelChangedEvent`: Publicado al cambiar nivel de participación
+
+#### 4.2.4.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en engagement ciudadano y consumidores de eventos para actualizaciones automáticas del sistema de recompensas.
+
+**Controllers:**
+
+1. **`Citizen Controller`**: Endpoints REST para registro y gestión de ciudadanos, actualización de perfiles, y consulta de métricas de engagement. Maneja requests desde aplicación móvil ciudadana con validaciones de autorización.
+
+2. **`Report Controller`**: Endpoints especializados para envío de reportes ciudadanos, seguimiento de estados, y gestión de feedback. Implementa validaciones geográficas y de contenido, soporta upload de imágenes con compresión automática.
+
+3. **`Rewards Controller`**: Endpoints para gestión del sistema de recompensas, consulta de puntos disponibles, historial de transacciones, y procesos de canje. Implementa validaciones de elegibilidad y disponibilidad de recompensas.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Container Monitoring BC (actualizaciones de estado de contenedores reportados) y Route Planning BC (confirmaciones de recolección). Implementa Consumer pattern para otorgamiento automático de recompensas.
+
+#### 4.2.4.3. Application Layer
+
+Esta capa coordina las operaciones complejas de engagement ciudadano y orquesta los flujos de trabajo de gamificación, implementando patrones para maximizar participación y satisfacción ciudadana.
+
+**Application Services:**
+
+1. **`Citizen Service`**: Servicio principal que orquesta operaciones ciudadanas incluyendo registro, gestión de perfiles, y tracking de engagement. Implementa Command pattern para operaciones ciudadanas y Facade pattern para simplificar interacciones complejas con sistema de recompensas.
+
+2. **`Report Service`**: Gestiona flujo completo de reportes ciudadanos, validación, enrutamiento a servicios apropiados, y loops de feedback. Implementa State pattern para workflow de reportes y Template Method pattern para diferentes tipos de procesamiento según categoría de reporte.
+
+3. **`Rewards Service`**: Maneja lógica completa del sistema de recompensas, cálculo de puntos, procesamiento de canjes, y features de gamificación. Implementa Strategy pattern para algoritmos de recompensas y Observer pattern para eventos de logros y milestones.
+
+#### 4.2.4.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos de engagement, notificaciones multi-canal, y comunicación con otros bounded contexts para mantener coherencia del sistema de recompensas.
+
+**Repositories:**
+
+1. **`Citizen Repository`**: Implementación JPA para persistencia de ciudadanos con historial de engagement y preferencias. Implementa Repository pattern con optimizaciones para consultas de participación y análisis de tendencias.
+
+2. **`Report Repository`**: Repositorio especializado para reportes ciudadanos con consultas geoespaciales y tracking de estados. Incluye optimizaciones para búsquedas por proximidad y análisis de patrones temporales.
+
+3. **`Rewards Repository`**: Repositorio para datos de recompensas con historial de transacciones y tracking de canjes. Optimizado para consultas de balance de puntos y análisis de utilización del programa.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de community relations a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de ciudadanos frecuentemente accedidos y cálculos de recompensas. Implementa Cache-Aside pattern para optimización de consultas de engagement.
+
+3. **`Notification Service`**: Envía notificaciones ciudadanas vía email, SMS, y push notifications para reportes y recompensas. Implementa Adapter pattern para múltiples proveedores y Template pattern para diferentes tipos de comunicación.
+
+#### 4.2.4.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Community Relations bounded context, ilustrando la separación por capas DDD y las especializaciones para engagement ciudadano y gamificación. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para ciudadanos, reportes y recompensas, plus event consumers para actualizaciones automáticas desde otros BCs
+- **Application Layer** (verde medio): Services que coordinan engagement ciudadano, gestión de reportes con workflow de estados, y sistema de recompensas gamificado
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos de engagement y servicios de notificación multi-canal
+- **Integraciones ciudadanas**: Email, SMS y Push notification services para comunicación omnicanal con ciudadanos
+
+La arquitectura implementa patrones avanzados como Strategy para cálculos de recompensas dinámicos, State para workflow de reportes, y Factory para diferentes tipos de notificaciones según contexto y preferencias ciudadanas.
+
+#### 4.2.4.6. Bounded Context Software Architecture Code Level Diagrams
+
+#### 4.2.4.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Community Relations, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: Citizen, Report, RewardsProgram como raíces con invariantes de engagement y gamificación
+- **Entities**: ReportImage y Notification con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos de engagement y gamificación
+- **Domain Services**: Servicios para análisis de engagement y gestión de recompensas
+- **Domain Events**: Eventos para tracking de participación y logros ciudadanos
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: CitizenFactory, ReportFactory, NotificationFactory para creación contextual
+- **Strategy Pattern**: RewardCalculationStrategy con múltiples algoritmos (Básico, Por Niveles, Estacional)
+- **State Pattern**: ReportState para gestión de workflow de reportes ciudadanos
+- **Repository Pattern**: Interfaces para abstracción de persistencia de engagement
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de engagement
+- **Queries**: Operaciones de lectura optimizadas para análisis de participación
+- **Command/Query Services**: Separación clara con especialización en gamificación
+
+**Sistema de gamificación:**
+- **Reward calculation**: Algoritmos configurables para otorgamiento de puntos
+- **Engagement tracking**: Métricas automáticas de participación ciudadana
+- **Membership levels**: Niveles progresivos con beneficios escalados
+
+#### 4.2.4.6.2. Bounded Context Database Design Diagram
+
+![database-design-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para engagement ciudadano y gamificación:
+
+**Tablas principales:**
+- **citizens**: Aggregate root con engagement tracking, sistema de recompensas integrado, y preferencias de comunicación
+- **reports**: Aggregate root con geolocalización, workflow de estados, y sistema de feedback ciudadano
+- **report_images**: Entity para evidencia fotográfica con validaciones de formato
+- **notifications**: Entity para comunicaciones multi-canal con tracking de entrega
+- **rewards_programs**: Aggregate root para programas configurables de recompensas
+
+**Tablas auxiliares especializadas:**
+- **citizen_rewards_history**: Historial completo de transacciones de puntos con auditoría
+- **citizen_topic_interests**: Preferencias temáticas para personalización de contenido
+- **engagement_metrics_history**: Historial temporal de métricas de participación
+
+**Optimizaciones de engagement:**
+- **Triggers automáticos**: Actualización de engagement basado en actividad ciudadana
+- **Funciones de gamificación**: Cálculo automático de niveles y estadísticas
+- **Índices geoespaciales**: Para reportes por proximidad geográfica
+- **Limpieza inteligente**: Retención de datos según relevancia para engagement
+
+**Características de gamificación:**
+- **Sistema de puntos**: Con fechas de expiración y tipos de transacción auditados
+- **Niveles progresivos**: Cálculo automático basado en métricas de participación
+- **Programas configurables**: Reglas JSON flexibles para diferentes campañas
+- **Analytics de engagement**: Métricas temporales para análisis de tendencias
+
+**Características técnicas:**
+- **JSONB avanzado**: Para reglas de recompensas flexibles y configuraciones personalizadas
+- **Triggers inteligentes**: Cálculo automático de engagement y niveles de membresía
+- **Constraints robustos**: Validaciones específicas para ratings, coordenadas, y puntos
+- **Vistas especializadas**: Para análisis de engagement y reportes activos
+
+El esquema está optimizado para las operaciones de engagement ciudadano identificadas en el dominio, incluyendo sistema de recompensas gamificado con múltiples algoritmos, tracking detallado de participación, comunicación omnicanal personalizada, y análisis avanzado de patrones de comportamiento ciudadano.
 
 # Capítulo V: Solution UI/UX Design
 
