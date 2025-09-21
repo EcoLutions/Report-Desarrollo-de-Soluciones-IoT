@@ -5617,3 +5617,11 @@ La aplicación de metodologías ágiles como Lean UX y herramientas de modelado 
 **Descripción:** Video recopilatorio de las entrevistas realizadas para la fase de needfinding del proyecto.
 
 **Acceso:** Enlace público de solo lectura
+
+## Anexo C: Video de Exposición TB1
+
+**Enlace:** [https://upcedupe-my.sharepoint.com/:v:/g/personal/u202317638_upc_edu_pe/EY3S4HcDL-pHng_8hN5pKCkBdLCm81Ty9yPfmg253xjkag?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=i4fq4E](https://upcedupe-my.sharepoint.com/:v:/g/personal/u202317638_upc_edu_pe/EY3S4HcDL-pHng_8hN5pKCkBdLCm81Ty9yPfmg253xjkag?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=i4fq4E)
+
+**Descripción:** Registro audiovisual de la exposición del **Trabajo Base 1 (TB1)**, en el cual se presentan los hallazgos, análisis y propuesta inicial del proyecto.
+
+**Acceso:** Enlace público de solo lectura
