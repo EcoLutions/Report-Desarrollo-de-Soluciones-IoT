@@ -1,0 +1,246 @@
+@startuml IAM: Domain Layer Class Diagram
+
+title IAM: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/F8BBD9
+    BackgroundColor<<Strategy>> #FFFFFF/E1BEE7
+    BackgroundColor<<Command>> #FFFFFF/D1C4E9
+    BackgroundColor<<Query>> #FFFFFF/C8E6C9
+    BackgroundColor<<Event>> #FFFFFF/FFE0B2
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "IAM Context" {
+    package "Domain Layer" {
+
+        ' ===================== AGGREGATES =====================
+        class "User" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -userId : UserId
+            -username : Username
+            -email : EmailAddress
+            -hashedPassword : HashedPassword
+            -status : UserStatus
+            -roles : Set<Role>
+            -createdAt : LocalDateTime
+            -lastLoginAt : LocalDateTime
+            -version : Long
+
+            #User()
+            +User(command : RegisterUserCommand, policy : PasswordPolicyStrategy)
+            +authenticate(password : String) : boolean
+            +changePassword(newPassword : String, policy : PasswordPolicyStrategy) : void
+            +assignRole(role : Role) : void
+            +removeRole(role : Role) : void
+            +activate() : void
+            +deactivate() : void
+            +hasRole(roleName : String) : boolean
+            +hasPermission(permissionName : String) : boolean
+        }
+
+        class "Role" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -roleId : RoleId
+            -name : String
+            -description : String
+            -permissions : Set<Permission>
+            -isDefault : boolean
+            -version : Long
+
+            #Role()
+            +Role(command : CreateRoleCommand)
+            +addPermission(permission : Permission) : void
+            +removePermission(permission : Permission) : void
+            +hasPermission(permissionName : String) : boolean
+        }
+
+        ' ===================== ENTITIES =====================
+        class "Permission" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -permissionId : PermissionId
+            -name : String
+            -description : String
+
+            +getName() : String
+        }
+
+        ' ===================== VALUE OBJECTS =====================
+        class "UserId" <<(V, #FFD700) Value Object>> {
+            -userId : UUID
+            +UserId(userId : UUID)
+            +getValue() : UUID
+        }
+
+        class "RoleId" <<(V, #FFD700) Value Object>> {
+            -roleId : UUID
+            +RoleId(roleId : UUID)
+            +getValue() : UUID
+        }
+
+        class "Username" <<(V, #FFD700) Value Object>> {
+            -username : String
+            +Username(username : String)
+            +getValue() : String
+        }
+
+        class "HashedPassword" <<(V, #FFD700) Value Object>> {
+            -hash : String
+            +HashedPassword(password : String)
+            +matches(password : String) : boolean
+        }
+
+        enum "UserStatus" <<(V, #FFD700) Value Object>> {
+            PENDING_VERIFICATION
+            ACTIVE
+            SUSPENDED
+            DEACTIVATED
+        }
+
+        ' ===================== FACTORIES =====================
+        class "UserFactory" <<(F, #F48FB1) Factory>> {
+            +createUser(command : RegisterUserCommand, policy : PasswordPolicyStrategy) : User
+            -validateRegistrationData(command : RegisterUserCommand) : ValidationResult
+        }
+
+        ' ===================== STRATEGIES =====================
+        interface "PasswordPolicyStrategy" <<(S, #CE93D8) Strategy>> {
+            +validate(password : String) : ValidationResult
+        }
+
+        class "SimplePasswordStrategy" <<(S, #CE93D8) Strategy>> {
+            +validate(password : String) : ValidationResult
+        }
+
+        class "ComplexPasswordStrategy" <<(S, #CE93D8) Strategy>> {
+            +validate(password : String) : ValidationResult
+        }
+
+        ' ===================== COMMANDS =====================
+        class "RegisterUserCommand" <<(C, #BA68C8) Command>> {
+            +username : String
+            +email : String
+            +password : String
+            +userType : String
+        }
+
+        class "AuthenticateUserCommand" <<(C, #BA68C8) Command>> {
+            +email : String
+            +password : String
+        }
+
+        class "AssignRoleToUserCommand" <<(C, #BA68C8) Command>> {
+            +userId : UUID
+            +roleName : String
+        }
+
+        class "CreateRoleCommand" <<(C, #BA68C8) Command>> {
+            +name : String
+            +description : String
+            +permissions : Set<String>
+        }
+
+        ' ===================== QUERIES =====================
+        class "GetUserByIdQuery" <<(Q, #C5E1A5) Query>> {
+            +userId : UUID
+        }
+
+        class "GetUserByEmailQuery" <<(Q, #C5E1A5) Query>> {
+            +email : String
+        }
+
+        class "GetRoleByNameQuery" <<(Q, #C5E1A5) Query>> {
+            +roleName : String
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "UserRegisteredEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +userId : UserId
+            +email : EmailAddress
+            +userType : String
+            +UserRegisteredEvent(source : Object, userId : UserId, email : EmailAddress, userType : String)
+        }
+
+        class "PasswordResetRequestedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +userId : UserId
+            +email : EmailAddress
+            +resetToken : String
+            +PasswordResetRequestedEvent(source : Object, userId : UserId, email : EmailAddress, resetToken : String)
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "UserCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : RegisterUserCommand) : Optional<User>
+            +handle(command : AssignRoleToUserCommand) : void
+        }
+
+        class "UserQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetUserByIdQuery) : Optional<User>
+            +handle(query : GetUserByEmailQuery) : Optional<User>
+        }
+
+        class "AuthService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : AuthenticateUserCommand) : Optional<AuthToken>
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "EmailAddress" <<(V, #FFD700) Value Object>> {
+            -email : String
+        }
+    }
+}
+
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate composition ---
+User *-- UserId
+User *-- Username
+User *-- HashedPassword
+User *-- UserStatus
+Role *-- RoleId
+Role o-- Permission
+
+' --- Shared Kernel usage ---
+User ..> EmailAddress : uses >
+
+' --- Many-to-Many Relationship ---
+User "1" *-- "0..*" Role
+
+' --- Factory relationships ---
+UserFactory ..> User : creates >
+UserFactory ..> RegisterUserCommand
+UserFactory ..> PasswordPolicyStrategy : uses >
+
+' --- Strategy relationships ---
+PasswordPolicyStrategy <|.. SimplePasswordStrategy
+PasswordPolicyStrategy <|.. ComplexPasswordStrategy
+
+' --- Command/Query/Event relationships ---
+User ..> RegisterUserCommand : creates >
+User ..> UserRegisteredEvent : publishes >
+User ..> PasswordResetRequestedEvent : publishes >
+Role ..> CreateRoleCommand : creates >
+
+' --- Service relationships ---
+UserCommandService ..> User : manages >
+UserCommandService ..> RegisterUserCommand
+UserCommandService ..> AssignRoleToUserCommand
+UserQueryService ..> User : queries >
+UserQueryService ..> GetUserByIdQuery
+UserQueryService ..> GetUserByEmailQuery
+AuthService ..> User : authenticates >
+AuthService ..> AuthenticateUserCommand
+
+@enduml

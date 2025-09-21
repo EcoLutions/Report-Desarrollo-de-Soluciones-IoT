@@ -3748,6 +3748,201 @@ El diseño de la base de datos implementa el modelo de dominio con optimizacione
 
 El esquema está diseñado para garantizar la integridad de los datos, la privacidad del usuario y un alto rendimiento en las consultas, soportando las diversas necesidades de los diferentes tipos de usuario de la plataforma.
 
+### 4.2.8. Bounded Context: IAM
+
+En esta sección se presenta el análisis detallado del **bounded context IAM** (Identity and Access Management), que encapsula toda la lógica de negocio relacionada con la gestión de identidades, autenticación, autorización y seguridad de acceso para todos los usuarios de la plataforma WasteTrack. Este contexto es fundamental para garantizar que solo los usuarios autorizados puedan acceder a las funcionalidades correspondientes a sus roles.
+
+#### 4.2.8.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de seguridad y gestión de identidades, implementando patrones de diseño robustos para asegurar un sistema seguro, escalable y mantenible.
+
+**Aggregate Roots:**
+
+1.  **`User` (Aggregate Root)**
+
+    Representa el agregado principal del dominio, encapsulando la identidad de un usuario, sus credenciales seguras, estado y los roles asignados.
+
+**Atributos principales:**
+
+| Atributo         | Tipo             | Visibilidad | Descripción                                              |
+|:-----------------|:-----------------|:------------|:---------------------------------------------------------|
+| `id`             | `Long`           | `private`   | Identificador único del usuario en la base de datos      |
+| `userId`         | `UserId`         | `private`   | Identificador de dominio del usuario                     |
+| `username`       | `Username`       | `private`   | Nombre de usuario único en el sistema                    |
+| `email`          | `EmailAddress`   | `private`   | Correo electrónico único para la autenticación           |
+| `hashedPassword` | `HashedPassword` | `private`   | Contraseña del usuario almacenada de forma segura (hash) |
+| `status`         | `UserStatus`     | `private`   | Estado actual del usuario (Activo, Suspendido, etc.)     |
+| `roles`          | `Set<Role>`      | `private`   | Conjunto de roles asignados al usuario                   |
+| `lastLoginAt`    | `LocalDateTime`  | `private`   | Fecha y hora del último inicio de sesión exitoso         |
+
+**Métodos principales:**
+
+| Método                        | Tipo de Retorno | Visibilidad | Descripción                                                              |
+|:------------------------------|:----------------|:------------|:-------------------------------------------------------------------------|
+| `authenticate(password)`      | `boolean`       | `public`    | Verifica si la contraseña proporcionada coincide con la almacenada       |
+| `changePassword(newPassword)` | `void`          | `public`    | Cambia la contraseña del usuario aplicando políticas de seguridad        |
+| `assignRole(role)`            | `void`          | `public`    | Asigna un nuevo rol al usuario                                           |
+| `removeRole(role)`            | `void`          | `public`    | Revoca un rol asignado al usuario                                        |
+| `activate()`                  | `void`          | `public`    | Activa la cuenta del usuario                                             |
+| `deactivate()`                | `void`          | `public`    | Desactiva la cuenta del usuario                                          |
+| `hasPermission(permission)`   | `boolean`       | `public`    | Verifica si el usuario tiene un permiso específico a través de sus roles |
+
+2.  **`Role` (Aggregate Root)**
+
+    Representa un rol dentro del sistema, agrupando un conjunto de permisos que definen lo que un usuario puede hacer.
+
+**Atributos principales:**
+
+| Atributo      | Tipo              | Visibilidad | Descripción                                      |
+|:--------------|:------------------|:------------|:-------------------------------------------------|
+| `roleId`      | `RoleId`          | `private`   | Identificador de dominio del rol                 |
+| `name`        | `String`          | `private`   | Nombre único del rol (e.g., "CITIZEN", "DRIVER") |
+| `permissions` | `Set<Permission>` | `private`   | Conjunto de permisos asociados a este rol        |
+
+**Métodos principales:**
+
+| Método                         | Tipo de Retorno | Visibilidad | Descripción                                       |
+|:-------------------------------|:----------------|:------------|:--------------------------------------------------|
+| `addPermission(permission)`    | `void`          | `public`    | Agrega un nuevo permiso al rol                    |
+| `removePermission(permission)` | `void`          | `public`    | Elimina un permiso del rol                        |
+| `hasPermission(permission)`    | `boolean`       | `public`    | Verifica si el rol contiene un permiso específico |
+
+**Entities:**
+
+* **`Permission` (Entity)**: Representa una acción granular permitida en el sistema (e.g., "VIEW_CONTAINERS", "MANAGE_USERS").
+
+**Value Objects:**
+
+* **`UserId`**: Identificador único de dominio para un usuario.
+* **`RoleId`**: Identificador único de dominio para un rol.
+* **`HashedPassword`**: Objeto inmutable que encapsula la contraseña hasheada y la lógica de comparación segura.
+* **`Username`**: Representa el nombre de usuario con sus reglas de validación (formato, longitud).
+* **`UserStatus`**: Un enum que define los posibles estados del ciclo de vida de un usuario.
+
+**Factories (Creational Pattern):**
+
+* **`UserFactory`**: Implementa el **Factory Pattern** para encapsular la lógica de creación de un nuevo `User`, incluyendo la validación inicial, la aplicación de políticas de contraseña y el hash seguro de la misma.
+
+**Strategies (Behavioral Pattern):**
+
+* **`PasswordPolicyStrategy`**: Define una interfaz para diferentes estrategias de validación de contraseñas. Esto permite cambiar las reglas de complejidad de las contraseñas (e.g., `SimplePasswordStrategy`, `ComplexPasswordStrategy`) sin modificar el agregado `User`.
+
+**Domain Services:**
+
+* **`UserCommandService` / `UserQueryService`**: Orquestan las operaciones de escritura y lectura para usuarios y roles, aplicando el patrón **CQRS**.
+* **`AuthService`**: Contiene la lógica de dominio para el proceso de autenticación, validando credenciales y coordinando la generación de tokens.
+
+**Commands (CQRS Write Side):**
+
+* `RegisterUserCommand`: Para crear una nueva cuenta de usuario.
+* `AuthenticateUserCommand`: Para iniciar el proceso de login.
+* `AssignRoleToUserCommand`: Para asignar un rol a un usuario.
+* `CreateRoleCommand`: Para crear un nuevo rol en el sistema.
+
+**Queries (CQRS Read Side):**
+
+* `GetUserByIdQuery`: Para obtener un usuario por su ID.
+* `GetUserByEmailQuery`: Para buscar un usuario por su correo electrónico.
+* `GetRoleByNameQuery`: Para consultar un rol por su nombre.
+
+**Domain Events:**
+
+* `UserRegisteredEvent`: Se publica cuando un nuevo usuario se registra. Es escuchado por otros BCs (como Profile) para crear entidades relacionadas.
+* `PasswordResetRequestedEvent`: Se emite para iniciar el flujo de recuperación de contraseña.
+
+#### 4.2.8.2. Interface Layer
+
+Esta capa expone las funcionalidades de seguridad y autenticación a través de controladores REST, actuando como la puerta de entrada para todas las operaciones de IAM.
+
+**Controllers:**
+
+1.  **`Auth Controller`**: Endpoints REST para el registro de nuevos usuarios, inicio de sesión (login), cierre de sesión (logout), recuperación de contraseña y validación de tokens. Es el punto de entrada para todas las aplicaciones cliente (web y móvil).
+
+#### 4.2.8.3. Application Layer
+
+Esta capa coordina los flujos de trabajo complejos de autenticación y gestión de usuarios, conectando la interfaz con el dominio.
+
+**Application Services:**
+
+1.  **`IAM Service`**: Orquesta el ciclo de vida completo de los usuarios y la autenticación. Implementa el **Strategy Pattern** para seleccionar la `PasswordPolicyStrategy` adecuada durante el registro o cambio de contraseña. Coordina la generación de tokens y la publicación de eventos de dominio.
+
+#### 4.2.8.4. Infrastructure Layer
+
+Esta capa proporciona las implementaciones técnicas para la persistencia de datos de seguridad, comunicación con otros servicios y la generación de tokens.
+
+**Repositories:**
+
+1.  **`User Repository`**: Implementación JPA para la persistencia de usuarios, asegurando que las contraseñas se almacenen siempre hasheadas.
+2.  **`Role Repository`**: Repositorio JPA para la gestión de roles y sus permisos asociados.
+
+**External Services:**
+
+1.  **`Event Publisher`**: Publica eventos de dominio, como `UserRegisteredEvent`, a otros bounded contexts a través de Kafka, permitiendo la consistencia eventual.
+2.  **`Token Service`**: Servicio encargado de la generación y validación de JSON Web Tokens (JWT) utilizando librerías como Spring Security o JJWT, para gestionar las sesiones de los usuarios de forma segura.
+
+#### 4.2.8.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del IAM bounded context, ilustrando su estructura por capas y sus responsabilidades enfocadas en la seguridad. Se observa:
+
+* **Interface Layer** (verde claro): Un `Auth Controller` que centraliza todas las solicitudes de autenticación y gestión de usuarios.
+* **Application Layer** (verde medio): Un `IAM Service` que orquesta toda la lógica de negocio.
+* **Infrastructure Layer** (verde oscuro): Repositorios para la persistencia segura de credenciales, un servicio de tokens (JWT), y un publicador de eventos para notificar a otros BCs.
+* **Integraciones externas**: Se conecta con la base de datos PostgreSQL para almacenar usuarios y roles, y con Kafka para la comunicación asíncrona de eventos.
+
+#### 4.2.8.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.8.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio IAM, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: `User` y `Role` como las principales raíces que garantizan la consistencia de las reglas de seguridad.
+- **Entities**: `Permission` como una entidad que define acciones específicas.
+- **Value Objects**: Objetos inmutables como `HashedPassword` y `UserStatus` que encapsulan lógica y validaciones.
+- **Domain Events**: Eventos como `UserRegisteredEvent` para la comunicación desacoplada.
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: `UserFactory` para la creación segura y consistente de usuarios.
+- **Strategy Pattern**: `PasswordPolicyStrategy` para definir políticas de contraseñas intercambiables.
+- **Repository Pattern**: Interfaces para la abstracción de la persistencia de usuarios y roles.
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura como `RegisterUserCommand` y `AssignRoleToUserCommand`.
+- **Queries**: Operaciones de lectura como `GetUserByEmailQuery`.
+- **Command/Query Services**: Separación de responsabilidades para mejorar la mantenibilidad del sistema.
+
+**Seguridad y Roles:**
+- Se define una relación **muchos a muchos** entre `User` y `Role`, y entre `Role` y `Permission`, permitiendo un sistema de control de acceso basado en roles (RBAC) flexible y robusto.
+
+##### 4.2.8.6.2. Bounded Context Database Design Diagram
+
+![database-design-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.database-design-diagram.png)
+
+El diseño de la base de datos implementa el modelo de dominio con un enfoque principal en la seguridad y la integridad de los datos de identidad.
+
+**Tablas principales:**
+- **`users`**: Aggregate root que almacena la información de identidad, incluyendo el `hashed_password` y el `status`.
+- **`roles`**: Aggregate root para definir los roles del sistema.
+- **`permissions`**: Tabla para los permisos granulares.
+- **`user_roles`** y **`role_permissions`**: Tablas de unión para implementar las relaciones muchos a muchos (RBAC).
+
+**Tablas auxiliares de seguridad:**
+- **`auth_tokens`**: Almacena tokens temporales y seguros para procesos como la verificación de email y la recuperación de contraseña.
+- **`iam_events`**: Guarda un registro de los eventos de dominio para auditoría y procesamiento asíncrono.
+
+**Características de seguridad y técnicas:**
+- **Hashing de contraseñas**: La columna `hashed_password` nunca almacena contraseñas en texto plano.
+- **Seeding de datos**: Se incluye una función (`seed_roles_and_permissions`) para crear los roles y permisos iniciales del sistema, asegurando una configuración base consistente.
+- **Índices optimizados**: Índices en `email` y `username` para acelerar las búsquedas durante el login.
+- **Control de concurrencia**: Campo `version` para el bloqueo optimista en las tablas de agregados.
+- **Triggers**: Para la actualización automática de timestamps (`updated_at`) y el versionado.
+
+El esquema está diseñado para ser la base de un sistema de autenticación seguro, cumpliendo con las mejores prácticas de almacenamiento de credenciales y gestión de acceso.
+
 # Capítulo V: Solution UI/UX Design
 
 ## 5.1. Style Guidelines
