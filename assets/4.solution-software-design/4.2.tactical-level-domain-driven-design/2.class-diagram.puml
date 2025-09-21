@@ -1,0 +1,478 @@
+@startuml Route Planning: Domain Layer Class Diagram
+
+title Route Planning: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/E1BEE7
+    BackgroundColor<<Strategy>> #FFFFFF/E8F5E8
+    BackgroundColor<<State>> #FFFFFF/FFF3E0
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Route Planning Context" {
+    package "Domain Layer" {
+        ' ===================== AGGREGATES =====================
+        class "Route" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - routeId : RouteId
+            - name : String
+            - municipalityId : MunicipalityId
+            - driverId : DriverId
+            - vehicleId : VehicleId
+            - routeType : RouteType
+            - status : RouteStatus
+            - scheduledDate : LocalDateTime
+            - startTime : LocalDateTime
+            - endTime : LocalDateTime
+            - waypoints : List<Waypoint>
+            - estimatedDuration : Duration
+            - actualDuration : Duration
+            - totalDistance : Distance
+            - optimizationMetrics : OptimizationMetrics
+            - version : Long
+
+            # Route()
+            + Route(name : String, municipalityId : MunicipalityId, routeType : RouteType)
+            + Route(command : CreateRouteCommand)
+            + addWaypoint(waypoint : Waypoint) : void
+            + removeWaypoint(waypointId : WaypointId) : void
+            + startExecution() : void
+            + completeExecution() : void
+            + updateProgress(currentLocation : Location) : void
+            + optimizeWaypoints(strategy : OptimizationStrategy) : void
+            + calculateEstimatedDuration() : Duration
+            + isExecutable() : boolean
+            + canBeModified() : boolean
+        }
+
+        class "Waypoint" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - waypointId : WaypointId
+            - routeId : RouteId
+            - containerId : ContainerId
+            - location : Location
+            - priority : Priority
+            - estimatedArrivalTime : LocalDateTime
+            - actualArrivalTime : LocalDateTime
+            - estimatedServiceTime : Duration
+            - actualServiceTime : Duration
+            - sequenceOrder : Integer
+            - waypointStatus : WaypointStatus
+            - collectionInstructions : String
+
+            # Waypoint()
+            + Waypoint(containerId : ContainerId, location : Location, priority : Priority)
+            + markAsVisited() : void
+            + updateServiceTime(duration : Duration) : void
+            + canBeVisited() : boolean
+            + isCompleted() : boolean
+        }
+
+        class "OptimizationResult" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - resultId : OptimizationResultId
+            - routeId : RouteId
+            - algorithmUsed : OptimizationAlgorithm
+            - executionTime : Duration
+            - totalDistance : Distance
+            - estimatedFuelConsumption : Double
+            - co2Emissions : Double
+            - costEstimate : MonetaryAmount
+            - optimizationScore : Double
+            - timestamp : LocalDateTime
+
+            + OptimizationResult(routeId : RouteId, algorithm : OptimizationAlgorithm)
+            + calculateScore() : Double
+            + compareWith(other : OptimizationResult) : ComparisonResult
+        }
+
+        ' ===================== COMMANDS (CQRS Write Side) =====================
+        class "CreateRouteCommand" <<(C, #BA68C8) Command>> {
+            + name : String
+            + municipalityId : MunicipalityId
+            + driverId : DriverId
+            + vehicleId : VehicleId
+            + routeType : RouteType
+            + scheduledDate : LocalDateTime
+            + containerIds : List<ContainerId>
+        }
+
+        class "OptimizeRouteCommand" <<(C, #BA68C8) Command>> {
+            + routeId : RouteId
+            + optimizationAlgorithm : OptimizationAlgorithm
+            + includeTrafficData : Boolean
+            + includeWeatherData : Boolean
+            + priorityWeights : PriorityWeights
+        }
+
+        class "StartRouteExecutionCommand" <<(C, #BA68C8) Command>> {
+            + routeId : RouteId
+            + driverId : DriverId
+            + startLocation : Location
+            + startTime : LocalDateTime
+        }
+
+        class "UpdateRouteProgressCommand" <<(C, #BA68C8) Command>> {
+            + routeId : RouteId
+            + currentLocation : Location
+            + completedWaypointId : WaypointId
+            + timestamp : LocalDateTime
+        }
+
+        class "CompleteRouteCommand" <<(C, #BA68C8) Command>> {
+            + routeId : RouteId
+            + endLocation : Location
+            + endTime : LocalDateTime
+            + totalCollectedVolume : Double
+        }
+
+        ' ===================== QUERIES (CQRS Read Side) =====================
+        class "GetRouteByIdQuery" <<(Q, #C5E1A5) Query>> {
+            + routeId : Long
+        }
+
+        class "GetRoutesByDriverQuery" <<(Q, #C5E1A5) Query>> {
+            + driverId : DriverId
+            + dateRange : DateRange
+        }
+
+        class "GetOptimizedRoutesQuery" <<(Q, #C5E1A5) Query>> {
+            + municipalityId : MunicipalityId
+            + date : LocalDate
+            + routeType : RouteType
+        }
+
+        class "GetRouteOptimizationHistoryQuery" <<(Q, #C5E1A5) Query>> {
+            + routeId : RouteId
+            + algorithmType : OptimizationAlgorithm
+        }
+
+        class "GetActiveRoutesQuery" <<(Q, #C5E1A5) Query>> {
+            + municipalityId : MunicipalityId
+            + status : RouteStatus
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "RouteOptimizationCompletedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + routeId : Long
+            + optimizationScore : Double
+            + totalDistance : Double
+            + estimatedDuration : Duration
+            + timestamp : LocalDateTime
+        }
+
+        class "RouteExecutionStartedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + routeId : Long
+            + driverId : Long
+            + startTime : LocalDateTime
+            + estimatedCompletionTime : LocalDateTime
+        }
+
+        class "WaypointCompletedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + routeId : Long
+            + waypointId : Long
+            + containerId : Long
+            + completionTime : LocalDateTime
+            + serviceTime : Duration
+        }
+
+        class "RouteDeviationDetectedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + routeId : Long
+            + currentLocation : Location
+            + expectedLocation : Location
+            + deviationDistance : Double
+            + timestamp : LocalDateTime
+        }
+
+        ' ===================== VALUE OBJECTS (LOCAL) =====================
+        class "RouteId" <<(V, #FFD700) Value Object>> {
+            - routeId : Long
+            + isValid() : Boolean
+        }
+
+        class "WaypointId" <<(V, #FFD700) Value Object>> {
+            - waypointId : Long
+        }
+
+        class "OptimizationResultId" <<(V, #FFD700) Value Object>> {
+            - resultId : Long
+        }
+
+        class "RouteStatus" <<(V, #FFD700) Value Object>> {
+            - status : String
+            - lastStatusChange : LocalDateTime
+            + isExecutable() : Boolean
+            + canTransitionTo(newStatus : String) : Boolean
+        }
+
+        class "WaypointStatus" <<(V, #FFD700) Value Object>> {
+            - status : String
+            + isPending() : Boolean
+            + isCompleted() : Boolean
+            + isSkipped() : Boolean
+        }
+
+        class "Priority" <<(V, #FFD700) Value Object>> {
+            - level : Integer
+            - description : String
+            + isHighPriority() : Boolean
+            + compareTo(other : Priority) : Integer
+        }
+
+        class "Distance" <<(V, #FFD700) Value Object>> {
+            - kilometers : Double
+            + toMeters() : Double
+            + add(other : Distance) : Distance
+        }
+
+        class "OptimizationMetrics" <<(V, #FFD700) Value Object>> {
+            - totalDistance : Distance
+            - estimatedFuelCost : MonetaryAmount
+            - co2Emissions : Double
+            - timeEfficiency : Double
+            + calculateOverallScore() : Double
+        }
+
+        ' ===================== FACTORIES (Creational Pattern) =====================
+        class "RouteFactory" <<(F, #BA68C8) Factory>> {
+            + createRoute(command : CreateRouteCommand) : Route
+            + createEmergencyRoute(containers : List<ContainerId>, priority : Priority) : Route
+            + createOptimizedRoute(containers : List<ContainerId>, strategy : OptimizationStrategy) : Route
+        }
+
+        class "WaypointFactory" <<(F, #BA68C8) Factory>> {
+            + createWaypoint(containerId : ContainerId, containerData : ContainerData) : Waypoint
+            + createWaypointsFromContainers(containers : List<ContainerData>) : List<Waypoint>
+        }
+
+        ' ===================== STRATEGIES (Behavioral Pattern) =====================
+        interface "OptimizationStrategy" <<(S, #81C784) Strategy>> {
+            + optimizeRoute(waypoints : List<Waypoint>, constraints : OptimizationConstraints) : List<Waypoint>
+            + calculateScore(route : Route) : Double
+        }
+
+        class "TravelingSalesmanStrategy" <<(S, #81C784) Strategy>> {
+            + optimizeRoute(waypoints : List<Waypoint>, constraints : OptimizationConstraints) : List<Waypoint>
+            + calculateScore(route : Route) : Double
+        }
+
+        class "NearestNeighborStrategy" <<(S, #81C784) Strategy>> {
+            + optimizeRoute(waypoints : List<Waypoint>, constraints : OptimizationConstraints) : List<Waypoint>
+            + calculateScore(route : Route) : Double
+        }
+
+        class "GeneticAlgorithmStrategy" <<(S, #81C784) Strategy>> {
+            + optimizeRoute(waypoints : List<Waypoint>, constraints : OptimizationConstraints) : List<Waypoint>
+            + calculateScore(route : Route) : Double
+        }
+
+        class "HybridOptimizationStrategy" <<(S, #81C784) Strategy>> {
+            - strategies : List<OptimizationStrategy>
+            + optimizeRoute(waypoints : List<Waypoint>, constraints : OptimizationConstraints) : List<Waypoint>
+            + calculateScore(route : Route) : Double
+        }
+
+        ' ===================== STATE PATTERN =====================
+        interface "RouteState" <<(S, #FFB74D) State>> {
+            + canStartExecution() : Boolean
+            + canModify() : Boolean
+            + canOptimize() : Boolean
+            + getAvailableActions() : List<RouteAction>
+        }
+
+        class "DraftRouteState" <<(S, #FFB74D) State>> {
+            + canStartExecution() : Boolean
+            + canModify() : Boolean
+            + canOptimize() : Boolean
+        }
+
+        class "OptimizedRouteState" <<(S, #FFB74D) State>> {
+            + canStartExecution() : Boolean
+            + canModify() : Boolean
+            + canOptimize() : Boolean
+        }
+
+        class "ExecutingRouteState" <<(S, #FFB74D) State>> {
+            + canStartExecution() : Boolean
+            + canModify() : Boolean
+            + canOptimize() : Boolean
+        }
+
+        class "CompletedRouteState" <<(S, #FFB74D) State>> {
+            + canStartExecution() : Boolean
+            + canModify() : Boolean
+            + canOptimize() : Boolean
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "RouteCommandService" <<(S, #FF8A65) Domain Service>> {
+            + handle(command : CreateRouteCommand) : Optional<Route>
+            + handle(command : OptimizeRouteCommand) : Optional<OptimizationResult>
+            + handle(command : StartRouteExecutionCommand) : void
+            + handle(command : UpdateRouteProgressCommand) : void
+            + handle(command : CompleteRouteCommand) : void
+        }
+
+        class "RouteQueryService" <<(S, #FF8A65) Domain Service>> {
+            + handle(query : GetRouteByIdQuery) : Optional<Route>
+            + handle(query : GetRoutesByDriverQuery) : List<Route>
+            + handle(query : GetOptimizedRoutesQuery) : List<Route>
+            + handle(query : GetRouteOptimizationHistoryQuery) : List<OptimizationResult>
+            + handle(query : GetActiveRoutesQuery) : List<Route>
+        }
+
+        class "RouteOptimizationService" <<(S, #FF8A65) Domain Service>> {
+            - optimizationStrategy : OptimizationStrategy
+            + optimizeRoute(route : Route, constraints : OptimizationConstraints) : OptimizationResult
+            + compareOptimizations(results : List<OptimizationResult>) : OptimizationComparison
+            + setOptimizationStrategy(strategy : OptimizationStrategy) : void
+        }
+
+        class "RouteValidationService" <<(S, #FF8A65) Domain Service>> {
+            + validateRoute(route : Route) : ValidationResult
+            + validateWaypoint(waypoint : Waypoint) : ValidationResult
+            + checkTimeConstraints(route : Route) : List<TimeConstraintViolation>
+            + checkVehicleCapacity(route : Route, vehicle : Vehicle) : Boolean
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "Location" <<(V, #FFD700) Value Object>> {
+            - latitude : Double
+            - longitude : Double
+            - address : String
+            - district : String
+            + distanceTo(other : Location) : Double
+            + isWithinRadius(center : Location, radius : Double) : Boolean
+        }
+
+        class "MunicipalityId" <<(V, #FFD700) Value Object>> {
+            - municipalityId : Long
+        }
+
+        class "DriverId" <<(V, #FFD700) Value Object>> {
+            - driverId : Long
+        }
+
+        class "VehicleId" <<(V, #FFD700) Value Object>> {
+            - vehicleId : Long
+        }
+
+        class "ContainerId" <<(V, #FFD700) Value Object>> {
+            - containerId : Long
+        }
+
+        class "RouteType" <<(V, #FFD700) Value Object>> {
+            - type : String
+            + isRegularCollection() : Boolean
+            + isEmergencyCollection() : Boolean
+            + isSpecialWaste() : Boolean
+        }
+
+        class "ValidationResult" <<(V, #FFD700) Value Object>> {
+            - isValid : Boolean
+            - errors : List<String>
+            - warnings : List<String>
+            + hasErrors() : Boolean
+            + hasWarnings() : Boolean
+        }
+
+        class "MonetaryAmount" <<(V, #FFD700) Value Object>> {
+            - amount : BigDecimal
+            - currency : String
+            + add(other : MonetaryAmount) : MonetaryAmount
+            + multiply(factor : Double) : MonetaryAmount
+        }
+
+        class "DateRange" <<(V, #FFD700) Value Object>> {
+            - startDate : LocalDate
+            - endDate : LocalDate
+            + contains(date : LocalDate) : Boolean
+            + getDays() : Long
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate Root Compositions ---
+Route *-- RouteId
+Route *-- RouteStatus
+Route *-- OptimizationMetrics
+Route o-- Waypoint
+Route o-- OptimizationResult
+
+' --- Entity Compositions ---
+Waypoint *-- WaypointId
+Waypoint *-- Priority
+Waypoint *-- WaypointStatus
+OptimizationResult *-- OptimizationResultId
+OptimizationResult *-- Distance
+
+' --- Shared Kernel Usage ---
+Route ..> Location : uses >
+Route ..> MunicipalityId : belongs to >
+Route ..> DriverId : assigned to >
+Route ..> VehicleId : uses >
+Route ..> RouteType : categorized as >
+Waypoint ..> ContainerId : references >
+Waypoint ..> Location : located at >
+
+' --- Factory Relationships ---
+RouteFactory ..> Route : creates >
+RouteFactory ..> CreateRouteCommand : uses >
+WaypointFactory ..> Waypoint : creates >
+
+' --- Strategy Relationships ---
+OptimizationStrategy <|.. TravelingSalesmanStrategy : implements >
+OptimizationStrategy <|.. NearestNeighborStrategy : implements >
+OptimizationStrategy <|.. GeneticAlgorithmStrategy : implements >
+OptimizationStrategy <|.. HybridOptimizationStrategy : implements >
+RouteOptimizationService o-- OptimizationStrategy : uses >
+
+' --- State Relationships ---
+RouteState <|.. DraftRouteState : implements >
+RouteState <|.. OptimizedRouteState : implements >
+RouteState <|.. ExecutingRouteState : implements >
+RouteState <|.. CompletedRouteState : implements >
+Route o-- RouteState : has current state >
+
+' --- Command/Query Services ---
+RouteCommandService ..> Route : manages >
+RouteCommandService ..> CreateRouteCommand
+RouteCommandService ..> OptimizeRouteCommand
+RouteCommandService ..> StartRouteExecutionCommand
+RouteCommandService ..> UpdateRouteProgressCommand
+RouteCommandService ..> CompleteRouteCommand
+
+RouteQueryService ..> Route : queries >
+RouteQueryService ..> GetRouteByIdQuery
+RouteQueryService ..> GetRoutesByDriverQuery
+RouteQueryService ..> GetOptimizedRoutesQuery
+RouteQueryService ..> GetActiveRoutesQuery
+
+RouteOptimizationService ..> Route : optimizes >
+RouteOptimizationService ..> OptimizationResult : generates >
+
+RouteValidationService ..> Route : validates >
+RouteValidationService ..> ValidationResult : returns >
+
+' --- Domain Events ---
+Route ..> RouteOptimizationCompletedEvent : publishes >
+Route ..> RouteExecutionStartedEvent : publishes >
+Route ..> WaypointCompletedEvent : publishes >
+Route ..> RouteDeviationDetectedEvent : publishes >
+
+@enduml
