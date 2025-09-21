@@ -1054,11 +1054,110 @@ Estarían dispuestos a usar una **aplicación informativa ciudadana**.
 
 ### 2.3.1. User personas
 
+### Administrador Municipal
+
+![Administrador Municipal Persona.png](assets/2.requirements/2.3.needfinding/2.3.1.userpersonas/adminMunicipalPersona.png)
+
+### Conductor de Recoleccion
+
+![Conductor de Recoleccion Persona.png](assets/2.requirements/2.3.needfinding/2.3.1.userpersonas/conductorRecolectorPersona.png)
+
+### Ciudadano Residente
+
+![Ciudadano Residente Persona.png](assets/2.requirements/2.3.needfinding/2.3.1.userpersonas/ciudadanoResidentePersona.png)
+
 ### 2.3.2. User Task Matrix
+
+<table>
+  <tr>
+    <th rowspan="2">Tarea</th>
+    <th colspan="2">Administrador Municipal</th>
+    <th colspan="2">Conductor de Recolección</th>
+    <th colspan="2">Ciudadano Residente</th>
+  </tr>
+  <tr>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+    <th>Frecuencia</th>
+    <th>Importancia</th>
+  </tr>
+  <tr>
+    <td>Reportar Contenedores Llenos</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Reportar Problemas de Recolección</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>MEDIA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Monitorear el Progreso de la Recolección</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Acceder a Información de Servicios Municipales</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Reportar Problemas de Seguridad</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+    <td>OCACIONAL</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Enviar y recibir quejas de la comunidad</td>
+    <td>OCACIONAL</td><td>MEDIA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+  <tr>
+    <td>Analizar y Generar Informes</td>
+    <td>DIARIO</td><td>BAJA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>OCACIONAL</td><td>BAJA</td>
+  </tr>
+  <tr>
+    <td>Comunicarse con el equipo o municipalidad</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+    <td>DIARIO</td><td>ALTA</td>
+  </tr>
+</table>
 
 ### 2.3.3. User Journey Mapping
 
+### Administrador Municipal
+
+![Administrador Municipal Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/adminMunicipalJourney.png)
+
+### Conductor de Recoleccion
+
+![Conductor de Recoleccion Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/conductorRecoleccionJourney.png)
+
+### Ciudadano Residente
+
+![Ciudadano Residente Journey Map.png](assets/2.requirements/2.3.needfinding/2.3.3.userjourneymapping/ciudadanoResidenteJourney.png)
+
 ### 2.3.4. Empathy Mapping
+
+![Administrador Municipal Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/adminMunicipalEmpathy.png)
+
+### Conductor de Recoleccion
+
+![Conductor de Recoleccion Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/conductorRecolectorEmpathy.png)
+
+### Ciudadano Residente
+
+![Ciudadano Residente Empathy Map.png](assets/2.requirements/2.3.needfinding/2.3.4.empathymapping/ciudadanoResidenteEmpathy.png)
 
 ## 2.4. Big Picture EventStorming
 
@@ -1365,6 +1464,18 @@ Las User Stories incluyen criterios de aceptación siguiendo la estructura Gherk
 | SP05            | Investigar cumplimiento de privacidad de datos   | Como developer, quiero investigar regulaciones de privacidad y protección de datos ciudadanos aplicables en Perú para asegurar cumplimiento legal.                                                                                                                 | Given el sistema procesará datos de ubicación y comportamiento ciudadano<br>When se analizan regulaciones locales e internacionales aplicables<br>Then se documenta marco regulatorio y requisitos de cumplimiento<br>And se definen políticas de privacidad y manejo de datos | EP11                      |
 
 ## 3.2. Impact Mapping
+
+- Conductor Recolector 
+
+![Conductor Recolector Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/conductorRecolectorImpactMapping.png)
+
+- Ciudadano Residente 
+
+![Ciudadano Residente Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/ciudadanoResidenteImpactMapping.png)
+
+- Admin Municipal 
+
+![Admin Municipal Impact Mapping.png](assets/2.requirements/2.3.needfinding/3.3.impactmapping/adminMunicipalImpactMapping.png)
 
 ## 3.3. Product Backlog
 
