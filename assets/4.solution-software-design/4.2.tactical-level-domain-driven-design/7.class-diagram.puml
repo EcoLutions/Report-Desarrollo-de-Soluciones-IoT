@@ -1,0 +1,517 @@
+@startuml Profile: Domain Layer Class Diagram
+
+title Profile: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/F8BBD9
+    BackgroundColor<<Strategy>> #FFFFFF/E1BEE7
+    BackgroundColor<<Command>> #FFFFFF/D1C4E9
+    BackgroundColor<<Query>> #FFFFFF/C8E6C9
+    BackgroundColor<<Event>> #FFFFFF/FFE0B2
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Profile Context" {
+    package "Domain Layer" {
+
+        ' ===================== AGGREGATES =====================
+        class "UserProfile" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -profileId : ProfileId
+            -userId : UserId
+            -userType : UserType
+            -personalInfo : PersonalInfo
+            -contactInfo : ContactInfo
+            -addressInfo : AddressInfo
+            -serviceArea : ServiceArea
+            -profileStatus : ProfileStatus
+            -privacySettings : PrivacySettings
+            -accountSettings : AccountSettings
+            -profileCompleteness : ProfileCompleteness
+            -lastLoginDate : LocalDateTime
+            -createdAt : LocalDateTime
+            -version : Long
+
+            #UserProfile()
+            +UserProfile(userId : UserId, userType : UserType, personalInfo : PersonalInfo)
+            +UserProfile(command : CreateProfileCommand)
+            +updatePersonalInfo(personalInfo : PersonalInfo) : void
+            +updateContactInfo(contactInfo : ContactInfo) : void
+            +updateAddress(addressInfo : AddressInfo) : void
+            +validateServiceAreaEligibility(location : Location) : EligibilityResult
+            +updatePrivacySettings(settings : PrivacySettings) : void
+            +deactivate(reason : DeactivationReason) : void
+            +isComplete() : boolean
+            +canAccessService(serviceType : ServiceType) : boolean
+            +calculateProfileScore() : ProfileScore
+            +recordLogin() : void
+        }
+
+        class "UserPreferences" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -preferencesId : PreferencesId
+            -profileId : ProfileId
+            -notificationSettings : NotificationSettings
+            -communicationChannels : List<CommunicationChannel>
+            -languagePreference : Language
+            -timezonePreference : Timezone
+            -themePreference : ThemePreference
+            -accessibilitySettings : AccessibilitySettings
+            -dataRetentionSettings : DataRetentionSettings
+            -marketingConsent : MarketingConsent
+            -version : Long
+
+            #UserPreferences()
+            +UserPreferences(profileId : ProfileId, defaultSettings : DefaultPreferences)
+            +UserPreferences(command : CreatePreferencesCommand)
+            +updateNotificationSettings(settings : NotificationSettings) : void
+            +addCommunicationChannel(channel : CommunicationChannel) : void
+            +removeCommunicationChannel(channel : CommunicationChannel) : void
+            +updateLanguage(language : Language) : void
+            +updateTheme(theme : ThemePreference) : void
+            +updateAccessibilitySettings(settings : AccessibilitySettings) : void
+            +grantMarketingConsent() : void
+            +revokeMarketingConsent() : void
+            +isChannelEnabled(channel : CommunicationChannel) : boolean
+            +getEffectiveTimezone() : Timezone
+        }
+
+        class "PersonalizationSettings" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -settingsId : PersonalizationSettingsId
+            -profileId : ProfileId
+            -dashboardLayout : DashboardLayout
+            -widgetConfigurations : List<WidgetConfiguration>
+            -shortcuts : List<Shortcut>
+            -customFields : List<CustomField>
+            -viewPreferences : ViewPreferences
+            -reportingPreferences : ReportingPreferences
+            -version : Long
+
+            #PersonalizationSettings()
+            +PersonalizationSettings(profileId : ProfileId, userType : UserType)
+            +PersonalizationSettings(command : CreatePersonalizationCommand)
+            +updateDashboardLayout(layout : DashboardLayout) : void
+            +addWidget(widget : WidgetConfiguration) : void
+            +removeWidget(widgetId : WidgetId) : void
+            +createShortcut(shortcut : Shortcut) : void
+            +addCustomField(field : CustomField) : void
+            +updateViewPreferences(preferences : ViewPreferences) : void
+            +resetToDefaults(userType : UserType) : void
+            +exportConfiguration() : PersonalizationExport
+        }
+
+        ' ===================== ENTITIES =====================
+        class "ContactMethod" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -methodId : ContactMethodId
+            -type : ContactMethodType
+            -value : String
+            -isPrimary : boolean
+            -isVerified : boolean
+            -verificationDate : LocalDateTime
+            -lastUsedDate : LocalDateTime
+
+            +verify(verificationCode : String) : VerificationResult
+            +markAsUsed() : void
+            +isActive() : boolean
+        }
+
+        class "AddressHistory" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -historyId : AddressHistoryId
+            -profileId : ProfileId
+            -address : AddressInfo
+            -validFrom : LocalDateTime
+            -validTo : LocalDateTime
+            -changeReason : AddressChangeReason
+
+            +isCurrentAddress() : boolean
+            +overlaps(other : AddressHistory) : boolean
+        }
+
+        class "WidgetConfiguration" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -widgetId : WidgetId
+            -widgetType : WidgetType
+            -position : WidgetPosition
+            -size : WidgetSize
+            -configuration : WidgetConfig
+            -isVisible : boolean
+            -refreshInterval : Duration
+
+            +updatePosition(position : WidgetPosition) : void
+            +resize(size : WidgetSize) : void
+            +hide() : void
+            +show() : void
+        }
+
+        ' ===================== VALUE OBJECTS =====================
+        class "ProfileId" <<(V, #FFD700) Value Object>> {
+            -profileId : String
+            +ProfileId(profileId : String)
+            +getValue() : String
+        }
+
+        class "PersonalInfo" <<(V, #FFD700) Value Object>> {
+            -firstName : String
+            -lastName : String
+            -documentType : DocumentType
+            -documentNumber : String
+            -dateOfBirth : LocalDate
+            -gender : Gender
+            +PersonalInfo(firstName : String, lastName : String, documentType : DocumentType, documentNumber : String)
+            +getFullName() : String
+            +getAge() : Integer
+            +isMinor() : boolean
+        }
+
+        class "ContactInfo" <<(V, #FFD700) Value Object>> {
+            -primaryEmail : EmailAddress
+            -secondaryEmail : EmailAddress
+            -primaryPhone : PhoneNumber
+            -secondaryPhone : PhoneNumber
+            -emergencyContact : EmergencyContact
+            +ContactInfo(primaryEmail : EmailAddress, primaryPhone : PhoneNumber)
+            +hasSecondaryContacts() : boolean
+            +getPreferredContactMethod() : ContactMethodType
+        }
+
+        class "AddressInfo" <<(V, #FFD700) Value Object>> {
+            -street : String
+            -number : String
+            -district : String
+            -city : String
+            -region : String
+            -postalCode : String
+            -coordinates : GeoCoordinates
+            +AddressInfo(street : String, number : String, district : String, city : String)
+            +getFullAddress() : String
+            +isInServiceArea(serviceArea : ServiceArea) : boolean
+        }
+
+        class "NotificationSettings" <<(V, #FFD700) Value Object>> {
+            -emailEnabled : boolean
+            -smsEnabled : boolean
+            -pushEnabled : boolean
+            -inAppEnabled : boolean
+            -quietHours : QuietHours
+            -frequency : NotificationFrequency
+            +NotificationSettings(emailEnabled : boolean, smsEnabled : boolean, pushEnabled : boolean)
+            +isChannelEnabled(channel : CommunicationChannel) : boolean
+            +isInQuietHours(timestamp : LocalDateTime) : boolean
+        }
+
+        class "PrivacySettings" <<(V, #FFD700) Value Object>> {
+            -profileVisibility : ProfileVisibility
+            -dataSharing : DataSharingLevel
+            -analyticsTracking : boolean
+            -marketingCommunications : boolean
+            -thirdPartySharing : boolean
+            +PrivacySettings(profileVisibility : ProfileVisibility, dataSharing : DataSharingLevel)
+            +allowsDataSharing() : boolean
+            +allowsAnalytics() : boolean
+        }
+
+        class "ProfileCompleteness" <<(V, #FFD700) Value Object>> {
+            -completionPercentage : Double
+            -missingFields : List<String>
+            -lastCalculated : LocalDateTime
+            +ProfileCompleteness(completionPercentage : Double, missingFields : List<String>)
+            +isComplete() : boolean
+            +getNextRequiredField() : String
+        }
+
+        ' ===================== FACTORIES =====================
+        class "UserProfileFactory" <<(F, #F48FB1) Factory>> {
+            +createCitizenProfile(userId : UserId, personalInfo : PersonalInfo, contactInfo : ContactInfo) : UserProfile
+            +createAdministratorProfile(userId : UserId, personalInfo : PersonalInfo, municipality : MunicipalityId) : UserProfile
+            +createDriverProfile(userId : UserId, personalInfo : PersonalInfo, licenseInfo : LicenseInfo) : UserProfile
+            +createFromCommand(command : CreateProfileCommand) : UserProfile
+            -validateUserTypeRequirements(userType : UserType, data : ProfileData) : ValidationResult
+        }
+
+        class "PreferencesFactory" <<(F, #F48FB1) Factory>> {
+            +createDefaultPreferences(profileId : ProfileId, userType : UserType) : UserPreferences
+            +createCustomPreferences(profileId : ProfileId, settings : PreferenceSettings) : UserPreferences
+            +createFromCommand(command : CreatePreferencesCommand) : UserPreferences
+            -getDefaultNotificationSettings(userType : UserType) : NotificationSettings
+        }
+
+        class "PersonalizationFactory" <<(F, #F48FB1) Factory>> {
+            +createDefaultPersonalization(profileId : ProfileId, userType : UserType) : PersonalizationSettings
+            +createCustomPersonalization(profileId : ProfileId, layout : DashboardLayout) : PersonalizationSettings
+            +createFromCommand(command : CreatePersonalizationCommand) : PersonalizationSettings
+            -getDefaultWidgets(userType : UserType) : List<WidgetConfiguration>
+        }
+
+        ' ===================== STRATEGIES =====================
+        class "ProfileValidationStrategy" <<(S, #CE93D8) Strategy>> {
+            +validateProfile(profile : UserProfile) : ValidationResult
+            +validatePersonalInfo(personalInfo : PersonalInfo) : ValidationResult
+            +validateServiceAreaEligibility(address : AddressInfo, userType : UserType) : EligibilityResult
+        }
+
+        class "CitizenValidationStrategy" <<(S, #CE93D8) Strategy>> {
+            +validateProfile(profile : UserProfile) : ValidationResult
+            +validatePersonalInfo(personalInfo : PersonalInfo) : ValidationResult
+            +validateServiceAreaEligibility(address : AddressInfo, userType : UserType) : EligibilityResult
+            -validateDocumentNumber(documentType : DocumentType, documentNumber : String) : ValidationResult
+        }
+
+        class "AdministratorValidationStrategy" <<(S, #CE93D8) Strategy>> {
+            +validateProfile(profile : UserProfile) : ValidationResult
+            +validatePersonalInfo(personalInfo : PersonalInfo) : ValidationResult
+            +validateServiceAreaEligibility(address : AddressInfo, userType : UserType) : EligibilityResult
+            -validateMunicipalityAssociation(profile : UserProfile) : ValidationResult
+        }
+
+        class "DriverValidationStrategy" <<(S, #CE93D8) Strategy>> {
+            +validateProfile(profile : UserProfile) : ValidationResult
+            +validatePersonalInfo(personalInfo : PersonalInfo) : ValidationResult
+            +validateServiceAreaEligibility(address : AddressInfo, userType : UserType) : EligibilityResult
+            -validateLicenseInfo(licenseInfo : LicenseInfo) : ValidationResult
+        }
+
+        ' ===================== COMMANDS =====================
+        class "CreateProfileCommand" <<(C, #BA68C8) Command>> {
+            +userId : UserId
+            +userType : UserType
+            +personalInfo : PersonalInfo
+            +contactInfo : ContactInfo
+            +addressInfo : AddressInfo
+        }
+
+        class "UpdateProfileCommand" <<(C, #BA68C8) Command>> {
+            +profileId : ProfileId
+            +personalInfo : PersonalInfo
+            +contactInfo : ContactInfo
+            +addressInfo : AddressInfo
+        }
+
+        class "CreatePreferencesCommand" <<(C, #BA68C8) Command>> {
+            +profileId : ProfileId
+            +notificationSettings : NotificationSettings
+            +languagePreference : Language
+            +timezonePreference : Timezone
+        }
+
+        class "UpdatePreferencesCommand" <<(C, #BA68C8) Command>> {
+            +preferencesId : PreferencesId
+            +notificationSettings : NotificationSettings
+            +communicationChannels : List<CommunicationChannel>
+            +languagePreference : Language
+        }
+
+        class "CreatePersonalizationCommand" <<(C, #BA68C8) Command>> {
+            +profileId : ProfileId
+            +dashboardLayout : DashboardLayout
+            +widgetConfigurations : List<WidgetConfiguration>
+        }
+
+        ' ===================== QUERIES =====================
+        class "GetProfileByIdQuery" <<(Q, #C5E1A5) Query>> {
+            +profileId : ProfileId
+        }
+
+        class "GetProfileByUserIdQuery" <<(Q, #C5E1A5) Query>> {
+            +userId : UserId
+        }
+
+        class "GetProfilesByUserTypeQuery" <<(Q, #C5E1A5) Query>> {
+            +userType : UserType
+            +serviceArea : ServiceArea
+        }
+
+        class "GetPreferencesByProfileQuery" <<(Q, #C5E1A5) Query>> {
+            +profileId : ProfileId
+        }
+
+        class "GetPersonalizationByProfileQuery" <<(Q, #C5E1A5) Query>> {
+            +profileId : ProfileId
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "ProfileCreatedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +profileId : ProfileId
+            +userId : UserId
+            +userType : UserType
+            +serviceArea : ServiceArea
+            +ProfileCreatedEvent(source : Object, profileId : ProfileId, userId : UserId, userType : UserType, serviceArea : ServiceArea)
+        }
+
+        class "ProfileUpdatedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +profileId : ProfileId
+            +changedFields : List<String>
+            +oldValues : Map<String, Object>
+            +newValues : Map<String, Object>
+            +ProfileUpdatedEvent(source : Object, profileId : ProfileId, changedFields : List<String>)
+        }
+
+        class "PreferencesChangedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +profileId : ProfileId
+            +preferencesId : PreferencesId
+            +changedSettings : Map<String, Object>
+            +effectiveDate : LocalDateTime
+            +PreferencesChangedEvent(source : Object, profileId : ProfileId, preferencesId : PreferencesId, changedSettings : Map<String, Object>)
+        }
+
+        class "ServiceAreaEligibilityChangedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +profileId : ProfileId
+            +oldServiceArea : ServiceArea
+            +newServiceArea : ServiceArea
+            +eligibilityStatus : EligibilityStatus
+            +ServiceAreaEligibilityChangedEvent(source : Object, profileId : ProfileId, newServiceArea : ServiceArea, eligibilityStatus : EligibilityStatus)
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "ProfileCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : CreateProfileCommand) : Optional<UserProfile>
+            +handle(command : UpdateProfileCommand) : void
+            -validateProfileData(profileData : ProfileData) : ValidationResult
+        }
+
+        class "ProfileQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetProfileByIdQuery) : Optional<UserProfile>
+            +handle(query : GetProfilesByUserTypeQuery) : List<UserProfile>
+        }
+
+        class "PreferencesCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : CreatePreferencesCommand) : Optional<UserPreferences>
+            +handle(command : UpdatePreferencesCommand) : void
+            -validatePreferencesSettings(settings : PreferenceSettings) : ValidationResult
+        }
+
+        class "PreferencesQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetPreferencesByProfileQuery) : Optional<UserPreferences>
+            +generatePreferencesReport(profileId : ProfileId) : PreferencesReport
+        }
+
+        class "PersonalizationCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : CreatePersonalizationCommand) : Optional<PersonalizationSettings>
+            +resetToDefaults(profileId : ProfileId, userType : UserType) : void
+        }
+
+        class "PersonalizationQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetPersonalizationByProfileQuery) : Optional<PersonalizationSettings>
+            +exportPersonalizationConfig(profileId : ProfileId) : PersonalizationExport
+        }
+
+        class "ProfileEligibilityService" <<(S, #FF8A65) Domain Service>> {
+            +validateServiceAreaEligibility(profile : UserProfile, serviceArea : ServiceArea) : EligibilityResult
+            +checkAccessPermissions(profile : UserProfile, serviceType : ServiceType) : AccessResult
+            +calculateProfileCompleteness(profile : UserProfile) : ProfileCompleteness
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "UserId" <<(V, #FFD700) Value Object>> {
+            -userId : String
+        }
+
+        class "MunicipalityId" <<(V, #FFD700) Value Object>> {
+            -municipalityId : String
+        }
+
+        class "Language" <<(V, #FFD700) Value Object>> {
+            -languageCode : String
+            -displayName : String
+        }
+
+        class "Timezone" <<(V, #FFD700) Value Object>> {
+            -timezoneId : String
+        }
+
+        class "ServiceArea" <<(V, #FFD700) Value Object>> {
+            -areaId : String
+            -boundaries : GeoPolygon
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate composition ---
+UserProfile *-- ProfileId
+UserProfile *-- PersonalInfo
+UserProfile *-- ContactInfo
+UserProfile *-- AddressInfo
+UserProfile *-- PrivacySettings
+UserProfile *-- ProfileCompleteness
+UserPreferences *-- PreferencesId
+UserPreferences *-- NotificationSettings
+PersonalizationSettings *-- PersonalizationSettingsId
+PersonalizationSettings *-- DashboardLayout
+
+' --- Shared Kernel usage ---
+UserProfile ..> UserId : uses >
+UserProfile ..> ServiceArea : uses >
+UserPreferences ..> Language : uses >
+UserPreferences ..> Timezone : uses >
+
+' --- Entity relationships ---
+UserProfile o-- ContactMethod
+UserProfile o-- AddressHistory
+PersonalizationSettings o-- WidgetConfiguration
+
+' --- Factory relationships ---
+UserProfileFactory ..> UserProfile : creates >
+UserProfileFactory ..> CreateProfileCommand
+PreferencesFactory ..> UserPreferences : creates >
+PreferencesFactory ..> CreatePreferencesCommand
+PersonalizationFactory ..> PersonalizationSettings : creates >
+PersonalizationFactory ..> CreatePersonalizationCommand
+
+' --- Strategy relationships ---
+ProfileValidationStrategy <|-- CitizenValidationStrategy
+ProfileValidationStrategy <|-- AdministratorValidationStrategy
+ProfileValidationStrategy <|-- DriverValidationStrategy
+
+' --- Command/Query relationships ---
+UserProfile ..> CreateProfileCommand : creates >
+UserProfile ..> UpdateProfileCommand : updates >
+UserPreferences ..> CreatePreferencesCommand : creates >
+UserPreferences ..> UpdatePreferencesCommand : updates >
+PersonalizationSettings ..> CreatePersonalizationCommand : creates >
+
+' --- Event relationships ---
+UserProfile ..> ProfileCreatedEvent : publishes >
+UserProfile ..> ProfileUpdatedEvent : publishes >
+UserPreferences ..> PreferencesChangedEvent : publishes >
+UserProfile ..> ServiceAreaEligibilityChangedEvent : publishes >
+
+' --- Service relationships ---
+ProfileCommandService ..> UserProfile : manages >
+ProfileCommandService ..> CreateProfileCommand
+ProfileCommandService ..> UpdateProfileCommand
+ProfileQueryService ..> UserProfile : queries >
+ProfileQueryService ..> GetProfileByIdQuery
+ProfileQueryService ..> GetProfilesByUserTypeQuery
+
+PreferencesCommandService ..> UserPreferences : manages >
+PreferencesCommandService ..> CreatePreferencesCommand
+PreferencesCommandService ..> UpdatePreferencesCommand
+PreferencesQueryService ..> UserPreferences : queries >
+PreferencesQueryService ..> GetPreferencesByProfileQuery
+
+PersonalizationCommandService ..> PersonalizationSettings : manages >
+PersonalizationCommandService ..> CreatePersonalizationCommand
+PersonalizationQueryService ..> PersonalizationSettings : queries >
+PersonalizationQueryService ..> GetPersonalizationByProfileQuery
+
+ProfileEligibilityService ..> UserProfile : validates >
+ProfileEligibilityService ..> ProfileCompleteness : calculates >
+
+@enduml

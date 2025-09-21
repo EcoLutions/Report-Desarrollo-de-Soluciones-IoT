@@ -3493,6 +3493,261 @@ El diseño de base de datos implementa el modelo de dominio con optimizaciones e
 
 El esquema está optimizado para las operaciones de comunicación identificadas en el dominio, incluyendo entrega multi-canal con fallback automático, template management con localización, cost tracking detallado, performance analytics por proveedor, y coordinación centralizada como hub de comunicaciones para toda la plataforma WasteTrack.
 
+### 4.2.7. Bounded Context: Profile
+
+En esta sección se presenta el análisis detallado del **bounded context Profile**, que encapsula toda la lógica de negocio relacionada con la gestión de perfiles de usuario (ciudadanos, administradores, conductores), sus preferencias personales, configuraciones de notificación y personalización de la experiencia de usuario, asegurando la privacidad de los datos y la validación de elegibilidad del área de servicio.
+
+#### 4.2.7.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de perfiles de usuario, implementando patrones avanzados para la gestión de datos personales, preferencias y personalización, asegurando una experiencia de usuario consistente y segura.
+
+**Aggregate Roots:**
+
+1.  **`UserProfile` (Aggregate Root)**
+
+    Representa el agregado principal del dominio, encapsulando toda la información y comportamiento de un usuario, incluyendo datos personales, de contacto, dirección, y estado del perfil.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                  | Visibilidad | Descripción                                        |
+|:----------------------|:----------------------|:------------|:---------------------------------------------------|
+| `id`                  | `Long`                | `private`   | Identificador único del perfil en la base de datos |
+| `profileId`           | `ProfileId`           | `private`   | Identificador de dominio del perfil                |
+| `userId`              | `UserId`              | `private`   | ID del usuario desde el BC de IAM                  |
+| `userType`            | `UserType`            | `private`   | Tipo de usuario (Citizen, Administrator, Driver)   |
+| `personalInfo`        | `PersonalInfo`        | `private`   | Información personal del usuario                   |
+| `contactInfo`         | `ContactInfo`         | `private`   | Información de contacto (email, teléfono)          |
+| `addressInfo`         | `AddressInfo`         | `private`   | Dirección y coordenadas geográficas                |
+| `serviceArea`         | `ServiceArea`         | `private`   | Área de servicio a la que pertenece                |
+| `profileStatus`       | `ProfileStatus`       | `private`   | Estado actual del perfil (Activo, Suspendido)      |
+| `privacySettings`     | `PrivacySettings`     | `private`   | Configuraciones de privacidad y datos compartidos  |
+| `profileCompleteness` | `ProfileCompleteness` | `private`   | Puntuación de completitud del perfil               |
+| `lastLoginDate`       | `LocalDateTime`       | `private`   | Fecha del último inicio de sesión                  |
+
+ **Métodos principales:**
+
+| Método                             | Tipo de Retorno     | Visibilidad | Descripción                                                                    |
+|:-----------------------------------|:--------------------|:------------|:-------------------------------------------------------------------------------|
+| `updatePersonalInfo(info)`         | `void`              | `public`    | Actualiza la información personal validando los datos                          |
+| `updateAddress(address)`           | `void`              | `public`    | Cambia la dirección y dispara la validación de elegibilidad                    |
+| `validateServiceAreaEligibility()` | `EligibilityResult` | `public`    | Verifica si la dirección del usuario está dentro de un área de servicio válida |
+| `updatePrivacySettings(settings)`  | `void`              | `public`    | Modifica las configuraciones de privacidad                                     |
+| `deactivate(reason)`               | `void`              | `public`    | Desactiva el perfil del usuario por una razón específica                       |
+| `isComplete()`                     | `boolean`           | `public`    | Verifica si el perfil tiene toda la información requerida                      |
+| `calculateProfileScore()`          | `ProfileScore`      | `public`    | Calcula una puntuación basada en la completitud y actividad                    |
+| `recordLogin()`                    | `void`              | `public`    | Registra un nuevo inicio de sesión y actualiza la fecha                        |
+
+2.  **`UserPreferences` (Aggregate Root)**
+
+    Gestiona todas las configuraciones y preferencias de un usuario, como notificaciones, idioma y tema de la interfaz.
+
+**Atributos principales:**
+
+| Atributo                | Tipo                    | Visibilidad | Descripción                                             |
+|:------------------------|:------------------------|:------------|:--------------------------------------------------------|
+| `preferencesId`         | `PreferencesId`         | `private`   | Identificador de dominio de las preferencias            |
+| `profileId`             | `ProfileId`             | `private`   | Perfil de usuario asociado                              |
+| `notificationSettings`  | `NotificationSettings`  | `private`   | Configuración de canales y frecuencia de notificaciones |
+| `languagePreference`    | `Language`              | `private`   | Idioma preferido por el usuario                         |
+| `timezonePreference`    | `Timezone`              | `private`   | Zona horaria del usuario                                |
+| `themePreference`       | `ThemePreference`       | `private`   | Tema visual de la aplicación (claro/oscuro)             |
+| `accessibilitySettings` | `AccessibilitySettings` | `private`   | Configuraciones de accesibilidad                        |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno | Visibilidad | Descripción                                        |
+|:---------------------------------------|:----------------|:------------|:---------------------------------------------------|
+| `updateNotificationSettings(settings)` | `void`          | `public`    | Modifica las preferencias de notificación          |
+| `updateLanguage(language)`             | `void`          | `public`    | Cambia el idioma de la interfaz para el usuario    |
+| `updateTheme(theme)`                   | `void`          | `public`    | Cambia el tema visual de la aplicación             |
+| `isChannelEnabled(channel)`            | `boolean`       | `public`    | Verifica si un canal de notificación está activado |
+
+3.  **`PersonalizationSettings` (Aggregate Root)**
+
+    Encapsula las configuraciones de personalización de la interfaz de usuario, como el layout del dashboard y los widgets.
+
+**Atributos principales:**
+
+| Atributo               | Tipo                        | Visibilidad | Descripción                                    |
+|:-----------------------|:----------------------------|:------------|:-----------------------------------------------|
+| `settingsId`           | `PersonalizationSettingsId` | `private`   | Identificador de dominio de la personalización |
+| `profileId`            | `ProfileId`                 | `private`   | Perfil de usuario asociado                     |
+| `dashboardLayout`      | `DashboardLayout`           | `private`   | Diseño del dashboard principal                 |
+| `widgetConfigurations` | `List<WidgetConfiguration>` | `private`   | Lista de widgets y sus configuraciones         |
+
+ **Métodos principales:**
+
+| Método                          | Tipo de Retorno | Visibilidad | Descripción                                           |
+|:--------------------------------|:----------------|:------------|:------------------------------------------------------|
+| `updateDashboardLayout(layout)` | `void`          | `public`    | Cambia el diseño del dashboard                        |
+| `addWidget(widget)`             | `void`          | `public`    | Agrega un nuevo widget al dashboard                   |
+| `removeWidget(widgetId)`        | `void`          | `public`    | Elimina un widget del dashboard                       |
+| `resetToDefaults(userType)`     | `void`          | `public`    | Restablece la configuración a los valores por defecto |
+
+**Entities:**
+
+* **`ContactMethod`**: Representa un método de contacto (email, teléfono) con su estado de verificación.
+* **`AddressHistory`**: Mantiene un historial de las direcciones del usuario para fines de auditoría.
+* **`WidgetConfiguration`**: Configuración específica de un widget en el dashboard, como su posición y tamaño.
+
+**Value Objects:**
+
+* **`PersonalInfo`**: Encapsula datos personales con validaciones de formato (DNI, nombre).
+* **`ContactInfo`**: Agrupa métodos de contacto primarios y secundarios.
+* **`AddressInfo`**: Contiene la dirección completa y coordenadas, con métodos de validación.
+* **`NotificationSettings`**: Define qué notificaciones y en qué canales desea recibir el usuario.
+* **`PrivacySettings`**: Controla la visibilidad del perfil y el consentimiento para compartir datos.
+* **`ProfileCompleteness`**: Calcula y almacena el porcentaje de completitud del perfil.
+
+**Factories (Creational Pattern):**
+
+* **`UserProfileFactory`**: Implementa el **Factory Pattern** para crear perfiles de usuario según su tipo (`Citizen`, `Administrator`, `Driver`), aplicando reglas de validación específicas para cada uno.
+* **`PreferencesFactory`**: Crea configuraciones de preferencias por defecto basadas en el tipo de usuario.
+
+**Strategies (Behavioral Pattern):**
+
+* **`ProfileValidationStrategy`**: Define una interfaz para las estrategias de validación de perfiles.
+  * **`CitizenValidationStrategy`**: Valida los requisitos específicos para un perfil de ciudadano.
+  * **`AdministratorValidationStrategy`**: Valida la asociación a una municipalidad para un administrador.
+  * **`DriverValidationStrategy`**: Valida la información de la licencia de conducir para un conductor.
+
+**Domain Services:**
+
+* **`ProfileCommandService`** / **`ProfileQueryService`**: Orquestan las operaciones de escritura y lectura para perfiles, siguiendo el patrón **CQRS**.
+* **`PreferencesCommandService`** / **`PreferencesQueryService`**: Gestionan las operaciones sobre las preferencias del usuario.
+* **`PersonalizationCommandService`** / **`PersonalizationQueryService`**: Administran la configuración de personalización.
+* **`ProfileEligibilityService`**: Servicio de dominio que centraliza la lógica compleja para validar la elegibilidad de un perfil en un área de servicio.
+
+**Commands (CQRS Write Side):**
+
+* `CreateProfileCommand`: Para registrar un nuevo perfil de usuario.
+* `UpdateProfileCommand`: Para actualizar la información de un perfil existente.
+* `CreatePreferencesCommand`: Para establecer las preferencias iniciales.
+* `UpdatePreferencesCommand`: Para modificar las preferencias de un usuario.
+
+**Queries (CQRS Read Side):**
+
+* `GetProfileByIdQuery`: Para obtener un perfil por su ID.
+* `GetProfileByUserIdQuery`: Para buscar un perfil a partir del ID de usuario (de IAM).
+* `GetPreferencesByProfileQuery`: Para consultar las preferencias de un perfil.
+
+**Domain Events:**
+
+* `ProfileCreatedEvent`: Se publica cuando un nuevo perfil es creado.
+* `ProfileUpdatedEvent`: Se emite cuando se actualiza la información clave de un perfil.
+* `PreferencesChangedEvent`: Se publica cuando un usuario modifica sus preferencias.
+* `ServiceAreaEligibilityChangedEvent`: Se emite cuando un cambio de dirección afecta la elegibilidad del servicio.
+
+#### 4.2.7.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados y consumidores de eventos para la sincronización con otros contextos.
+
+**Controllers:**
+
+1.  **`Profile Controller`**: Endpoints REST para la gestión de perfiles de usuario, actualización de información personal y configuraciones de la cuenta.
+2.  **`Preferences Controller`**: Endpoints para que los usuarios gestionen sus preferencias de notificación, privacidad y canales de comunicación.
+3.  **`Personalization Controller`**: Endpoints para la personalización de la UI, como la configuración de widgets y el idioma.
+
+**Event Consumer:**
+
+* **`Event Consumer`**: Un consumidor de Kafka que escucha eventos de otros BCs. Por ejemplo, `AccountActivationEvent` desde **IAM BC** para crear el perfil inicial o `EngagementUpdateEvent` desde **Community Relations BC** para actualizar métricas de participación.
+
+#### 4.2.7.3. Application Layer
+
+Esta capa orquesta los flujos de negocio relacionados con la gestión de perfiles, aplicando patrones para coordinar las operaciones del dominio.
+
+**Application Services:**
+
+1.  **`Profile Service`**: Servicio principal que orquesta las operaciones de perfiles, como creación, actualización y validación. Utiliza el **Command Pattern** para manejar los casos de uso de escritura.
+2.  **`Preferences Service`**: Gestiona las preferencias del usuario. Implementa el **Strategy Pattern** para aplicar diferentes lógicas de validación de preferencias según el tipo de usuario.
+3.  **`Personalization Service`**: Maneja la personalización de la UI. Utiliza el **Builder Pattern** para construir configuraciones complejas de dashboards y widgets.
+
+#### 4.2.7.4. Infrastructure Layer
+
+Esta capa proporciona las implementaciones técnicas para la persistencia, comunicación y otros servicios externos, desacoplando el dominio de la tecnología subyacente.
+
+**Repositories:**
+
+1.  **`Profile Repository`**: Implementación JPA para la persistencia de perfiles de usuario, con controles de privacidad y un rastro de auditoría.
+2.  **`Preferences Repository`**: Repositorio JPA para las preferencias del usuario, con seguimiento de cambios y versionado.
+3.  **`Personalization Repository`**: Repositorio JPA para las configuraciones de personalización, incluyendo temas y layouts.
+
+**External Services:**
+
+1.  **`Event Publisher`**: Publica eventos de dominio (como `ProfileUpdatedEvent`) a otros bounded contexts a través de Kafka.
+2.  **`Cache Service`**: Servicio de caché con Redis para datos de perfil y preferencias de acceso frecuente, mejorando el rendimiento.
+3.  **`Encryption Service`**: Servicio que utiliza Spring Security para encriptar información personal sensible, asegurando la protección de datos.
+
+#### 4.2.7.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Profile bounded context, ilustrando la separación por capas DDD y las interacciones entre sus componentes. Se observa claramente:
+
+* **Interface Layer** (verde claro): Controllers para la gestión de perfiles, preferencias y personalización, además de un consumidor de eventos para la comunicación asíncrona.
+* **Application Layer** (verde medio): Services que coordinan la lógica de negocio, aplicando patrones como Command, Strategy y Builder.
+* **Infrastructure Layer** (verde oscuro): Repositories para la persistencia de datos y servicios para la publicación de eventos, caching y encriptación.
+* **Integraciones externas**: Se comunica con la base de datos PostgreSQL, el caché de Redis y el message broker de Kafka. También interactúa con servicios como geocodificación y proveedores de email.
+
+La arquitectura sigue un flujo de dependencias claro, asegurando que la lógica de dominio permanezca independiente de los detalles de infraestructura.
+
+#### 4.2.7.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.7.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Profile, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: `UserProfile`, `UserPreferences` y `PersonalizationSettings` como raíces que garantizan la consistencia de sus invariantes.
+- **Entities**: `ContactMethod`, `AddressHistory` y `WidgetConfiguration` con identidad y ciclo de vida propios.
+- **Value Objects**: Objetos inmutables que encapsulan conceptos complejos del dominio como `PersonalInfo`, `AddressInfo` y `PrivacySettings`.
+- **Domain Services**: Servicios como `ProfileEligibilityService` que contienen lógica de dominio que no encaja en un solo agregado.
+- **Domain Events**: Eventos como `ProfileCreatedEvent` para notificar a otros BCs de cambios de estado.
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: `UserProfileFactory` para crear perfiles según el tipo de usuario.
+- **Strategy Pattern**: `ProfileValidationStrategy` para validar perfiles de manera flexible.
+- **Repository Pattern**: Interfaces para abstraer la persistencia de los agregados.
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura que modifican el estado del sistema (`CreateProfileCommand`).
+- **Queries**: Operaciones de lectura optimizadas para diferentes casos de uso (`GetProfileByIdQuery`).
+- **Command/Query Services**: Separación clara de responsabilidades para mejorar la escalabilidad y mantenibilidad.
+
+**Características especiales:**
+- **Service Area Eligibility**: Validación automática de la elegibilidad geográfica del usuario.
+- **Privacy Controls**: Gestión granular de la privacidad y el consentimiento de datos.
+- **Multi-user Types**: Soporte para diferentes tipos de usuarios con reglas de validación específicas.
+
+##### 4.2.7.6.2. Bounded Context Database Design Diagram
+
+![database-design-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.database-design-diagram.png)
+
+El diseño de la base de datos implementa el modelo de dominio con optimizaciones específicas para la gestión de perfiles a gran escala:
+
+**Tablas principales:**
+- **`user_profiles`**: Aggregate root que almacena toda la información personal, de contacto y de estado.
+- **`user_preferences`**: Aggregate root para las preferencias de notificación, idioma y privacidad.
+- **`personalization_settings`**: Aggregate root para las configuraciones de la UI, como widgets y temas.
+- **`contact_methods`**: Entity para los métodos de contacto verificables.
+- **`address_history`**: Entity que mantiene un historial de cambios de dirección.
+
+**Tablas auxiliares especializadas:**
+- **`profile_events`**: Almacena los eventos de dominio para su procesamiento asíncrono y auditoría.
+- **`profile_activity_log`**: Registra la actividad del usuario para fines de seguridad y análisis.
+
+**Optimizaciones y características técnicas:**
+- **Triggers automáticos**: Para calcular la completitud del perfil (`profile_completeness_percentage`) y actualizar timestamps.
+- **Índices geoespaciales (GIST)**: Para optimizar las consultas de ubicación y la validación de elegibilidad en el área de servicio.
+- **Auditoría completa**: Tablas de logs y campos `created_at`/`updated_at` en todas las tablas principales.
+- **Función de anonimización**: Procedimiento `anonymize_profile_data` para cumplir con normativas de privacidad (GDPR).
+- **JSONB avanzado**: Utilizado para almacenar configuraciones flexibles como `privacy_settings` y `widget_configurations`.
+- **Vistas especializadas**: `vw_profile_overview` y `vw_users_by_service_area` para simplificar consultas comunes y reporting.
+
+El esquema está diseñado para garantizar la integridad de los datos, la privacidad del usuario y un alto rendimiento en las consultas, soportando las diversas necesidades de los diferentes tipos de usuario de la plataforma.
+
 # Capítulo V: Solution UI/UX Design
 
 ## 5.1. Style Guidelines
