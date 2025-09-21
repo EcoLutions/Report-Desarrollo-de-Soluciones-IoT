@@ -45,8 +45,17 @@
 
 # Registro de Versiones del Informe
 
-| Versión | Fecha      | Autor                             | Descripción de modificación |
-|---------|------------|-----------------------------------|-----------------------------|
+| Versión | Fecha      | Autor                          | Descripción de modificación                                                                           |
+|---------|------------|--------------------------------|-------------------------------------------------------------------------------------------------------|
+| v1.7.0  | 20/09/2025 | Jhosepmyr, Eric, Andrés, Elmer | Agregado context mapping, nuevos Bounded Contexts, sección de entrevistas, arquitectura DDD           |
+| v1.6.0  | 19/09/2025 | Elmer Riva                     | Agregados mockups y wireframes para apps móviles y web, guías de estilo y arquitectura de información |
+| v1.5.0  | 18/09/2025 | Jhosepmyr                      | Documentación de contextos, flujos de mensajes, y Event Storming de nivel táctico                     |
+| v1.4.0  | 17/09/2025 | Jhosepmyr, Elmer, Joaquin      | Big Picture Event Storming, historias de usuario, wireframes de landing page                          |
+| v1.3.0  | 16/09/2025 | Jhosepmyr, Andrés              | Definición de Lean UX Canvas, segmentos objetivo, competencia, y análisis del problema                |
+| v1.2.0  | 12/09/2025 | Jhosepmyr                      | Diseño de entrevistas, estrategia competitiva, referencias y mejoras menores                          |
+| v1.1.0  | 09/09/2025 | Jhosepmyr                      | Estructura base del repositorio, portada y archivos iniciales                                         |
+| v1.0.0  | 05/09/2025 | Jhosepmyr                      | Commit inicial, configuración de gitignore y base del proyecto                                        |
+
 
 <div style="page-break-before: always"></div>
 
