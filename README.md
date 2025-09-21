@@ -2801,7 +2801,7 @@ La arquitectura implementa patrones avanzados como Strategy para cálculos de re
 
 #### 4.2.4.6. Bounded Context Software Architecture Code Level Diagrams
 
-#### 4.2.4.6.1. Bounded Context Domain Layer Class Diagrams
+##### 4.2.4.6.1. Bounded Context Domain Layer Class Diagrams
 
 ![class-diagram-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.class-diagram.png)
 
@@ -2830,7 +2830,7 @@ El diagrama de clases del Domain Layer presenta la estructura completa del domin
 - **Engagement tracking**: Métricas automáticas de participación ciudadana
 - **Membership levels**: Niveles progresivos con beneficios escalados
 
-#### 4.2.4.6.2. Bounded Context Database Design Diagram
+##### 4.2.4.6.2. Bounded Context Database Design Diagram
 
 ![database-design-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.database-design-diagram.png)
 
@@ -2867,6 +2867,317 @@ El diseño de base de datos implementa el modelo de dominio con optimizaciones e
 - **Vistas especializadas**: Para análisis de engagement y reportes activos
 
 El esquema está optimizado para las operaciones de engagement ciudadano identificadas en el dominio, incluyendo sistema de recompensas gamificado con múltiples algoritmos, tracking detallado de participación, comunicación omnicanal personalizada, y análisis avanzado de patrones de comportamiento ciudadano.
+
+### 4.2.5. Bounded Context: Payment & Subscriptions
+
+En esta sección se presenta el análisis detallado del bounded context Payment & Subscriptions, que encapsula toda la lógica de negocio relacionada con la gestión del ciclo completo de revenue para clientes municipales, procesamiento de pagos mediante integración con Culqi, facturación automática por ciclos, y administración del lifecycle de suscripciones para asegurar sostenibilidad financiera del modelo SaaS.
+
+#### 4.2.5.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio financiero y de suscripciones, implementando patrones avanzados de procesamiento de pagos y estrategias de facturación para maximizar conversión y minimizar churn en el mercado municipal peruano.
+
+**Aggregate Roots:**
+
+1. **`Subscription` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una suscripción municipal, su lifecycle completo, ciclos de facturación, y gestión de estados para asegurar continuidad de servicio.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                 | Visibilidad | Descripción                                            |
+|----------------------|----------------------|-------------|--------------------------------------------------------|
+| `id`                 | `Long`               | `private`   | Identificador único de la suscripción en base de datos |
+| `subscriptionId`     | `SubscriptionId`     | `private`   | Identificador de dominio de la suscripción             |
+| `municipalityId`     | `MunicipalityId`     | `private`   | Municipalidad propietaria de la suscripción            |
+| `planId`             | `PlanId`             | `private`   | Plan de servicios contratado                           |
+| `status`             | `SubscriptionStatus` | `private`   | Estado actual de la suscripción                        |
+| `startDate`          | `LocalDateTime`      | `private`   | Fecha de inicio de la suscripción                      |
+| `trialEndDate`       | `LocalDateTime`      | `private`   | Fecha de finalización del período de prueba            |
+| `nextBillingDate`    | `LocalDateTime`      | `private`   | Próxima fecha de facturación programada                |
+| `billingCycle`       | `BillingCycle`       | `private`   | Ciclo de facturación configurado                       |
+| `paymentMethodId`    | `PaymentMethodId`    | `private`   | Método de pago asociado                                |
+| `billingAddress`     | `BillingAddress`     | `private`   | Dirección de facturación municipal                     |
+| `autoRenewal`        | `boolean`            | `private`   | Renovación automática habilitada                       |
+| `gracePeriodEndDate` | `LocalDateTime`      | `private`   | Fecha límite del período de gracia                     |
+
+**Métodos principales:**
+
+| Método                          | Tipo de Retorno | Visibilidad | Descripción                                      |
+|---------------------------------|-----------------|-------------|--------------------------------------------------|
+| `activate()`                    | `void`          | `public`    | Activa suscripción validando método de pago      |
+| `suspend(reason)`               | `void`          | `public`    | Suspende servicios por falta de pago o violación |
+| `cancel(reason)`                | `void`          | `public`    | Cancela suscripción con políticas de reembolso   |
+| `updatePlan(newPlanId)`         | `void`          | `public`    | Actualiza plan con cálculo de prorrateo          |
+| `updatePaymentMethod(methodId)` | `void`          | `public`    | Cambia método de pago con validaciones           |
+| `processPayment(amount)`        | `PaymentResult` | `public`    | Procesa pago programado con retry logic          |
+| `isInGracePeriod()`             | `boolean`       | `public`    | Verifica si está en período de gracia            |
+| `canBeUpgraded()`               | `boolean`       | `public`    | Determina si permite upgrade de plan             |
+| `calculateNextBilling()`        | `LocalDateTime` | `public`    | Calcula próxima fecha de facturación             |
+
+2. **`Payment` (Aggregate Root)**
+
+Representa un pago individual con integración a gateway Culqi, gestión de reintentos, y tracking completo de transacciones para asegurar reconciliación financiera.
+
+**Atributos principales:**
+
+| Atributo          | Tipo                | Visibilidad | Descripción                       |
+|-------------------|---------------------|-------------|-----------------------------------|
+| `paymentId`       | `PaymentId`         | `private`   | Identificador de dominio del pago |
+| `subscriptionId`  | `SubscriptionId`    | `private`   | Suscripción asociada al pago      |
+| `amount`          | `MonetaryAmount`    | `private`   | Monto del pago en soles peruanos  |
+| `paymentMethod`   | `PaymentMethodType` | `private`   | Tipo de método de pago utilizado  |
+| `paymentStatus`   | `PaymentStatus`     | `private`   | Estado actual del procesamiento   |
+| `transactionId`   | `TransactionId`     | `private`   | ID de transacción de Culqi        |
+| `gatewayResponse` | `GatewayResponse`   | `private`   | Respuesta completa del gateway    |
+| `attemptNumber`   | `Integer`           | `private`   | Número de intento actual          |
+| `scheduledDate`   | `LocalDateTime`     | `private`   | Fecha programada de procesamiento |
+| `processedDate`   | `LocalDateTime`     | `private`   | Fecha real de procesamiento       |
+| `failureReason`   | `FailureReason`     | `private`   | Razón de falla si aplica          |
+
+**Métodos principales:**
+
+| Método                            | Tipo de Retorno        | Visibilidad | Descripción                                    |
+|-----------------------------------|------------------------|-------------|------------------------------------------------|
+| `process()`                       | `PaymentResult`        | `public`    | Procesa pago a través de Culqi gateway         |
+| `retry()`                         | `PaymentResult`        | `public`    | Reintenta pago fallido con backoff exponencial |
+| `markAsSuccessful(transactionId)` | `void`                 | `public`    | Marca como exitoso con ID de transacción       |
+| `markAsFailed(reason)`            | `void`                 | `public`    | Marca como fallido con razón específica        |
+| `canBeRetried()`                  | `boolean`              | `public`    | Verifica si permite reintentos                 |
+| `isSuccessful()`                  | `boolean`              | `public`    | Determina si el pago fue exitoso               |
+| `getAttemptHistory()`             | `List<PaymentAttempt>` | `public`    | Obtiene historial de intentos                  |
+
+3. **`Invoice` (Aggregate Root)**
+
+Representa una factura con cálculos automáticos de impuestos peruanos, gestión de line items, y tracking de pagos para cumplimiento fiscal.
+
+**Atributos principales:**
+
+| Atributo         | Tipo                    | Visibilidad | Descripción                            |
+|------------------|-------------------------|-------------|----------------------------------------|
+| `invoiceId`      | `InvoiceId`             | `private`   | Identificador de dominio de la factura |
+| `invoiceNumber`  | `InvoiceNumber`         | `private`   | Número secuencial de factura           |
+| `subscriptionId` | `SubscriptionId`        | `private`   | Suscripción asociada                   |
+| `billingPeriod`  | `BillingPeriod`         | `private`   | Período de facturación cubierto        |
+| `issueDate`      | `LocalDateTime`         | `private`   | Fecha de emisión de la factura         |
+| `dueDate`        | `LocalDateTime`         | `private`   | Fecha de vencimiento                   |
+| `subtotal`       | `MonetaryAmount`        | `private`   | Subtotal antes de impuestos            |
+| `taxAmount`      | `MonetaryAmount`        | `private`   | Monto de IGV (18%)                     |
+| `totalAmount`    | `MonetaryAmount`        | `private`   | Total final incluido IGV               |
+| `status`         | `InvoiceStatus`         | `private`   | Estado actual de la factura            |
+| `lineItems`      | `List<InvoiceLineItem>` | `private`   | Items detallados de la factura         |
+
+**Métodos principales:**
+
+| Método                  | Tipo de Retorno | Visibilidad | Descripción                           |
+|-------------------------|-----------------|-------------|---------------------------------------|
+| `addLineItem(item)`     | `void`          | `public`    | Agrega item validando cálculos        |
+| `calculateTotals()`     | `void`          | `public`    | Recalcula totales con IGV peruano     |
+| `markAsPaid(paymentId)` | `void`          | `public`    | Marca como pagada con referencia      |
+| `markAsOverdue()`       | `void`          | `public`    | Marca como vencida para cobranza      |
+| `isPaid()`              | `boolean`       | `public`    | Verifica si está completamente pagada |
+| `isOverdue()`           | `boolean`       | `public`    | Determina si está vencida             |
+| `getDaysOverdue()`      | `int`           | `public`    | Calcula días de mora                  |
+
+**Entities:**
+
+4. **`PaymentMethod` (Entity)**
+
+Entidad que representa métodos de pago con integración específica a Culqi y validaciones para el mercado peruano.
+
+5. **`InvoiceLineItem` (Entity)**
+
+Entidad que representa items individuales de factura con cálculos de IGV y validaciones fiscales.
+
+6. **`PaymentAttempt` (Entity)**
+
+Entidad que registra cada intento de pago con detalles de gateway para auditoría y análisis.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio financiero peruano:
+
+- **`MonetaryAmount`**: Moneda con operaciones matemáticas y soporte para soles peruanos
+- **`BillingCycle`**: Ciclos configurables (mensual, trimestral, anual) con cálculos automáticos
+- **`BillingAddress`**: Direcciones con validaciones específicas de Perú
+- **`PaymentMethodType`**: Tipos de pago soportados por Culqi
+- **`SubscriptionStatus`**: Estados con transiciones válidas y restricciones de negocio
+
+**Factories (Creational Pattern):**
+
+1. **`SubscriptionFactory`**: Implementa Factory pattern para crear suscripciones con diferentes configuraciones (trial gratuito de 30 días, suscripciones pagadas inmediatas, migraciones desde otros sistemas) aplicando validaciones específicas del mercado municipal.
+
+2. **`PaymentFactory`**: Crea pagos programados y reintentos con configuraciones específicas de Culqi, aplicando estrategias de backoff exponencial y validaciones de montos.
+
+3. **`InvoiceFactory`**: Genera facturas mensuales, trimestrales o anuales con cálculos automáticos de prorrateo, aplicando tasas de IGV vigentes y formatos de facturación peruanos.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar métodos de procesamiento de pagos dinámicamente:
+
+1. **`CreditCardStrategy`**: Procesamiento de tarjetas de crédito con validaciones 3DS
+2. **`BankTransferStrategy`**: Transferencias bancarias con integración a bancos peruanos
+3. **`DigitalWalletStrategy`**: Billeteras digitales como Yape, Plin integradas via Culqi
+4. **`CashPaymentStrategy`**: Pagos en efectivo en agentes autorizados
+
+**Domain Services:**
+
+1. **`SubscriptionCommandService`**: Orquesta operaciones CQRS de escritura para lifecycle de suscripciones
+2. **`SubscriptionQueryService`**: Maneja consultas CQRS optimizadas para reportes de revenue
+3. **`PaymentCommandService`**: Coordina procesamiento de pagos con estrategias de reintento
+4. **`PaymentQueryService`**: Genera análisis de transacciones y métricas de conversión
+5. **`BillingCommandService`**: Gestiona generación automática de facturas por ciclos
+6. **`BillingQueryService`**: Proporciona reportes financieros y análisis de accounts receivable
+
+**Commands (CQRS Write Side):**
+
+- `CreateSubscriptionCommand`: Creación de suscripciones con validación de elegibilidad
+- `ProcessPaymentCommand`: Procesamiento de pagos con validaciones de gateway
+- `GenerateInvoiceCommand`: Generación de facturas por ciclo de facturación
+- `UpdateSubscriptionCommand`: Actualizaciones de plan con cálculo de prorrateo
+- `RetryPaymentCommand`: Reintentos de pagos fallidos con estrategias configurables
+
+**Queries (CQRS Read Side):**
+
+- `GetSubscriptionByIdQuery`: Consulta individual con historial de pagos
+- `GetSubscriptionsByMunicipalityQuery`: Consultas por cliente municipal
+- `GetPaymentHistoryQuery`: Historial completo de transacciones
+- `GetOutstandingInvoicesQuery`: Facturas pendientes por municipalidad
+- `GetRevenueAnalyticsQuery`: Análisis de MRR y métricas SaaS
+
+**Domain Events:**
+
+- `SubscriptionCreatedEvent`: Publicado al crear suscripciones municipales
+- `PaymentProcessedEvent`: Publicado al procesar pagos exitosos o fallidos
+- `SubscriptionSuspendedEvent`: Publicado al suspender servicios por falta de pago
+- `InvoiceGeneratedEvent`: Publicado al generar facturas automáticas
+
+#### 4.2.5.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en operaciones financieras y consumidores de eventos para automatización de facturación.
+
+**Controllers:**
+
+1. **`Subscription Controller`**: Endpoints REST para gestión de suscripciones municipales, configuración de planes, y operaciones de lifecycle. Maneja requests desde dashboard administrativo con validaciones de autorización fiscal.
+
+2. **`Payment Controller`**: Endpoints especializados para procesamiento de pagos, gestión de métodos de pago, y tracking de transacciones. Implementa integración directa con Culqi webhook para confirmaciones de pago.
+
+3. **`Billing Controller`**: Endpoints para generación de facturas, reportes financieros, y análisis de revenue. Proporciona interfaces para exportación de datos fiscales y reconciliación contable.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Municipal Operations BC (activación de distritos) y Communication Hub BC (solicitudes de notificaciones de facturación). Implementa Consumer pattern para automatización de facturación.
+
+#### 4.2.5.3. Application Layer
+
+Esta capa coordina las operaciones financieras complejas y orquesta los flujos de trabajo de facturación, implementando patrones para optimizar conversión y minimizar revenue churn.
+
+**Application Services:**
+
+1. **`Subscription Service`**: Servicio principal que orquesta lifecycle completo de suscripciones incluyendo onboarding, conversiones de trial, y gestión de renovaciones. Implementa State pattern para estados de suscripción y Template Method pattern para diferentes flujos de onboarding.
+
+2. **`Payment Service`**: Maneja procesamiento completo de pagos, lógica de reintentos, y gestión de transacciones. Implementa Strategy pattern para métodos de pago y Circuit Breaker pattern para integraciones con Culqi gateway.
+
+3. **`Billing Service`**: Gestiona ciclos de facturación, generación automática de invoices, y cálculos de prorrateo. Implementa Builder pattern para facturas complejas y Scheduler pattern para automatización de facturación recurrente.
+
+#### 4.2.5.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos financieros, integración con gateway Culqi, y comunicación con otros bounded contexts para mantener coherencia de servicios.
+
+**Repositories:**
+
+1. **`Subscription Repository`**: Implementación JPA para persistencia de suscripciones con historial de facturación y tracking de estados. Implementa Repository pattern con optimizaciones para consultas de revenue y análisis de churn.
+
+2. **`Payment Repository`**: Repositorio especializado para transacciones de pago con audit trail y soporte para reconciliación. Incluye optimizaciones para consultas de análisis financiero y detección de fraude.
+
+3. **`Invoice Repository`**: Repositorio para datos de facturación con cálculos fiscales y tracking de compliance. Optimizado para reportes contables y exportación de datos fiscales.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos financieros a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de messaging financiero.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de facturación frecuentemente accedidos y configuraciones de pricing. Implementa Cache-Aside pattern para optimización de consultas financieras.
+
+3. **`Payment Gateway Adapter`**: Integración especializada con Culqi para procesamiento de pagos en Perú. Implementa Adapter pattern para abstracción de gateway y Retry pattern para resiliencia de transacciones.
+
+#### 4.2.5.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Payment & Subscriptions bounded context, ilustrando la separación por capas DDD y las integraciones especializadas para procesamiento de pagos. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para suscripciones, pagos y facturación, plus event consumers para automatización de billing
+- **Application Layer** (verde medio): Services que coordinan lifecycle de suscripciones, procesamiento de pagos con reintentos, y generación automática de facturas
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos financieros y adaptadores especializados para Culqi gateway
+- **Integraciones financieras**: Culqi Payment Gateway para procesamiento local, Tax Calculation Service para cumplimiento fiscal peruano
+
+La arquitectura implementa patrones avanzados como Strategy para múltiples métodos de pago, Circuit Breaker para resiliencia de gateway, y State para gestión completa del lifecycle de suscripciones.
+
+#### 4.2.5.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.5.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Payment & Subscriptions, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: Subscription, Payment, Invoice como raíces con invariantes financieras
+- **Entities**: PaymentMethod, InvoiceLineItem, PaymentAttempt con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos financieros y de facturación
+- **Domain Services**: Servicios para operaciones financieras complejas
+- **Domain Events**: Eventos para coordinación de revenue y lifecycle de servicios
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: SubscriptionFactory, PaymentFactory, InvoiceFactory para creación especializada
+- **Strategy Pattern**: PaymentProcessingStrategy con múltiples métodos (Tarjetas, Transferencias, Wallets)
+- **State Pattern**: Estados de suscripción con transiciones controladas por reglas de negocio
+- **Repository Pattern**: Interfaces para abstracción de persistencia financiera
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones financieras y fiscales
+- **Queries**: Operaciones de lectura optimizadas para análisis de revenue y reporting
+- **Command/Query Services**: Separación clara con especialización en operaciones SaaS
+
+**Integración Culqi:**
+- **Payment processing**: Estrategias específicas para métodos soportados por Culqi
+- **Webhook handling**: Procesamiento de confirmaciones de transacciones
+- **Retry mechanisms**: Lógica de reintentos para transacciones fallidas
+
+##### 4.2.5.6.2. Bounded Context Database Design Diagram
+
+![database-design-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para operaciones financieras SaaS:
+
+**Tablas principales:**
+- **subscriptions**: Aggregate root con lifecycle completo, ciclos de facturación y trial management
+- **payments**: Aggregate root con integración Culqi, tracking de intentos y audit trail
+- **invoices**: Aggregate root para facturación con cálculos automáticos de IGV peruano
+- **payment_methods**: Entity para métodos de pago con validaciones específicas de Culqi
+- **invoice_line_items**: Entity para items de factura con cálculos fiscales detallados
+
+**Tablas auxiliares financieras:**
+- **payment_attempts**: Historial completo de intentos con detalles de gateway
+- **subscription_usage**: Tracking de uso para billing por consumo
+- **payment_events**: Domain events para coordinación financiera
+
+**Optimizaciones SaaS:**
+- **Triggers automáticos**: Cálculo de totales de facturas con IGV y actualización de estados
+- **Funciones de MRR**: Cálculos de Monthly Recurring Revenue para análisis SaaS
+- **Índices especializados**: Para consultas de vencimientos, reintentos, y análisis de churn
+- **Limpieza inteligente**: Retención de datos financieros según regulaciones fiscales
+
+**Características de compliance:**
+- **Audit trail completo**: Tracking de todas las transacciones para auditoría
+- **Validaciones fiscales**: Constraints para cumplimiento de regulaciones peruanas
+- **Cálculos de IGV**: Automatización de impuestos según normativa vigente
+- **Numeración secuencial**: Sistema de facturación compatible con SUNAT
+
+**Características técnicas:**
+- **JSONB avanzado**: Para respuestas de gateway y metadatos de transacciones
+- **Triggers financieros**: Automatización de estados y cálculos críticos
+- **Constraints robustos**: Validaciones de integridad para datos financieros críticos
+- **Vistas especializadas**: Para análisis de revenue y reportes de compliance
+
+El esquema está optimizado para las operaciones financieras identificadas en el dominio, incluyendo procesamiento de pagos con Culqi, facturación automática con IGV, gestión de trial periods, análisis de MRR/churn, y cumplimiento de regulaciones fiscales peruanas.
 
 # Capítulo V: Solution UI/UX Design
 
