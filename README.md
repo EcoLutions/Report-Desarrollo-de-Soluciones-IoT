@@ -3198,7 +3198,11 @@ Asimismo, a continuación se presentan los enlaces que llevan a los flujos por c
 
 # Conclusiones
 
+Este proyecto demuestra la capacidad del equipo para abordar un problema complejo de manera integral y metódica. Al seguir un proceso de diseño de software bien estructurado, el grupo no solo identificó y analizó una problemática real en la gestión de residuos, sino que también propuso una solución tecnológica viable y centrada en las necesidades del usuario.
 
+El éxito del proyecto radica en la sinergia del equipo y su enfoque en la validación a través de la investigación. Las entrevistas a administradores, conductores y ciudadanos proporcionaron la base empírica para la toma de decisiones, garantizando que el diseño y las funcionalidades de la aplicación respondieran directamente a los dolores y frustraciones de los usuarios finales.
+
+La aplicación de metodologías ágiles como Lean UX y herramientas de modelado como EventStorming permitió una colaboración fluida y una comprensión compartida de los objetivos. Este enfoque colaborativo, donde cada miembro lideró una fase y contribuyó al conjunto, fue fundamental para transformar los hallazgos de la investigación en una solución de software coherente y con un claro potencial de impacto positivo.
 
 # Bibliografía
 
