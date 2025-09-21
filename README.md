@@ -5600,3 +5600,11 @@ La aplicación de metodologías ágiles como Lean UX y herramientas de modelado 
 **Descripción:** Workspace interactivo de Miro donde se diseñaron los 8 Bounded Context Canvases completos para WasteTrack. Incluye el diseño detallado de cada contexto delimitado: Container Monitoring, Route Planning & Execution, Municipal Operations, Payment & Subscriptions, Community Relations, Communication Hub, Profile, e IAM, con sus respectivas responsabilidades, comunicaciones, y criterios de diseño.
 
 **Acceso:** Enlace público de solo lectura para revisión del diseño estratégico de bounded contexts y validación de la separación de responsabilidades del dominio.
+
+## Anexo B: Entrevistas de needfinding TB1
+
+**Enlace:** [https://upcedupe-my.sharepoint.com/personal/u20221c857_upc_edu_pe/_layouts/15/stream.aspx?id=%2Fpersonal%2Fu20221c857%5Fupc%5Fedu%5Fpe%2FDocuments%2FEntrevistas%20Ecolutions%20SI0572%203414%20needfinding%2Emp4&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Eb0722955%2D98bb%2D4b31%2Da73c%2D2b68c4b57c52](https://upcedupe-my.sharepoint.com/personal/u20221c857_upc_edu_pe/_layouts/15/stream.aspx?id=%2Fpersonal%2Fu20221c857%5Fupc%5Fedu%5Fpe%2FDocuments%2FEntrevistas%20Ecolutions%20SI0572%203414%20needfinding%2Emp4&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Eb0722955%2D98bb%2D4b31%2Da73c%2D2b68c4b57c52)
+
+**Descripción:** Video recopilatorio de las entrevistas realizadas para la fase de needfinding del proyecto.
+
+**Acceso:** Enlace público de solo lectura
