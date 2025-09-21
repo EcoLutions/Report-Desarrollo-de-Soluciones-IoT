@@ -1,0 +1,569 @@
+@startuml Community Relations: Domain Layer Class Diagram
+
+title Community Relations: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/E1BEE7
+    BackgroundColor<<Strategy>> #FFFFFF/E8F5E8
+    BackgroundColor<<State>> #FFFFFF/FFF3E0
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Community Relations Context" {
+    package "Domain Layer" {
+        ' ===================== AGGREGATES =====================
+        class "Citizen" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - citizenId : CitizenId
+            - personalInfo : PersonalInfo
+            - contactInfo : ContactInfo
+            - address : Address
+            - registrationDate : LocalDateTime
+            - membershipStatus : MembershipStatus
+            - engagementLevel : EngagementLevel
+            - preferences : CitizenPreferences
+            - rewardsAccount : RewardsAccount
+            - reports : List<Report>
+            - notifications : List<Notification>
+            - version : Long
+
+            # Citizen()
+            + Citizen(personalInfo : PersonalInfo, contactInfo : ContactInfo, address : Address)
+            + Citizen(command : RegisterCitizenCommand)
+            + updateProfile(personalInfo : PersonalInfo, contactInfo : ContactInfo) : void
+            + updatePreferences(preferences : CitizenPreferences) : void
+            + submitReport(report : Report) : void
+            + earnRewardPoints(points : RewardPoints, reason : String) : void
+            + redeemRewards(redemption : RewardRedemption) : void
+            + updateEngagementLevel() : void
+            + canSubmitReport() : boolean
+            + hasActiveReports() : boolean
+            + calculateTotalRewardPoints() : RewardPoints
+        }
+
+        class "Report" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - reportId : ReportId
+            - citizenId : CitizenId
+            - reportType : ReportType
+            - description : String
+            - location : Location
+            - priority : Priority
+            - status : ReportStatus
+            - images : List<ReportImage>
+            - assignedContainerId : ContainerId
+            - submissionDate : LocalDateTime
+            - resolutionDate : LocalDateTime
+            - feedback : CitizenFeedback
+            - administratorNotes : String
+            - version : Long
+
+            # Report()
+            + Report(citizenId : CitizenId, reportType : ReportType, description : String, location : Location)
+            + Report(command : SubmitReportCommand)
+            + assignToContainer(containerId : ContainerId) : void
+            + updateStatus(newStatus : ReportStatus, notes : String) : void
+            + addImage(image : ReportImage) : void
+            + provideResolution(resolution : String, resolvedBy : String) : void
+            + submitFeedback(feedback : CitizenFeedback) : void
+            + calculateResolutionTime() : Duration
+            + isOverdue() : boolean
+            + canBeUpdated() : boolean
+        }
+
+        class "RewardsProgram" <<(A, #27D3F5) Aggregate Root>> {
+            - id : Long
+            - programId : RewardsProgramId
+            - name : String
+            - description : String
+            - isActive : Boolean
+            - startDate : LocalDateTime
+            - endDate : LocalDateTime
+            - rules : List<RewardRule>
+            - redemptionOptions : List<RedemptionOption>
+            - participants : List<CitizenId>
+            - totalPointsAwarded : RewardPoints
+            - version : Long
+
+            # RewardsProgram()
+            + RewardsProgram(name : String, description : String, rules : List<RewardRule>)
+            + addRule(rule : RewardRule) : void
+            + addRedemptionOption(option : RedemptionOption) : void
+            + calculatePoints(action : CitizenAction) : RewardPoints
+            + enrollCitizen(citizenId : CitizenId) : void
+            + isEligibleForRedemption(citizenId : CitizenId, option : RedemptionOption) : boolean
+            + deactivateProgram() : void
+        }
+
+        class "ReportImage" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - imageId : ReportImageId
+            - reportId : ReportId
+            - fileName : String
+            - filePath : String
+            - fileSize : Long
+            - mimeType : String
+            - uploadedDate : LocalDateTime
+            - description : String
+
+            + ReportImage(reportId : ReportId, fileName : String, filePath : String)
+            + getFileUrl() : String
+            + isValidImageType() : Boolean
+        }
+
+        class "Notification" <<(E, #4CAF50) Entity>> {
+            - id : Long
+            - notificationId : NotificationId
+            - citizenId : CitizenId
+            - type : NotificationType
+            - title : String
+            - message : String
+            - priority : NotificationPriority
+            - channel : NotificationChannel
+            - status : NotificationStatus
+            - scheduledDate : LocalDateTime
+            - sentDate : LocalDateTime
+            - readDate : LocalDateTime
+
+            + Notification(citizenId : CitizenId, type : NotificationType, message : String)
+            + markAsRead() : void
+            + markAsSent() : void
+            + isExpired() : Boolean
+        }
+
+        ' ===================== COMMANDS (CQRS Write Side) =====================
+        class "RegisterCitizenCommand" <<(C, #BA68C8) Command>> {
+            + personalInfo : PersonalInfo
+            + contactInfo : ContactInfo
+            + address : Address
+            + preferences : CitizenPreferences
+            + acceptedTerms : Boolean
+        }
+
+        class "SubmitReportCommand" <<(C, #BA68C8) Command>> {
+            + citizenId : CitizenId
+            + reportType : ReportType
+            + description : String
+            + location : Location
+            + priority : Priority
+            + images : List<String>
+        }
+
+        class "UpdateReportStatusCommand" <<(C, #BA68C8) Command>> {
+            + reportId : ReportId
+            + newStatus : ReportStatus
+            + adminNotes : String
+            + estimatedResolutionDate : LocalDateTime
+        }
+
+        class "RedeemRewardsCommand" <<(C, #BA68C8) Command>> {
+            + citizenId : CitizenId
+            + redemptionOptionId : RedemptionOptionId
+            + pointsToRedeem : RewardPoints
+        }
+
+        class "SendNotificationCommand" <<(C, #BA68C8) Command>> {
+            + citizenId : CitizenId
+            + notificationType : NotificationType
+            + message : String
+            + channel : NotificationChannel
+            + priority : NotificationPriority
+        }
+
+        ' ===================== QUERIES (CQRS Read Side) =====================
+        class "GetCitizenByIdQuery" <<(Q, #C5E1A5) Query>> {
+            + citizenId : Long
+        }
+
+        class "GetCitizenReportsQuery" <<(Q, #C5E1A5) Query>> {
+            + citizenId : CitizenId
+            + status : ReportStatus
+            + dateRange : DateRange
+        }
+
+        class "GetReportsByLocationQuery" <<(Q, #C5E1A5) Query>> {
+            + location : Location
+            + radius : Double
+            + reportType : ReportType
+        }
+
+        class "GetCitizenRewardsHistoryQuery" <<(Q, #C5E1A5) Query>> {
+            + citizenId : CitizenId
+            + transactionType : TransactionType
+        }
+
+        class "GetActiveReportsQuery" <<(Q, #C5E1A5) Query>> {
+            + priority : Priority
+            + assignedDistrict : DistrictId
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "CitizenRegisteredEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + citizenId : Long
+            + registrationDate : LocalDateTime
+            + district : String
+            + membershipLevel : String
+        }
+
+        class "ReportSubmittedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + reportId : Long
+            + citizenId : Long
+            + reportType : String
+            + location : Location
+            + priority : String
+            + submissionDate : LocalDateTime
+        }
+
+        class "ReportResolvedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + reportId : Long
+            + citizenId : Long
+            + resolutionDate : LocalDateTime
+            + resolutionTime : Duration
+            + citizenSatisfaction : Double
+        }
+
+        class "RewardsEarnedEvent" <<(E, #FFB74D) Domain Event>> {
+            + source : Object
+            + citizenId : Long
+            + pointsEarned : Integer
+            + reason : String
+            + earnedDate : LocalDateTime
+        }
+
+        ' ===================== VALUE OBJECTS (LOCAL) =====================
+        class "CitizenId" <<(V, #FFD700) Value Object>> {
+            - citizenId : Long
+            + isValid() : Boolean
+        }
+
+        class "ReportId" <<(V, #FFD700) Value Object>> {
+            - reportId : Long
+        }
+
+        class "PersonalInfo" <<(V, #FFD700) Value Object>> {
+            - firstName : String
+            - lastName : String
+            - documentType : DocumentType
+            - documentNumber : String
+            - birthDate : LocalDate
+            + getFullName() : String
+            + getAge() : Integer
+        }
+
+        class "ContactInfo" <<(V, #FFD700) Value Object>> {
+            - email : EmailAddress
+            - phoneNumber : PhoneNumber
+            - alternativePhone : PhoneNumber
+            + isValidEmail() : Boolean
+            + isValidPhone() : Boolean
+        }
+
+        class "ReportStatus" <<(V, #FFD700) Value Object>> {
+            - status : String
+            - lastStatusChange : LocalDateTime
+            + isResolved() : Boolean
+            + canTransitionTo(newStatus : String) : Boolean
+            + getDaysInStatus() : Long
+        }
+
+        class "MembershipStatus" <<(V, #FFD700) Value Object>> {
+            - level : MembershipLevel
+            - joinDate : LocalDateTime
+            - benefits : List<Benefit>
+            + isActive() : Boolean
+            + canUpgrade() : Boolean
+        }
+
+        class "EngagementLevel" <<(V, #FFD700) Value Object>> {
+            - level : String
+            - score : Double
+            - lastCalculation : LocalDateTime
+            + isHighEngagement() : Boolean
+            + calculateNewLevel(recentActivity : List<Activity>) : EngagementLevel
+        }
+
+        class "RewardPoints" <<(V, #FFD700) Value Object>> {
+            - points : Integer
+            - earnedDate : LocalDateTime
+            - expiryDate : LocalDateTime
+            + isExpired() : Boolean
+            + add(other : RewardPoints) : RewardPoints
+            + subtract(other : RewardPoints) : RewardPoints
+        }
+
+        class "CitizenPreferences" <<(V, #FFD700) Value Object>> {
+            - language : Language
+            - notificationChannels : Set<NotificationChannel>
+            - topicInterests : Set<TopicInterest>
+            - privacySettings : PrivacySettings
+            + allowsNotificationType(type : NotificationType) : Boolean
+        }
+
+        ' ===================== FACTORIES (Creational Pattern) =====================
+        class "CitizenFactory" <<(F, #BA68C8) Factory>> {
+            + createCitizen(command : RegisterCitizenCommand) : Citizen
+            + createCitizenWithDefaults(basicInfo : PersonalInfo, contact : ContactInfo) : Citizen
+            + createGuestCitizen(tempId : String) : Citizen
+        }
+
+        class "ReportFactory" <<(F, #BA68C8) Factory>> {
+            + createReport(command : SubmitReportCommand) : Report
+            + createEmergencyReport(citizenId : CitizenId, location : Location, description : String) : Report
+            + createContainerReport(citizenId : CitizenId, containerId : ContainerId, issue : ContainerIssue) : Report
+        }
+
+        class "NotificationFactory" <<(F, #BA68C8) Factory>> {
+            + createWelcomeNotification(citizenId : CitizenId) : Notification
+            + createReportStatusNotification(reportId : ReportId, newStatus : ReportStatus) : Notification
+            + createRewardsNotification(citizenId : CitizenId, points : RewardPoints) : Notification
+        }
+
+        ' ===================== STRATEGIES (Behavioral Pattern) =====================
+        interface "RewardCalculationStrategy" <<(S, #81C784) Strategy>> {
+            + calculatePoints(action : CitizenAction, citizen : Citizen) : RewardPoints
+            + getMultiplier(citizen : Citizen) : Double
+        }
+
+        class "BasicRewardStrategy" <<(S, #81C784) Strategy>> {
+            + calculatePoints(action : CitizenAction, citizen : Citizen) : RewardPoints
+            + getMultiplier(citizen : Citizen) : Double
+        }
+
+        class "TieredRewardStrategy" <<(S, #81C784) Strategy>> {
+            + calculatePoints(action : CitizenAction, citizen : Citizen) : RewardPoints
+            + getMultiplier(citizen : Citizen) : Double
+        }
+
+        class "SeasonalRewardStrategy" <<(S, #81C784) Strategy>> {
+            + calculatePoints(action : CitizenAction, citizen : Citizen) : RewardPoints
+            + getMultiplier(citizen : Citizen) : Double
+        }
+
+        ' ===================== STATE PATTERN =====================
+        interface "ReportState" <<(S, #FFB74D) State>> {
+            + canUpdateStatus() : Boolean
+            + canAddComments() : Boolean
+            + canProvideResolution() : Boolean
+            + getAvailableActions() : List<ReportAction>
+        }
+
+        class "SubmittedReportState" <<(S, #FFB74D) State>> {
+            + canUpdateStatus() : Boolean
+            + canAddComments() : Boolean
+            + canProvideResolution() : Boolean
+        }
+
+        class "InProgressReportState" <<(S, #FFB74D) State>> {
+            + canUpdateStatus() : Boolean
+            + canAddComments() : Boolean
+            + canProvideResolution() : Boolean
+        }
+
+        class "ResolvedReportState" <<(S, #FFB74D) State>> {
+            + canUpdateStatus() : Boolean
+            + canAddComments() : Boolean
+            + canProvideResolution() : Boolean
+        }
+
+        class "ClosedReportState" <<(S, #FFB74D) State>> {
+            + canUpdateStatus() : Boolean
+            + canAddComments() : Boolean
+            + canProvideResolution() : Boolean
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "CommunityCommandService" <<(S, #FF8A65) Domain Service>> {
+            + handle(command : RegisterCitizenCommand) : Optional<Citizen>
+            + handle(command : SubmitReportCommand) : Optional<Report>
+            + handle(command : UpdateReportStatusCommand) : void
+            + handle(command : RedeemRewardsCommand) : void
+            + handle(command : SendNotificationCommand) : void
+        }
+
+        class "CommunityQueryService" <<(S, #FF8A65) Domain Service>> {
+            + handle(query : GetCitizenByIdQuery) : Optional<Citizen>
+            + handle(query : GetCitizenReportsQuery) : List<Report>
+            + handle(query : GetReportsByLocationQuery) : List<Report>
+            + handle(query : GetCitizenRewardsHistoryQuery) : RewardsHistory
+            + handle(query : GetActiveReportsQuery) : List<Report>
+        }
+
+        class "EngagementAnalysisService" <<(S, #FF8A65) Domain Service>> {
+            + calculateEngagementLevel(citizen : Citizen) : EngagementLevel
+            + analyzeReportingPatterns(citizen : Citizen) : ReportingPatterns
+            + identifyInfluentialCitizens(district : DistrictId) : List<Citizen>
+            + generateEngagementReport(period : DateRange) : EngagementReport
+        }
+
+        class "RewardsManagementService" <<(S, #FF8A65) Domain Service>> {
+            - rewardStrategy : RewardCalculationStrategy
+            + calculateRewards(citizen : Citizen, action : CitizenAction) : RewardPoints
+            + processRedemption(citizen : Citizen, redemption : RewardRedemption) : RedemptionResult
+            + expirePoints(citizen : Citizen) : List<ExpiredPoints>
+            + setRewardStrategy(strategy : RewardCalculationStrategy) : void
+        }
+
+        class "ReportRoutingService" <<(S, #FF8A65) Domain Service>> {
+            + routeReport(report : Report) : RoutingResult
+            + assignPriority(report : Report) : Priority
+            + findNearestContainer(location : Location) : Optional<ContainerId>
+            + estimateResolutionTime(report : Report) : Duration
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "Location" <<(V, #FFD700) Value Object>> {
+            - latitude : Double
+            - longitude : Double
+            - address : String
+            - district : String
+            + distanceTo(other : Location) : Double
+            + isWithinRadius(center : Location, radius : Double) : Boolean
+        }
+
+        class "Address" <<(V, #FFD700) Value Object>> {
+            - street : String
+            - number : String
+            - district : String
+            - city : String
+            - postalCode : String
+            + getFullAddress() : String
+        }
+
+        class "EmailAddress" <<(V, #FFD700) Value Object>> {
+            - email : String
+            + isValid() : Boolean
+            + getDomain() : String
+        }
+
+        class "PhoneNumber" <<(V, #FFD700) Value Object>> {
+            - countryCode : String
+            - number : String
+            + isValid() : Boolean
+            + getInternationalFormat() : String
+        }
+
+        class "Priority" <<(V, #FFD700) Value Object>> {
+            - level : Integer
+            - description : String
+            + isHigh() : Boolean
+            + isCritical() : Boolean
+            + compareTo(other : Priority) : Integer
+        }
+
+        class "ContainerId" <<(V, #FFD700) Value Object>> {
+            - containerId : Long
+        }
+
+        class "DistrictId" <<(V, #FFD700) Value Object>> {
+            - districtId : Long
+        }
+
+        class "ValidationResult" <<(V, #FFD700) Value Object>> {
+            - isValid : Boolean
+            - errors : List<String>
+            - warnings : List<String>
+            + hasErrors() : Boolean
+            + hasWarnings() : Boolean
+        }
+
+        class "DateRange" <<(V, #FFD700) Value Object>> {
+            - startDate : LocalDate
+            - endDate : LocalDate
+            + contains(date : LocalDate) : Boolean
+            + getDurationInDays() : Long
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate Root Compositions ---
+Citizen *-- CitizenId
+Citizen *-- PersonalInfo
+Citizen *-- ContactInfo
+Citizen *-- MembershipStatus
+Citizen *-- EngagementLevel
+Citizen *-- CitizenPreferences
+Citizen o-- Report
+Citizen o-- Notification
+
+Report *-- ReportId
+Report *-- ReportStatus
+Report o-- ReportImage
+
+RewardsProgram *-- RewardsProgramId
+
+' --- Entity Compositions ---
+ReportImage *-- ReportImageId
+Notification *-- NotificationId
+
+' --- Shared Kernel Usage ---
+Citizen ..> Address : lives at >
+Citizen ..> Location : reports from >
+Report ..> Location : located at >
+Report ..> Priority : has priority >
+Report ..> ContainerId : references >
+Citizen ..> DistrictId : belongs to >
+
+' --- Factory Relationships ---
+CitizenFactory ..> Citizen : creates >
+CitizenFactory ..> RegisterCitizenCommand : uses >
+ReportFactory ..> Report : creates >
+ReportFactory ..> SubmitReportCommand : uses >
+NotificationFactory ..> Notification : creates >
+
+' --- Strategy Relationships ---
+RewardCalculationStrategy <|.. BasicRewardStrategy : implements >
+RewardCalculationStrategy <|.. TieredRewardStrategy : implements >
+RewardCalculationStrategy <|.. SeasonalRewardStrategy : implements >
+RewardsManagementService o-- RewardCalculationStrategy : uses >
+
+' --- State Relationships ---
+ReportState <|.. SubmittedReportState : implements >
+ReportState <|.. InProgressReportState : implements >
+ReportState <|.. ResolvedReportState : implements >
+ReportState <|.. ClosedReportState : implements >
+Report o-- ReportState : has current state >
+
+' --- Command/Query Services ---
+CommunityCommandService ..> Citizen : manages >
+CommunityCommandService ..> Report : manages >
+CommunityCommandService ..> RegisterCitizenCommand
+CommunityCommandService ..> SubmitReportCommand
+CommunityCommandService ..> UpdateReportStatusCommand
+CommunityCommandService ..> RedeemRewardsCommand
+
+CommunityQueryService ..> Citizen : queries >
+CommunityQueryService ..> Report : queries >
+CommunityQueryService ..> GetCitizenByIdQuery
+CommunityQueryService ..> GetCitizenReportsQuery
+CommunityQueryService ..> GetReportsByLocationQuery
+
+EngagementAnalysisService ..> Citizen : analyzes >
+EngagementAnalysisService ..> EngagementLevel : calculates >
+
+RewardsManagementService ..> Citizen : awards points to >
+RewardsManagementService ..> RewardPoints : manages >
+
+ReportRoutingService ..> Report : routes >
+ReportRoutingService ..> Priority : assigns >
+
+' --- Domain Events ---
+Citizen ..> CitizenRegisteredEvent : publishes >
+Report ..> ReportSubmittedEvent : publishes >
+Report ..> ReportResolvedEvent : publishes >
+Citizen ..> RewardsEarnedEvent : publishes >
+
+@enduml

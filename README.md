@@ -2341,41 +2341,2178 @@ La arquitectura de deployment asegura disponibilidad del 99.9%, escalabilidad au
 
 ## 4.2. Tactical-Level Domain-Driven Design
 
-### 4.2.1. Bounded Context: <Bounded Context Name>
+### 4.2.1. Bounded Context: Container Monitoring
+
+En esta sección se presenta el análisis detallado del bounded context Container Monitoring, que encapsula toda la lógica de negocio relacionada con el monitoreo de contenedores de residuos mediante sensores IoT, la gestión de su estado operacional, y la generación de análisis predictivo para optimizar las operaciones de recolección municipal.
 
 #### 4.2.1.1. Domain Layer
 
+Esta capa contiene las reglas de negocio fundamentales del dominio de monitoreo de contenedores, implementando patrones DDD y de diseño para asegurar un código mantenible y escalable.
+
+**Aggregate Roots:**
+
+1. **`Container` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un contenedor de residuos y sus sensores asociados.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                  | Visibilidad | Descripción                                         |
+|----------------------|-----------------------|-------------|-----------------------------------------------------|
+| `id`                 | `Long`                | `private`   | Identificador único del contenedor en base de datos |
+| `containerId`        | `ContainerId`         | `private`   | Identificador de dominio del contenedor             |
+| `location`           | `Location`            | `private`   | Ubicación geográfica del contenedor                 |
+| `capacity`           | `ContainerCapacity`   | `private`   | Capacidad máxima del contenedor                     |
+| `currentFillLevel`   | `FillLevel`           | `private`   | Nivel actual de llenado del contenedor              |
+| `status`             | `ContainerStatus`     | `private`   | Estado operacional del contenedor                   |
+| `type`               | `ContainerType`       | `private`   | Tipo de residuos que almacena                       |
+| `lastCollectionDate` | `LocalDateTime`       | `private`   | Fecha de la última recolección                      |
+| `sensorReadings`     | `List<SensorReading>` | `private`   | Historial de lecturas de sensores                   |
+| `version`            | `Long`                | `private`   | Control de versión para optimistic locking          |
+
+**Métodos principales:**
+
+| Método                                | Tipo de Retorno | Visibilidad | Descripción                                                   |
+|---------------------------------------|-----------------|-------------|---------------------------------------------------------------|
+| `Container()`                         | `Constructor`   | `protected` | Constructor protegido para repositorio                        |
+| `Container(location, capacity, type)` | `Constructor`   | `public`    | Constructor con parámetros esenciales                         |
+| `Container(command)`                  | `Constructor`   | `public`    | Constructor desde comando usando Factory pattern              |
+| `addSensorReading(reading)`           | `void`          | `public`    | Agrega nueva lectura de sensor validando reglas de negocio    |
+| `updateFillLevel(newLevel)`           | `void`          | `public`    | Actualiza nivel de llenado y publica eventos de dominio       |
+| `markAsCollected()`                   | `void`          | `public`    | Marca contenedor como recolectado y resetea métricas          |
+| `isOverflowing()`                     | `boolean`       | `public`    | Verifica si el contenedor está desbordándose                  |
+| `needsCollection()`                   | `boolean`       | `public`    | Determina si requiere recolección basado en reglas de negocio |
+| `calculateFillRate()`                 | `double`        | `public`    | Calcula tasa de llenado para análisis predictivo              |
+
+2. **`SensorReading` (Entity)**
+
+Entidad que representa una lectura individual de los sensores IoT instalados en los contenedores.
+
+**Atributos principales:**
+
+| Atributo       | Tipo              | Visibilidad | Descripción                            |
+|----------------|-------------------|-------------|----------------------------------------|
+| `id`           | `Long`            | `private`   | Identificador único de la lectura      |
+| `readingId`    | `SensorReadingId` | `private`   | Identificador de dominio de la lectura |
+| `containerId`  | `ContainerId`     | `private`   | Referencia al contenedor asociado      |
+| `sensorId`     | `SensorId`        | `private`   | Identificador del sensor físico        |
+| `timestamp`    | `LocalDateTime`   | `private`   | Momento de la lectura                  |
+| `fillLevel`    | `FillLevel`       | `private`   | Nivel de llenado registrado            |
+| `temperature`  | `Temperature`     | `private`   | Temperatura ambiente registrada        |
+| `sensorHealth` | `SensorHealth`    | `private`   | Estado de salud del sensor             |
+| `isValidated`  | `boolean`         | `private`   | Indica si la lectura ha sido validada  |
+
+**Métodos principales:**
+
+| Método          | Tipo de Retorno    | Visibilidad | Descripción                                    |
+|-----------------|--------------------|-------------|------------------------------------------------|
+| `validate()`    | `ValidationResult` | `public`    | Valida la lectura usando Specification pattern |
+| `isAnomalous()` | `boolean`          | `public`    | Detecta anomalías en los datos del sensor      |
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones de dominio específicas:
+
+- **`ContainerId`**: Identificador único con validaciones de formato
+- **`FillLevel`**: Porcentaje de llenado con métodos `isCritical()`, `isNearFull()`
+- **`ContainerCapacity`**: Volumen y peso máximo con cálculo de utilización
+- **`ContainerStatus`**: Estado operacional con transiciones válidas
+- **`SensorHealth`**: Estado de salud del sensor con indicadores de mantenimiento
+- **`Temperature`**: Temperatura con conversiones y validaciones de rango
+
+**Factories (Creational Pattern):**
+
+1. **`ContainerFactory`**: Implementa Factory pattern para crear contenedores con configuraciones predeterminadas y validaciones complejas
+2. **`SensorReadingFactory`**: Crea lecturas de sensores desde mensajes IoT raw, aplicando transformaciones y validaciones
+
+**Strategies (Behavioral Pattern):**
+
+1. **`FillLevelPredictionStrategy`**: Interface para algoritmos de predicción
+  - **`LinearPredictionStrategy`**: Predicción basada en tendencias lineales
+  - **`MachineLearningPredictionStrategy`**: Predicción usando modelos de ML
+
+**Observers (Behavioral Pattern):**
+
+1. **`ContainerEventObserver`**: Interface para observadores de eventos de contenedores
+2. **`AlertNotificationObserver`**: Implementa notificaciones automáticas para eventos críticos
+
+**Domain Services:**
+
+1. **`ContainerCommandService`**: Orquesta operaciones CQRS de escritura
+2. **`ContainerQueryService`**: Maneja consultas CQRS de lectura
+3. **`ContainerAnalyticsService`**: Genera análisis predictivos usando Strategy pattern
+4. **`SensorValidationService`**: Valida lecturas de sensores y detecta anomalías
+
+**Commands (CQRS Write Side):**
+
+- `CreateContainerCommand`: Creación de nuevos contenedores
+- `UpdateFillLevelCommand`: Actualización de niveles de llenado
+- `MarkContainerCollectedCommand`: Marcado de recolección completada
+- `ScheduleMaintenanceCommand`: Programación de mantenimiento
+
+**Queries (CQRS Read Side):**
+
+- `GetContainerByIdQuery`: Consulta individual por ID
+- `GetContainersByLocationQuery`: Consulta por ubicación geográfica
+- `GetContainersByFillLevelQuery`: Consulta por nivel de llenado
+- `GetContainerAnalyticsQuery`: Generación de análisis específicos
+- `GetAllOverflowingContainersQuery`: Contenedores en estado crítico
+
+**Domain Events:**
+
+- `ContainerOverflowEvent`: Publicado cuando un contenedor se desborda
+- `SensorMalfunctionEvent`: Publicado cuando un sensor falla
+- `MaintenanceRequiredEvent`: Publicado cuando se requiere mantenimiento
+
 #### 4.2.1.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST y consumidores de eventos, implementando patrones de presentación para separar la lógica de interfaz del dominio.
+
+**Controllers:**
+
+1. **`Container Controller`**: Endpoints REST para operaciones CRUD de contenedores, consultas de estado y generación de análisis. Implementa MVC pattern y maneja requests desde dashboard administrativo y aplicaciones móviles.
+
+2. **`Sensor Data Controller`**: Endpoints especializados para recibir datos IoT desde message queue. Implementa Validation pattern para asegurar integridad de datos de sensores.
+
+3. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde otros bounded contexts (Route Planning BC para eventos de recolección, Community Relations BC para reportes ciudadanos). Implementa Consumer pattern para procesamiento asíncrono.
 
 #### 4.2.1.3. Application Layer
 
+Esta capa coordina las operaciones del dominio y orquesta los flujos de trabajo, implementando patrones de aplicación para gestionar la complejidad de las operaciones de negocio.
+
+**Application Services:**
+
+1. **`Container Service`**: Servicio principal que orquesta operaciones de contenedores incluyendo creación, actualizaciones y gestión de estado. Implementa Facade pattern para simplificar interacciones complejas entre agregados.
+
+2. **`Analytics Service`**: Genera análisis de niveles de llenado, patrones de uso e insights predictivos. Implementa Builder pattern para construcción de reportes complejos y Template Method pattern para diferentes tipos de análisis.
+
+3. **`Alert Service`**: Gestiona alertas de contenedores para advertencias de desbordamiento y fallas de sensores. Implementa Observer pattern para manejo reactivo de eventos críticos y State pattern para gestión de escalamiento de alertas.
+
 #### 4.2.1.4. Infrastructure Layer
 
+Esta capa proporciona implementaciones técnicas para persistencia, comunicación externa y servicios de infraestructura, aplicando patrones estructurales para desacoplar el dominio de detalles técnicos.
+
+**Repositories:**
+
+1. **`Container Repository`**: Implementación JPA para persistencia de contenedores con consultas personalizadas para análisis. Implementa Repository pattern con optimizaciones para consultas geoespaciales y análisis de tendencias.
+
+2. **`Sensor Repository`**: Repositorio JPA para lecturas de sensores con optimizaciones time-series para manejo eficiente de grandes volúmenes de datos IoT.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de contenedores a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de contenedores frecuentemente accedidos. Implementa Cache-Aside pattern para optimización de rendimiento.
+
+3. **`Notification Service`**: Envía alertas vía email y push notifications usando servicios externos. Implementa Adapter pattern para integración con múltiples proveedores de notificaciones.
+
 #### 4.2.1.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Container Monitoring bounded context, ilustrando la separación por capas DDD y las interacciones entre componentes. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers y event consumers que manejan comunicación externa
+- **Application Layer** (verde medio): Services que coordinan operaciones de negocio
+- **Infrastructure Layer** (verde oscuro): Repositories y servicios externos
+- **Integraciones externas**: Base de datos PostgreSQL (rojo), Redis Cache (naranja), y Kafka Message Queue (morado)
+
+La arquitectura implementa el patrón de dependencias hacia adentro, donde las capas externas dependen de las internas, asegurando que el dominio permanezca puro y testeable.
 
 #### 4.2.1.6. Bounded Context Software Architecture Code Level Diagrams
 
 ##### 4.2.1.6.1. Bounded Context Domain Layer Class Diagrams
 
+![class-diagram.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Container Monitoring, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Root**: Container como raíz del agregado con invariantes de negocio
+- **Entities**: SensorReading con identidad propia dentro del agregado
+- **Value Objects**: Objetos inmutables para conceptos del dominio
+- **Domain Services**: Servicios para lógica compleja que no pertenece a una entidad específica
+- **Domain Events**: Eventos para comunicación eventual consistency
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: ContainerFactory y SensorReadingFactory para creación compleja
+- **Strategy Pattern**: FillLevelPredictionStrategy para algoritmos intercambiables
+- **Observer Pattern**: ContainerEventObserver para manejo reactivo de eventos
+- **Repository Pattern**: Interfaces para abstracción de persistencia
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de negocio
+- **Queries**: Operaciones de lectura optimizadas por caso de uso
+- **Command/Query Services**: Separación clara de responsabilidades
+
+**Shared Kernel:**
+- Value Objects compartidos entre bounded contexts (Location, MunicipalityId, ContainerType)
+- Contratos estables para integración entre contextos
+
 ##### 4.2.1.6.2. Bounded Context Database Design Diagram
 
-### 4.2.2. Bounded Context: <Bounded Context Name>
+![database-design.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/1.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con las siguientes características técnicas:
+
+**Tablas principales:**
+- **containers**: Aggregate root con datos principales y metadatos de auditoría
+- **sensor_readings**: Entity con optimizaciones para datos time-series
+- **maintenance_events**: Gestión de eventos de mantenimiento
+- **container_events**: Almacenamiento de domain events para procesamiento asíncrono
+- **container_analytics_cache**: Cache de análisis para optimización de rendimiento
+
+**Optimizaciones implementadas:**
+- **Índices geoespaciales**: GIST indexes para consultas por ubicación
+- **Índices temporales**: Optimización para consultas de series de tiempo
+- **Triggers automáticos**: Actualización de timestamps y control de versiones
+- **Constraints robustos**: Validación de integridad a nivel de base de datos
+- **Funciones de limpieza**: Retención automática de datos con políticas configurables
+
+**Características técnicas:**
+- **JSONB**: Para datos flexibles de eventos y validaciones
+- **Optimistic locking**: Control de concurrencia con campo version
+- **Auditoría completa**: Timestamps automáticos para trazabilidad
+- **Vistas materializadas**: Para consultas comunes de análisis y reportes
+
+El esquema está optimizado para las operaciones identificadas en el dominio, incluyendo consultas geoespaciales, análisis de tendencias, y procesamiento de grandes volúmenes de datos IoT.
+
+### 4.2.2. Bounded Context: Route Planning
+
+En esta sección se presenta el análisis detallado del bounded context Route Planning, que encapsula toda la lógica de negocio relacionada con la optimización de rutas de recolección, la planificación inteligente de recorridos, y el seguimiento en tiempo real de la ejecución de rutas para maximizar la eficiencia operacional y minimizar costos ambientales.
 
 #### 4.2.2.1. Domain Layer
 
+Esta capa contiene las reglas de negocio fundamentales del dominio de planificación de rutas, implementando algoritmos de optimización avanzados y patrones de diseño para asegurar flexibilidad y escalabilidad en las operaciones de recolección.
+
+**Aggregate Roots:**
+
+1. **`Route` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una ruta de recolección, sus waypoints, y métricas de optimización.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                  | Visibilidad | Descripción                                     |
+|-----------------------|-----------------------|-------------|-------------------------------------------------|
+| `id`                  | `Long`                | `private`   | Identificador único de la ruta en base de datos |
+| `routeId`             | `RouteId`             | `private`   | Identificador de dominio de la ruta             |
+| `name`                | `String`              | `private`   | Nombre descriptivo de la ruta                   |
+| `municipalityId`      | `MunicipalityId`      | `private`   | Municipalidad propietaria de la ruta            |
+| `driverId`            | `DriverId`            | `private`   | Conductor asignado a la ruta                    |
+| `vehicleId`           | `VehicleId`           | `private`   | Vehículo asignado para la ejecución             |
+| `routeType`           | `RouteType`           | `private`   | Tipo de ruta (regular, emergencia, especial)    |
+| `status`              | `RouteStatus`         | `private`   | Estado actual de la ruta                        |
+| `scheduledDate`       | `LocalDateTime`       | `private`   | Fecha programada de ejecución                   |
+| `waypoints`           | `List<Waypoint>`      | `private`   | Lista ordenada de puntos de recolección         |
+| `optimizationMetrics` | `OptimizationMetrics` | `private`   | Métricas de optimización y rendimiento          |
+| `version`             | `Long`                | `private`   | Control de versión para optimistic locking      |
+
+**Métodos principales:**
+
+| Método                                   | Tipo de Retorno | Visibilidad | Descripción                                           |
+|------------------------------------------|-----------------|-------------|-------------------------------------------------------|
+| `Route()`                                | `Constructor`   | `protected` | Constructor protegido para repositorio                |
+| `Route(name, municipalityId, routeType)` | `Constructor`   | `public`    | Constructor con parámetros esenciales                 |
+| `addWaypoint(waypoint)`                  | `void`          | `public`    | Agrega waypoint validando restricciones de capacidad  |
+| `removeWaypoint(waypointId)`             | `void`          | `public`    | Elimina waypoint y recalcula secuencia                |
+| `startExecution()`                       | `void`          | `public`    | Inicia ejecución publicando eventos de dominio        |
+| `completeExecution()`                    | `void`          | `public`    | Marca ruta como completada y calcula métricas finales |
+| `optimizeWaypoints(strategy)`            | `void`          | `public`    | Optimiza orden de waypoints usando Strategy pattern   |
+| `updateProgress(currentLocation)`        | `void`          | `public`    | Actualiza progreso de ejecución en tiempo real        |
+| `isExecutable()`                         | `boolean`       | `public`    | Verifica si la ruta puede ser ejecutada               |
+| `canBeModified()`                        | `boolean`       | `public`    | Determina si la ruta permite modificaciones           |
+
+2. **`Waypoint` (Entity)**
+
+Entidad que representa un punto individual de recolección dentro de una ruta, con información específica del contenedor y métricas de servicio.
+
+**Atributos principales:**
+
+| Atributo               | Tipo             | Visibilidad | Descripción                           |
+|------------------------|------------------|-------------|---------------------------------------|
+| `id`                   | `Long`           | `private`   | Identificador único del waypoint      |
+| `waypointId`           | `WaypointId`     | `private`   | Identificador de dominio del waypoint |
+| `containerId`          | `ContainerId`    | `private`   | Referencia al contenedor a recolectar |
+| `location`             | `Location`       | `private`   | Ubicación geográfica del waypoint     |
+| `priority`             | `Priority`       | `private`   | Nivel de prioridad para optimización  |
+| `estimatedArrivalTime` | `LocalDateTime`  | `private`   | Hora estimada de llegada              |
+| `actualArrivalTime`    | `LocalDateTime`  | `private`   | Hora real de llegada registrada       |
+| `sequenceOrder`        | `Integer`        | `private`   | Orden en la secuencia de la ruta      |
+| `waypointStatus`       | `WaypointStatus` | `private`   | Estado actual del waypoint            |
+
+**Métodos principales:**
+
+| Método                        | Tipo de Retorno | Visibilidad | Descripción                                |
+|-------------------------------|-----------------|-------------|--------------------------------------------|
+| `markAsVisited()`             | `void`          | `public`    | Marca waypoint como visitado con timestamp |
+| `updateServiceTime(duration)` | `void`          | `public`    | Actualiza tiempo de servicio real          |
+| `canBeVisited()`              | `boolean`       | `public`    | Verifica si el waypoint puede ser visitado |
+| `isCompleted()`               | `boolean`       | `public`    | Determina si el waypoint está completado   |
+
+3. **`OptimizationResult` (Entity)**
+
+Entidad que almacena los resultados de algoritmos de optimización aplicados a rutas, permitiendo análisis comparativo y mejora continua.
+
+**Atributos principales:**
+
+| Atributo                   | Tipo                    | Visibilidad | Descripción                              |
+|----------------------------|-------------------------|-------------|------------------------------------------|
+| `algorithmUsed`            | `OptimizationAlgorithm` | `private`   | Algoritmo utilizado para optimización    |
+| `executionTime`            | `Duration`              | `private`   | Tiempo de ejecución del algoritmo        |
+| `optimizationScore`        | `Double`                | `private`   | Puntuación de calidad de la optimización |
+| `totalDistance`            | `Distance`              | `private`   | Distancia total de la ruta optimizada    |
+| `estimatedFuelConsumption` | `Double`                | `private`   | Consumo estimado de combustible          |
+| `co2Emissions`             | `Double`                | `private`   | Emisiones de CO2 estimadas               |
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio:
+
+- **`RouteId`**: Identificador único con validaciones de formato
+- **`RouteStatus`**: Estado con transiciones válidas y restricciones de modificación
+- **`WaypointStatus`**: Estado del waypoint con validaciones de progreso
+- **`Priority`**: Nivel de prioridad comparable para algoritmos de optimización
+- **`Distance`**: Distancia con operaciones matemáticas y conversiones
+- **`OptimizationMetrics`**: Métricas complejas con cálculos de eficiencia
+
+**Factories (Creational Pattern):**
+
+1. **`RouteFactory`**: Implementa Factory pattern para crear rutas con diferentes configuraciones (regular, emergencia, optimizada) aplicando validaciones complejas y configuraciones predeterminadas.
+
+2. **`WaypointFactory`**: Crea waypoints desde datos de contenedores, aplicando transformaciones de prioridad y cálculos de tiempo estimado.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de optimización dinámicamente:
+
+1. **`TravelingSalesmanStrategy`**: Implementa algoritmo TSP para optimización exacta en rutas pequeñas
+2. **`NearestNeighborStrategy`**: Algoritmo heurístico rápido para rutas grandes
+3. **`GeneticAlgorithmStrategy`**: Optimización evolutiva para problemas complejos
+4. **`HybridOptimizationStrategy`**: Combina múltiples estrategias para resultados óptimos
+
+**State Pattern:**
+
+Gestiona los diferentes estados de una ruta con comportamientos específicos:
+
+1. **`DraftRouteState`**: Permite modificaciones completas y optimización
+2. **`OptimizedRouteState`**: Permite asignación pero restricciones de modificación
+3. **`ExecutingRouteState`**: Solo permite actualizaciones de progreso
+4. **`CompletedRouteState`**: Estado inmutable con métricas finales
+
+**Domain Services:**
+
+1. **`RouteCommandService`**: Orquesta operaciones CQRS de escritura con validaciones complejas
+2. **`RouteQueryService`**: Maneja consultas CQRS optimizadas por caso de uso específico
+3. **`RouteOptimizationService`**: Coordina algoritmos de optimización usando Strategy pattern
+4. **`RouteValidationService`**: Valida restricciones complejas de rutas y capacidades
+
+**Commands (CQRS Write Side):**
+
+- `CreateRouteCommand`: Creación de rutas con validación de recursos
+- `OptimizeRouteCommand`: Optimización con parámetros configurables
+- `StartRouteExecutionCommand`: Inicio de ejecución con validaciones previas
+- `UpdateRouteProgressCommand`: Actualización de progreso en tiempo real
+- `CompleteRouteCommand`: Finalización con cálculo de métricas
+
+**Queries (CQRS Read Side):**
+
+- `GetRouteByIdQuery`: Consulta individual con datos completos
+- `GetRoutesByDriverQuery`: Rutas asignadas a conductor específico
+- `GetOptimizedRoutesQuery`: Rutas optimizadas por criterios específicos
+- `GetRouteOptimizationHistoryQuery`: Historial de optimizaciones para análisis
+- `GetActiveRoutesQuery`: Rutas en ejecución para monitoring
+
+**Domain Events:**
+
+- `RouteOptimizationCompletedEvent`: Publicado al completar optimización exitosa
+- `RouteExecutionStartedEvent`: Publicado al iniciar ejecución de ruta
+- `WaypointCompletedEvent`: Publicado al completar cada waypoint
+- `RouteDeviationDetectedEvent`: Publicado al detectar desviaciones significativas
+
 #### 4.2.2.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados y consumidores de eventos, implementando patrones de presentación para manejar la complejidad de las operaciones de optimización.
+
+**Controllers:**
+
+1. **`Route Controller`**: Endpoints REST para operaciones CRUD de rutas, optimización bajo demanda, y actualizaciones de progreso en tiempo real. Implementa MVC pattern y maneja requests desde aplicaciones móviles de conductores y dashboard administrativo.
+
+2. **`Optimization Controller`**: Endpoints especializados para algoritmos de optimización y métricas de rendimiento. Proporciona interfaz de configuración de parámetros de optimización y análisis comparativo de resultados.
+
+3. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Container Monitoring BC (actualizaciones de fill level) y Municipal Operations BC (disponibilidad de vehículos). Implementa Consumer pattern para procesamiento asíncrono y actualización automática de prioridades.
 
 #### 4.2.2.3. Application Layer
 
+Esta capa coordina las operaciones complejas del dominio y orquesta los flujos de trabajo de optimización, implementando patrones de aplicación para gestionar la complejidad algorítmica y operacional.
+
+**Application Services:**
+
+1. **`Route Service`**: Servicio principal que orquesta operaciones de rutas incluyendo creación, asignaciones, y seguimiento de ejecución. Implementa Command pattern para operaciones de ruta y Facade pattern para simplificar interacciones complejas entre agregados.
+
+2. **`Optimization Service`**: Genera rutas optimizadas usando múltiples algoritmos y datos en tiempo real. Implementa Strategy pattern para diferentes enfoques de optimización y Builder pattern para construcción de configuraciones complejas de optimización.
+
+3. **`Tracking Service`**: Gestiona seguimiento en tiempo real de ejecución de rutas, monitoreo de progreso, y manejo de desviaciones. Implementa State pattern para gestión de estados de ruta y Observer pattern para notificaciones automáticas de eventos críticos.
+
 #### 4.2.2.4. Infrastructure Layer
 
+Esta capa proporciona implementaciones técnicas para persistencia de algoritmos, integración con servicios de mapas, y comunicación con otros bounded contexts, aplicando patrones estructurales para optimizar rendimiento.
+
+**Repositories:**
+
+1. **`Route Repository`**: Implementación JPA para persistencia de rutas con consultas geoespaciales y optimizaciones para histórico de rutas. Implementa Repository pattern con índices especializados para consultas de optimización.
+
+2. **`Optimization Repository`**: Repositorio especializado para resultados de algoritmos con métricas de rendimiento para análisis comparativo y mejora continua de algoritmos.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de rutas a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para cálculos de rutas y datos de optimización frecuentemente accedidos. Implementa Cache-Aside pattern para optimización de rendimiento de algoritmos.
+
+3. **`External Maps Service`**: Integración con Google Maps API para cálculo de rutas reales y datos de tráfico. Implementa Adapter pattern para abstracción de proveedores de mapas y Circuit Breaker pattern para resiliencia.
+
 #### 4.2.2.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Route Planning bounded context, ilustrando la separación por capas DDD y las integraciones especializadas para optimización de rutas. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para rutas y optimización, plus event consumers para datos en tiempo real
+- **Application Layer** (verde medio): Services que coordinan algoritmos de optimización y seguimiento de ejecución
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para consultas geoespaciales y servicios externos especializados
+- **Integraciones críticas**: Google Maps API para cálculos reales, Weather Service para adaptación climática
+
+La arquitectura implementa patrones avanzados como Strategy para algoritmos intercambiables, State para gestión de estados de ruta, y Circuit Breaker para integraciones externas resilientes.
 
 #### 4.2.2.6. Bounded Context Software Architecture Code Level Diagrams
 
 ##### 4.2.2.6.1. Bounded Context Domain Layer Class Diagrams
 
+![class-diagram-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Route Planning, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Root**: Route como raíz del agregado con invariantes de optimización
+- **Entities**: Waypoint y OptimizationResult con identidad y ciclo de vida propios
+- **Value Objects**: Objetos inmutables para conceptos de optimización y geolocalización
+- **Domain Services**: Servicios para algoritmos complejos de optimización
+- **Domain Events**: Eventos para coordinación con otros BCs y tracking en tiempo real
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: RouteFactory y WaypointFactory para creación con validaciones complejas
+- **Strategy Pattern**: OptimizationStrategy con múltiples algoritmos (TSP, Genetic, Hybrid)
+- **State Pattern**: RouteState para gestión de estados con transiciones válidas
+- **Repository Pattern**: Interfaces para abstracción de persistencia geoespacial
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de optimización
+- **Queries**: Operaciones de lectura optimizadas para análisis y reporting
+- **Command/Query Services**: Separación clara con especialización en algoritmos
+
+**Algoritmos de optimización:**
+- **Traveling Salesman**: Para rutas pequeñas con solución exacta
+- **Genetic Algorithm**: Para optimización evolutiva en problemas complejos
+- **Hybrid Strategy**: Combinación inteligente de múltiples enfoques
+
 ##### 4.2.2.6.2. Bounded Context Database Design Diagram
+
+![database-design-route-planning.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/2.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para algoritmos de rutas:
+
+**Tablas principales:**
+- **routes**: Aggregate root con métricas de optimización y control de ejecución
+- **waypoints**: Entity con índices geoespaciales para consultas de proximidad
+- **optimization_results**: Histórico de algoritmos con métricas de rendimiento
+- **route_progress**: Seguimiento en tiempo real con actualizaciones frecuentes
+- **algorithm_performance_cache**: Cache de rendimiento para selección automática de algoritmos
+
+**Optimizaciones especializadas:**
+- **Índices geoespaciales**: GIST indexes para consultas de ubicación y proximidad
+- **Índices compuestos**: Para consultas de secuencia y optimización
+- **Triggers de progreso**: Actualización automática de métricas de ejecución
+- **Funciones de eficiencia**: Cálculos complejos de rendimiento de rutas
+- **Particionamiento temporal**: Para datos históricos de optimización
+
+**Características técnicas:**
+- **JSONB**: Para parámetros complejos de algoritmos y métricas detalladas
+- **Geolocalización avanzada**: Con validaciones de coordenadas y cálculos de distancia
+- **Cache de algoritmos**: Para optimización de selección de estrategias
+- **Limpieza inteligente**: Retención de mejores resultados por algoritmo
+
+El esquema está optimizado para las operaciones algorítmicas identificadas en el dominio, incluyendo cálculos de rutas óptimas, análisis de rendimiento de algoritmos, y seguimiento GPS en tiempo real con alta frecuencia de actualizaciones.
+
+### 4.2.3. Bounded Context: Municipal Operations
+
+En esta sección se presenta el análisis detallado del bounded context Municipal Operations, que encapsula toda la lógica de negocio relacionada con la gestión de operaciones municipales, administración de distritos, gestión de flotas vehiculares, y coordinación de recursos humanos para optimizar la eficiencia operacional y el control presupuestario municipal.
+
+#### 4.2.3.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de operaciones municipales, implementando patrones avanzados de gestión de recursos y estrategias de mantenimiento para asegurar eficiencia operacional y control de costos.
+
+**Aggregate Roots:**
+
+1. **`District` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un distrito municipal, sus recursos asignados, presupuesto, y métricas de rendimiento operacional.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                 | Visibilidad | Descripción                                       |
+|----------------------|----------------------|-------------|---------------------------------------------------|
+| `id`                 | `Long`               | `private`   | Identificador único del distrito en base de datos |
+| `districtId`         | `DistrictId`         | `private`   | Identificador de dominio del distrito             |
+| `name`               | `String`             | `private`   | Nombre oficial del distrito municipal             |
+| `municipalityId`     | `MunicipalityId`     | `private`   | Municipalidad a la que pertenece                  |
+| `administratorId`    | `AdministratorId`    | `private`   | Administrador responsable del distrito            |
+| `boundaries`         | `GeographicBoundary` | `private`   | Límites geográficos del distrito                  |
+| `population`         | `Population`         | `private`   | Datos demográficos del distrito                   |
+| `budget`             | `Budget`             | `private`   | Presupuesto asignado con categorías               |
+| `operationalStatus`  | `OperationalStatus`  | `private`   | Estado operacional actual                         |
+| `resources`          | `List<Resource>`     | `private`   | Recursos asignados al distrito                    |
+| `performanceMetrics` | `PerformanceMetrics` | `private`   | Métricas de rendimiento operacional               |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno       | Visibilidad | Descripción                                            |
+|----------------------------------------|-----------------------|-------------|--------------------------------------------------------|
+| `allocateResource(resource)`           | `void`                | `public`    | Asigna recurso validando disponibilidad presupuestaria |
+| `deallocateResource(resourceId)`       | `void`                | `public`    | Libera recurso y actualiza utilización                 |
+| `updateBudget(newBudget)`              | `void`                | `public`    | Actualiza presupuesto con validaciones fiscales        |
+| `assignAdministrator(administratorId)` | `void`                | `public`    | Asigna administrador con verificación de autorización  |
+| `calculateOperationalCost()`           | `MonetaryAmount`      | `public`    | Calcula costo operacional total del distrito           |
+| `isWithinBoundaries(location)`         | `boolean`             | `public`    | Verifica si ubicación está dentro de límites           |
+| `hasAvailableCapacity()`               | `boolean`             | `public`    | Determina si hay capacidad para nuevos recursos        |
+| `getResourceUtilization()`             | `ResourceUtilization` | `public`    | Calcula utilización actual de recursos                 |
+
+2. **`Vehicle` (Aggregate Root)**
+
+Representa un vehículo de la flota municipal con capacidades de tracking GPS, historial de mantenimiento, y métricas operacionales para optimización de costos.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                      | Visibilidad | Descripción                                      |
+|-----------------------|---------------------------|-------------|--------------------------------------------------|
+| `vehicleId`           | `VehicleId`               | `private`   | Identificador de dominio del vehículo            |
+| `registrationNumber`  | `String`                  | `private`   | Número de placa único                            |
+| `vehicleType`         | `VehicleType`             | `private`   | Tipo de vehículo (recolector, compactador, etc.) |
+| `capacity`            | `VehicleCapacity`         | `private`   | Capacidad de carga del vehículo                  |
+| `status`              | `VehicleStatus`           | `private`   | Estado operacional actual                        |
+| `maintenanceHistory`  | `List<MaintenanceRecord>` | `private`   | Historial completo de mantenimiento              |
+| `operationalMetrics`  | `OperationalMetrics`      | `private`   | Métricas de eficiencia y costo                   |
+| `gpsTracker`          | `GPSTracker`              | `private`   | Sistema de tracking GPS                          |
+| `nextMaintenanceDate` | `LocalDateTime`           | `private`   | Fecha programada de próximo mantenimiento        |
+
+**Métodos principales:**
+
+| Método                            | Tipo de Retorno  | Visibilidad | Descripción                                     |
+|-----------------------------------|------------------|-------------|-------------------------------------------------|
+| `assignToDistrict(districtId)`    | `void`           | `public`    | Asigna vehículo a distrito específico           |
+| `assignDriver(driverId)`          | `void`           | `public`    | Asigna conductor validando certificaciones      |
+| `scheduleMaintenance(type, date)` | `void`           | `public`    | Programa mantenimiento usando Strategy pattern  |
+| `recordMaintenance(record)`       | `void`           | `public`    | Registra mantenimiento completado               |
+| `isAvailableForRoute()`           | `boolean`        | `public`    | Verifica disponibilidad para asignación de ruta |
+| `requiresMaintenance()`           | `boolean`        | `public`    | Determina si requiere mantenimiento             |
+| `calculateOperationalCost()`      | `MonetaryAmount` | `public`    | Calcula costo operacional por período           |
+| `updateLocation(location)`        | `void`           | `public`    | Actualiza ubicación GPS en tiempo real          |
+
+3. **`Driver` (Aggregate Root)**
+
+Representa un conductor municipal con información personal, certificaciones, horarios de trabajo, y métricas de rendimiento para gestión de recursos humanos.
+
+**Atributos principales:**
+
+| Atributo            | Tipo                  | Visibilidad | Descripción                            |
+|---------------------|-----------------------|-------------|----------------------------------------|
+| `driverId`          | `DriverId`            | `private`   | Identificador de dominio del conductor |
+| `personalInfo`      | `PersonalInfo`        | `private`   | Información personal y documentos      |
+| `licenseInfo`       | `LicenseInfo`         | `private`   | Información de licencia de conducir    |
+| `employmentStatus`  | `EmploymentStatus`    | `private`   | Estado laboral actual                  |
+| `workSchedule`      | `WorkSchedule`        | `private`   | Horario de trabajo detallado           |
+| `performanceRecord` | `PerformanceRecord`   | `private`   | Registro de rendimiento laboral        |
+| `certifications`    | `List<Certification>` | `private`   | Certificaciones y capacitaciones       |
+
+**Métodos principales:**
+
+| Método                           | Tipo de Retorno | Visibilidad | Descripción                                  |
+|----------------------------------|-----------------|-------------|----------------------------------------------|
+| `assignToDistrict(districtId)`   | `void`          | `public`    | Asigna conductor a distrito específico       |
+| `assignVehicle(vehicleId)`       | `void`          | `public`    | Asigna vehículo verificando compatibilidad   |
+| `updateWorkSchedule(schedule)`   | `void`          | `public`    | Actualiza horario con validaciones laborales |
+| `recordPerformance(metrics)`     | `void`          | `public`    | Registra métricas de rendimiento             |
+| `isAvailableForAssignment()`     | `boolean`       | `public`    | Verifica disponibilidad para asignación      |
+| `canOperateVehicle(vehicleType)` | `boolean`       | `public`    | Verifica si puede operar tipo de vehículo    |
+| `calculateWorkingHours(period)`  | `Duration`      | `public`    | Calcula horas trabajadas en período          |
+
+**Entities:**
+
+4. **`Resource` (Entity)**
+
+Entidad que representa recursos asignados a distritos con seguimiento de utilización y costos operacionales.
+
+5. **`MaintenanceRecord` (Entity)**
+
+Entidad que registra eventos de mantenimiento vehicular con costos, técnicos, y resultados.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio municipal:
+
+- **`GeographicBoundary`**: Límites geográficos con validaciones de contención
+- **`Budget`**: Presupuesto con categorías y validaciones fiscales
+- **`VehicleCapacity`**: Capacidad con validaciones de carga
+- **`WorkSchedule`**: Horarios con validaciones laborales
+- **`PerformanceMetrics`**: Métricas con cálculos de eficiencia
+
+**Factories (Creational Pattern):**
+
+1. **`DistrictFactory`**: Implementa Factory pattern para crear distritos con configuraciones específicas (urbanos con alta densidad, rurales con grandes áreas) aplicando validaciones presupuestarias.
+
+2. **`VehicleFactory`**: Crea diferentes tipos de vehículos (recolectores, compactadores, mantenimiento) con configuraciones específicas y equipamiento.
+
+3. **`ResourceAllocationFactory`**: Gestiona creación de asignaciones de recursos con validaciones de capacidad y presupuesto.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar políticas de mantenimiento dinámicamente:
+
+1. **`PreventiveMaintenanceStrategy`**: Mantenimiento programado basado en tiempo/kilometraje
+2. **`CorrectiveMaintenanceStrategy`**: Mantenimiento reactivo para reparaciones
+3. **`PredictiveMaintenanceStrategy`**: Mantenimiento basado en análisis de datos IoT
+
+**Builder Pattern:**
+
+1. **`DistrictBuilder`**: Construcción compleja de distritos con múltiples recursos y configuraciones
+2. **`VehicleConfigurationBuilder`**: Configuración detallada de vehículos con equipamiento especializado
+
+**Domain Services:**
+
+1. **`MunicipalCommandService`**: Orquesta operaciones CQRS de escritura para entidades municipales
+2. **`MunicipalQueryService`**: Maneja consultas CQRS optimizadas para reportes municipales
+3. **`ResourceAllocationService`**: Optimiza distribución de recursos entre distritos
+4. **`FleetManagementService`**: Coordina operaciones de flota usando Strategy pattern
+5. **`PerformanceAnalysisService`**: Genera análisis de rendimiento operacional
+
+**Commands (CQRS Write Side):**
+
+- `CreateDistrictCommand`: Creación de distritos con validaciones geográficas
+- `RegisterVehicleCommand`: Registro de vehículos con validaciones técnicas
+- `RegisterDriverCommand`: Registro de conductores con verificación de certificaciones
+- `AllocateResourceCommand`: Asignación de recursos con validaciones presupuestarias
+- `ScheduleMaintenanceCommand`: Programación de mantenimiento vehicular
+
+**Queries (CQRS Read Side):**
+
+- `GetDistrictsByMunicipalityQuery`: Consulta de distritos por municipalidad
+- `GetVehiclesByDistrictQuery`: Consulta de vehículos por distrito y estado
+- `GetAvailableDriversQuery`: Consulta de conductores disponibles por turno
+- `GetMaintenanceScheduleQuery`: Cronograma de mantenimiento por período
+- `GetResourceUtilizationQuery`: Análisis de utilización de recursos
+
+**Domain Events:**
+
+- `DistrictCreatedEvent`: Publicado al crear nuevos distritos municipales
+- `VehicleAssignedEvent`: Publicado al asignar vehículos a distritos o conductores
+- `MaintenanceScheduledEvent`: Publicado al programar mantenimiento vehicular
+- `ResourceAllocatedEvent`: Publicado al asignar recursos a distritos
+
+#### 4.2.3.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en gestión municipal y consumidores de eventos para coordinación operacional.
+
+**Controllers:**
+
+1. **`District Controller`**: Endpoints REST para operaciones CRUD de distritos, asignación de recursos, y monitoreo de rendimiento. Maneja requests desde dashboard administrativo con validaciones de autorización municipal.
+
+2. **`Vehicle Controller`**: Endpoints especializados para gestión de flota vehicular, programación de mantenimiento, y seguimiento de disponibilidad. Proporciona interfaces para tracking GPS y gestión de asignaciones.
+
+3. **`Driver Controller`**: Endpoints para gestión de conductores, programación de turnos, y seguimiento de rendimiento. Implementa validaciones de certificaciones y horarios laborales.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Route Planning BC (finalización de rutas) y Payment & Subscriptions BC (actualizaciones de facturación municipal). Implementa Consumer pattern para procesamiento asíncrono.
+
+#### 4.2.3.3. Application Layer
+
+Esta capa coordina las operaciones municipales complejas y orquesta los flujos de trabajo de gestión de recursos, implementando patrones para optimizar eficiencia operacional.
+
+**Application Services:**
+
+1. **`Municipal Service`**: Servicio principal que orquesta operaciones municipales incluyendo gestión de distritos, coordinación de recursos, y coordinación operacional. Implementa Command pattern para operaciones municipales y Facade pattern para simplificar interacciones complejas.
+
+2. **`Fleet Service`**: Gestiona operaciones de flota vehicular, programación de mantenimiento, y optimización de disponibilidad. Implementa Strategy pattern para políticas de mantenimiento y Template Method pattern para diferentes tipos de análisis de flota.
+
+3. **`Resource Service`**: Maneja asignación de recursos, planificación de capacidad, y optimización de eficiencia operacional. Implementa Factory pattern para creación de recursos y Builder pattern para configuraciones complejas de asignación.
+
+#### 4.2.3.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos municipales, notificaciones operacionales, y comunicación con otros bounded contexts.
+
+**Repositories:**
+
+1. **`District Repository`**: Implementación JPA para persistencia de distritos con consultas jerárquicas y límites geográficos. Implementa Repository pattern con optimizaciones para consultas geoespaciales complejas.
+
+2. **`Vehicle Repository`**: Repositorio especializado para datos de flota con historial de mantenimiento y seguimiento de disponibilidad. Incluye optimizaciones para consultas de tracking GPS.
+
+3. **`Driver Repository`**: Repositorio para datos de conductores con métricas de rendimiento y gestión de horarios. Optimizado para consultas de disponibilidad y certificaciones.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de operaciones municipales a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos municipales frecuentemente accedidos y disponibilidad de recursos. Implementa Cache-Aside pattern para optimización de consultas geográficas.
+
+3. **`Notification Service`**: Envía notificaciones operacionales vía email y SMS para alertas de mantenimiento y actualizaciones de horarios. Implementa Adapter pattern para múltiples proveedores de notificaciones.
+
+#### 4.2.3.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Municipal Operations bounded context, ilustrando la separación por capas DDD y las especializaciones para gestión municipal. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para distritos, vehículos y conductores, plus event consumers para coordinación operacional
+- **Application Layer** (verde medio): Services que coordinan operaciones municipales, gestión de flotas, y asignación de recursos
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos geográficos y servicios de notificación especializados
+- **Integraciones operacionales**: Email y SMS services para notificaciones críticas, comunicación con Route Planning BC y Payment BC
+
+La arquitectura implementa patrones avanzados como Strategy para políticas de mantenimiento, Builder para configuraciones complejas, y Factory para diferentes tipos de recursos municipales.
+
+#### 4.2.3.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.3.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Municipal Operations, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: District, Vehicle, Driver como raíces con invariantes municipales
+- **Entities**: Resource y MaintenanceRecord con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos municipales complejos
+- **Domain Services**: Servicios para operaciones municipales complejas
+- **Domain Events**: Eventos para coordinación operacional entre distritos
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: DistrictFactory, VehicleFactory, ResourceAllocationFactory para creación especializada
+- **Strategy Pattern**: MaintenanceStrategy con múltiples políticas (Preventivo, Correctivo, Predictivo)
+- **Builder Pattern**: DistrictBuilder y VehicleConfigurationBuilder para construcción compleja
+- **Repository Pattern**: Interfaces para abstracción de persistencia municipal
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones municipales
+- **Queries**: Operaciones de lectura optimizadas para reportes y análisis
+- **Command/Query Services**: Separación clara con especialización municipal
+
+**Gestión de recursos:**
+- **Resource allocation**: Algoritmos de asignación con validaciones presupuestarias
+- **Fleet management**: Gestión completa de flotas con mantenimiento predictivo
+- **Performance tracking**: Métricas operacionales con análisis temporal
+
+##### 4.2.3.6.2. Bounded Context Database Design Diagram
+
+![database-design-municipal-operations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/3.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para operaciones municipales:
+
+**Tablas principales:**
+- **districts**: Aggregate root con límites geográficos, presupuestos y métricas de rendimiento
+- **vehicles**: Aggregate root con tracking GPS, historial de mantenimiento y asignaciones
+- **drivers**: Aggregate root con certificaciones, horarios de trabajo y rendimiento
+- **resources**: Entity para gestión de recursos con utilización y costos
+- **maintenance_records**: Historial completo de mantenimiento con técnicos y costos
+
+**Tablas auxiliares especializadas:**
+- **driver_certifications**: Gestión de certificaciones con fechas de vencimiento
+- **work_schedules**: Horarios detallados por día de la semana
+- **performance_history**: Historial temporal de métricas operacionales
+
+**Optimizaciones municipales:**
+- **Índices geoespaciales**: GIST indexes para límites distritales y tracking vehicular
+- **Índices GIN**: Para consultas complejas en datos JSONB de límites geográficos
+- **Triggers bidireccionales**: Sincronización automática entre conductores y vehículos
+- **Funciones de eficiencia**: Cálculos operacionales complejos por distrito
+- **Constraints municipales**: Validaciones específicas para operaciones municipales
+
+**Características técnicas:**
+- **JSONB avanzado**: Para límites geográficos complejos y configuraciones vehiculares
+- **Tracking GPS completo**: Con validaciones de coordenadas y historial de ubicaciones
+- **Gestión de horarios**: Sistema completo de turnos y disponibilidad
+- **Análisis de rendimiento**: Métricas temporales con agregaciones optimizadas
+
+El esquema está optimizado para las operaciones municipales identificadas en el dominio, incluyendo gestión de flotas con GPS en tiempo real, programación de mantenimiento predictivo, análisis de eficiencia operacional, y gestión presupuestaria con validaciones fiscales.
+
+### 4.2.4. Bounded Context: Community Relations
+
+En esta sección se presenta el análisis detallado del bounded context Community Relations, que encapsula toda la lógica de negocio relacionada con el engagement ciudadano, gestión de reportes comunitarios, sistemas de recompensas gamificados, y comunicación omnicanal para fomentar la participación activa de los ciudadanos en la gestión municipal de residuos.
+
+#### 4.2.4.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de relaciones comunitarias, implementando patrones avanzados de gamificación y engagement para maximizar la participación ciudadana y mejorar la calidad del servicio municipal.
+
+**Aggregate Roots:**
+
+1. **`Citizen` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con un ciudadano, su nivel de engagement, historial de participación, y acumulación de recompensas en el sistema gamificado.
+
+**Atributos principales:**
+
+| Atributo            | Tipo                 | Visibilidad | Descripción                                            |
+|---------------------|----------------------|-------------|--------------------------------------------------------|
+| `id`                | `Long`               | `private`   | Identificador único del ciudadano en base de datos     |
+| `citizenId`         | `CitizenId`          | `private`   | Identificador de dominio del ciudadano                 |
+| `personalInfo`      | `PersonalInfo`       | `private`   | Información personal y documentos de identidad         |
+| `contactInfo`       | `ContactInfo`        | `private`   | Información de contacto y preferencias de comunicación |
+| `membershipLevel`   | `MembershipLevel`    | `private`   | Nivel de membresía en programa de recompensas          |
+| `engagementLevel`   | `EngagementLevel`    | `private`   | Nivel de participación ciudadana calculado             |
+| `engagementScore`   | `EngagementScore`    | `private`   | Puntuación numérica de engagement                      |
+| `totalRewardPoints` | `RewardPoints`       | `private`   | Puntos acumulados en sistema de recompensas            |
+| `preferences`       | `CitizenPreferences` | `private`   | Preferencias de notificación y privacidad              |
+| `registrationDate`  | `LocalDateTime`      | `private`   | Fecha de registro en la plataforma                     |
+| `lastActivity`      | `LocalDateTime`      | `private`   | Timestamp de última actividad                          |
+
+**Métodos principales:**
+
+| Método                             | Tipo de Retorno   | Visibilidad | Descripción                                         |
+|------------------------------------|-------------------|-------------|-----------------------------------------------------|
+| `submitReport(report)`             | `void`            | `public`    | Envía reporte ciudadano validando reglas de negocio |
+| `earnRewardPoints(points, reason)` | `void`            | `public`    | Acumula puntos de recompensa con auditoría          |
+| `redeemRewards(redemption)`        | `void`            | `public`    | Canjea recompensas validando disponibilidad         |
+| `updateEngagementLevel()`          | `void`            | `public`    | Recalcula nivel de engagement basado en actividad   |
+| `canSubmitReport()`                | `boolean`         | `public`    | Verifica si puede enviar reportes según reglas      |
+| `calculateEngagementScore()`       | `EngagementScore` | `public`    | Calcula puntuación de engagement actual             |
+| `getActiveReports()`               | `List<Report>`    | `public`    | Obtiene reportes pendientes del ciudadano           |
+| `updatePreferences(preferences)`   | `void`            | `public`    | Actualiza preferencias de comunicación              |
+
+2. **`Report` (Aggregate Root)**
+
+Representa un reporte ciudadano con workflow de estados, geolocalización, y sistema de feedback para asegurar resolución efectiva de problemas comunitarios.
+
+**Atributos principales:**
+
+| Atributo         | Tipo                | Visibilidad | Descripción                             |
+|------------------|---------------------|-------------|-----------------------------------------|
+| `reportId`       | `ReportId`          | `private`   | Identificador de dominio del reporte    |
+| `citizenId`      | `CitizenId`         | `private`   | Ciudadano que envió el reporte          |
+| `reportType`     | `ReportType`        | `private`   | Tipo de problema reportado              |
+| `title`          | `String`            | `private`   | Título descriptivo del reporte          |
+| `description`    | `String`            | `private`   | Descripción detallada del problema      |
+| `location`       | `Location`          | `private`   | Ubicación geográfica del problema       |
+| `priority`       | `Priority`          | `private`   | Nivel de prioridad del reporte          |
+| `status`         | `ReportStatus`      | `private`   | Estado actual en workflow               |
+| `images`         | `List<ReportImage>` | `private`   | Evidencia fotográfica del problema      |
+| `feedback`       | `CitizenFeedback`   | `private`   | Feedback del ciudadano sobre resolución |
+| `resolutionTime` | `Duration`          | `private`   | Tiempo total de resolución              |
+
+**Métodos principales:**
+
+| Método                      | Tipo de Retorno | Visibilidad | Descripción                                   |
+|-----------------------------|-----------------|-------------|-----------------------------------------------|
+| `acknowledge()`             | `void`          | `public`    | Marca reporte como reconocido por autoridades |
+| `startProcessing()`         | `void`          | `public`    | Inicia procesamiento usando State pattern     |
+| `resolve(resolution)`       | `void`          | `public`    | Resuelve reporte con descripción de solución  |
+| `addFeedback(feedback)`     | `void`          | `public`    | Agrega feedback ciudadano sobre resolución    |
+| `calculateResolutionTime()` | `Duration`      | `public`    | Calcula tiempo total de resolución            |
+| `canBeResolved()`           | `boolean`       | `public`    | Verifica si reporte puede ser resuelto        |
+| `isOverdue()`               | `boolean`       | `public`    | Determina si reporte excede tiempo esperado   |
+
+3. **`RewardsProgram` (Aggregate Root)**
+
+Representa un programa de recompensas configurable con reglas específicas, opciones de canje, y métricas de participación para incentivar engagement ciudadano.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                     | Visibilidad | Descripción                                    |
+|----------------------|--------------------------|-------------|------------------------------------------------|
+| `programId`          | `ProgramId`              | `private`   | Identificador del programa de recompensas      |
+| `name`               | `String`                 | `private`   | Nombre del programa                            |
+| `rules`              | `RewardRules`            | `private`   | Reglas configurables de otorgamiento de puntos |
+| `redemptionOptions`  | `List<RedemptionOption>` | `private`   | Opciones disponibles para canje                |
+| `isActive`           | `boolean`                | `private`   | Estado de activación del programa              |
+| `participants`       | `Integer`                | `private`   | Número total de participantes                  |
+| `totalPointsAwarded` | `Long`                   | `private`   | Puntos totales otorgados                       |
+
+**Entities:**
+
+4. **`ReportImage` (Entity)**
+
+Entidad que representa evidencia fotográfica adjunta a reportes ciudadanos con validaciones de formato y tamaño.
+
+5. **`Notification` (Entity)**
+
+Entidad que gestiona comunicaciones dirigidas a ciudadanos con soporte multi-canal y tracking de entrega.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio de engagement:
+
+- **`PersonalInfo`**: Información personal con validaciones de documentos de identidad
+- **`EngagementLevel`**: Nivel de participación con cálculos automáticos de progreso
+- **`RewardPoints`**: Puntos con fecha de expiración y operaciones matemáticas
+- **`CitizenPreferences`**: Preferencias de notificación y configuración de privacidad
+- **`CitizenFeedback`**: Feedback estructurado con ratings y comentarios
+
+**Factories (Creational Pattern):**
+
+1. **`CitizenFactory`**: Implementa Factory pattern para crear ciudadanos con diferentes configuraciones (registrados con datos completos, invitados con información mínima) aplicando validaciones específicas por tipo.
+
+2. **`ReportFactory`**: Crea diferentes tipos de reportes (emergencia con alta prioridad, contenedores con geolocalización automática, sugerencias con workflow simplificado) con configuraciones predeterminadas.
+
+3. **`NotificationFactory`**: Genera notificaciones contextuales según tipo de evento y preferencias ciudadanas, aplicando templates y canales apropiados.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de cálculo de recompensas dinámicamente:
+
+1. **`BasicRewardStrategy`**: Algoritmo simple basado en acciones básicas ciudadanas
+2. **`TieredRewardStrategy`**: Recompensas escalonadas según nivel de membresía
+3. **`SeasonalRewardStrategy`**: Bonificaciones especiales por campañas temporales
+4. **`CommunityRewardStrategy`**: Recompensas por actividades colaborativas comunitarias
+
+**State Pattern:**
+
+Gestiona los diferentes estados de un reporte con comportamientos y transiciones específicas:
+
+1. **`SubmittedReportState`**: Permite edición limitada y asignación de prioridad
+2. **`AcknowledgedReportState`**: En proceso de validación por autoridades
+3. **`InProgressReportState`**: Siendo atendido con actualizaciones de progreso
+4. **`ResolvedReportState`**: Resuelto pendiente de feedback ciudadano
+5. **`ClosedReportState`**: Estado final con métricas de resolución
+
+**Domain Services:**
+
+1. **`CitizenCommandService`**: Orquesta operaciones CQRS de escritura para gestión ciudadana
+2. **`CitizenQueryService`**: Maneja consultas CQRS optimizadas para análisis de engagement
+3. **`EngagementAnalysisService`**: Analiza patrones de participación y calcula métricas de engagement
+4. **`RewardsManagementService`**: Gestiona lógica compleja de recompensas y gamificación
+5. **`ReportRoutingService`**: Enruta reportes a servicios apropiados según tipo y ubicación
+
+**Commands (CQRS Write Side):**
+
+- `RegisterCitizenCommand`: Registro de ciudadanos con validación de datos
+- `SubmitReportCommand`: Envío de reportes con validaciones geográficas
+- `EarnRewardsCommand`: Otorgamiento de puntos con auditoría
+- `RedeemRewardsCommand`: Canje de recompensas con validación de disponibilidad
+- `UpdateEngagementCommand`: Actualización de métricas de participación
+
+**Queries (CQRS Read Side):**
+
+- `GetCitizenByIdQuery`: Consulta individual de ciudadano con engagement
+- `GetCitizensByEngagementLevelQuery`: Consulta por nivel de participación
+- `GetReportsByLocationQuery`: Consulta geoespacial de reportes
+- `GetCitizenRewardsHistoryQuery`: Historial completo de recompensas
+- `GetEngagementAnalyticsQuery`: Análisis agregado de participación comunitaria
+
+**Domain Events:**
+
+- `CitizenRegisteredEvent`: Publicado al registrar nuevos ciudadanos
+- `ReportSubmittedEvent`: Publicado al enviar reportes ciudadanos
+- `ReportResolvedEvent`: Publicado al resolver problemas reportados
+- `RewardsEarnedEvent`: Publicado al otorgar puntos de recompensas
+- `EngagementLevelChangedEvent`: Publicado al cambiar nivel de participación
+
+#### 4.2.4.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en engagement ciudadano y consumidores de eventos para actualizaciones automáticas del sistema de recompensas.
+
+**Controllers:**
+
+1. **`Citizen Controller`**: Endpoints REST para registro y gestión de ciudadanos, actualización de perfiles, y consulta de métricas de engagement. Maneja requests desde aplicación móvil ciudadana con validaciones de autorización.
+
+2. **`Report Controller`**: Endpoints especializados para envío de reportes ciudadanos, seguimiento de estados, y gestión de feedback. Implementa validaciones geográficas y de contenido, soporta upload de imágenes con compresión automática.
+
+3. **`Rewards Controller`**: Endpoints para gestión del sistema de recompensas, consulta de puntos disponibles, historial de transacciones, y procesos de canje. Implementa validaciones de elegibilidad y disponibilidad de recompensas.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Container Monitoring BC (actualizaciones de estado de contenedores reportados) y Route Planning BC (confirmaciones de recolección). Implementa Consumer pattern para otorgamiento automático de recompensas.
+
+#### 4.2.4.3. Application Layer
+
+Esta capa coordina las operaciones complejas de engagement ciudadano y orquesta los flujos de trabajo de gamificación, implementando patrones para maximizar participación y satisfacción ciudadana.
+
+**Application Services:**
+
+1. **`Citizen Service`**: Servicio principal que orquesta operaciones ciudadanas incluyendo registro, gestión de perfiles, y tracking de engagement. Implementa Command pattern para operaciones ciudadanas y Facade pattern para simplificar interacciones complejas con sistema de recompensas.
+
+2. **`Report Service`**: Gestiona flujo completo de reportes ciudadanos, validación, enrutamiento a servicios apropiados, y loops de feedback. Implementa State pattern para workflow de reportes y Template Method pattern para diferentes tipos de procesamiento según categoría de reporte.
+
+3. **`Rewards Service`**: Maneja lógica completa del sistema de recompensas, cálculo de puntos, procesamiento de canjes, y features de gamificación. Implementa Strategy pattern para algoritmos de recompensas y Observer pattern para eventos de logros y milestones.
+
+#### 4.2.4.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos de engagement, notificaciones multi-canal, y comunicación con otros bounded contexts para mantener coherencia del sistema de recompensas.
+
+**Repositories:**
+
+1. **`Citizen Repository`**: Implementación JPA para persistencia de ciudadanos con historial de engagement y preferencias. Implementa Repository pattern con optimizaciones para consultas de participación y análisis de tendencias.
+
+2. **`Report Repository`**: Repositorio especializado para reportes ciudadanos con consultas geoespaciales y tracking de estados. Incluye optimizaciones para búsquedas por proximidad y análisis de patrones temporales.
+
+3. **`Rewards Repository`**: Repositorio para datos de recompensas con historial de transacciones y tracking de canjes. Optimizado para consultas de balance de puntos y análisis de utilización del programa.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos de community relations a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de detalles de messaging.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de ciudadanos frecuentemente accedidos y cálculos de recompensas. Implementa Cache-Aside pattern para optimización de consultas de engagement.
+
+3. **`Notification Service`**: Envía notificaciones ciudadanas vía email, SMS, y push notifications para reportes y recompensas. Implementa Adapter pattern para múltiples proveedores y Template pattern para diferentes tipos de comunicación.
+
+#### 4.2.4.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Community Relations bounded context, ilustrando la separación por capas DDD y las especializaciones para engagement ciudadano y gamificación. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para ciudadanos, reportes y recompensas, plus event consumers para actualizaciones automáticas desde otros BCs
+- **Application Layer** (verde medio): Services que coordinan engagement ciudadano, gestión de reportes con workflow de estados, y sistema de recompensas gamificado
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos de engagement y servicios de notificación multi-canal
+- **Integraciones ciudadanas**: Email, SMS y Push notification services para comunicación omnicanal con ciudadanos
+
+La arquitectura implementa patrones avanzados como Strategy para cálculos de recompensas dinámicos, State para workflow de reportes, y Factory para diferentes tipos de notificaciones según contexto y preferencias ciudadanas.
+
+#### 4.2.4.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.4.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Community Relations, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: Citizen, Report, RewardsProgram como raíces con invariantes de engagement y gamificación
+- **Entities**: ReportImage y Notification con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos de engagement y gamificación
+- **Domain Services**: Servicios para análisis de engagement y gestión de recompensas
+- **Domain Events**: Eventos para tracking de participación y logros ciudadanos
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: CitizenFactory, ReportFactory, NotificationFactory para creación contextual
+- **Strategy Pattern**: RewardCalculationStrategy con múltiples algoritmos (Básico, Por Niveles, Estacional)
+- **State Pattern**: ReportState para gestión de workflow de reportes ciudadanos
+- **Repository Pattern**: Interfaces para abstracción de persistencia de engagement
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de engagement
+- **Queries**: Operaciones de lectura optimizadas para análisis de participación
+- **Command/Query Services**: Separación clara con especialización en gamificación
+
+**Sistema de gamificación:**
+- **Reward calculation**: Algoritmos configurables para otorgamiento de puntos
+- **Engagement tracking**: Métricas automáticas de participación ciudadana
+- **Membership levels**: Niveles progresivos con beneficios escalados
+
+##### 4.2.4.6.2. Bounded Context Database Design Diagram
+
+![database-design-community-relations.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/4.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para engagement ciudadano y gamificación:
+
+**Tablas principales:**
+- **citizens**: Aggregate root con engagement tracking, sistema de recompensas integrado, y preferencias de comunicación
+- **reports**: Aggregate root con geolocalización, workflow de estados, y sistema de feedback ciudadano
+- **report_images**: Entity para evidencia fotográfica con validaciones de formato
+- **notifications**: Entity para comunicaciones multi-canal con tracking de entrega
+- **rewards_programs**: Aggregate root para programas configurables de recompensas
+
+**Tablas auxiliares especializadas:**
+- **citizen_rewards_history**: Historial completo de transacciones de puntos con auditoría
+- **citizen_topic_interests**: Preferencias temáticas para personalización de contenido
+- **engagement_metrics_history**: Historial temporal de métricas de participación
+
+**Optimizaciones de engagement:**
+- **Triggers automáticos**: Actualización de engagement basado en actividad ciudadana
+- **Funciones de gamificación**: Cálculo automático de niveles y estadísticas
+- **Índices geoespaciales**: Para reportes por proximidad geográfica
+- **Limpieza inteligente**: Retención de datos según relevancia para engagement
+
+**Características de gamificación:**
+- **Sistema de puntos**: Con fechas de expiración y tipos de transacción auditados
+- **Niveles progresivos**: Cálculo automático basado en métricas de participación
+- **Programas configurables**: Reglas JSON flexibles para diferentes campañas
+- **Analytics de engagement**: Métricas temporales para análisis de tendencias
+
+**Características técnicas:**
+- **JSONB avanzado**: Para reglas de recompensas flexibles y configuraciones personalizadas
+- **Triggers inteligentes**: Cálculo automático de engagement y niveles de membresía
+- **Constraints robustos**: Validaciones específicas para ratings, coordenadas, y puntos
+- **Vistas especializadas**: Para análisis de engagement y reportes activos
+
+El esquema está optimizado para las operaciones de engagement ciudadano identificadas en el dominio, incluyendo sistema de recompensas gamificado con múltiples algoritmos, tracking detallado de participación, comunicación omnicanal personalizada, y análisis avanzado de patrones de comportamiento ciudadano.
+
+### 4.2.5. Bounded Context: Payment & Subscriptions
+
+En esta sección se presenta el análisis detallado del bounded context Payment & Subscriptions, que encapsula toda la lógica de negocio relacionada con la gestión del ciclo completo de revenue para clientes municipales, procesamiento de pagos mediante integración con Culqi, facturación automática por ciclos, y administración del lifecycle de suscripciones para asegurar sostenibilidad financiera del modelo SaaS.
+
+#### 4.2.5.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio financiero y de suscripciones, implementando patrones avanzados de procesamiento de pagos y estrategias de facturación para maximizar conversión y minimizar churn en el mercado municipal peruano.
+
+**Aggregate Roots:**
+
+1. **`Subscription` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una suscripción municipal, su lifecycle completo, ciclos de facturación, y gestión de estados para asegurar continuidad de servicio.
+
+**Atributos principales:**
+
+| Atributo             | Tipo                 | Visibilidad | Descripción                                            |
+|----------------------|----------------------|-------------|--------------------------------------------------------|
+| `id`                 | `Long`               | `private`   | Identificador único de la suscripción en base de datos |
+| `subscriptionId`     | `SubscriptionId`     | `private`   | Identificador de dominio de la suscripción             |
+| `municipalityId`     | `MunicipalityId`     | `private`   | Municipalidad propietaria de la suscripción            |
+| `planId`             | `PlanId`             | `private`   | Plan de servicios contratado                           |
+| `status`             | `SubscriptionStatus` | `private`   | Estado actual de la suscripción                        |
+| `startDate`          | `LocalDateTime`      | `private`   | Fecha de inicio de la suscripción                      |
+| `trialEndDate`       | `LocalDateTime`      | `private`   | Fecha de finalización del período de prueba            |
+| `nextBillingDate`    | `LocalDateTime`      | `private`   | Próxima fecha de facturación programada                |
+| `billingCycle`       | `BillingCycle`       | `private`   | Ciclo de facturación configurado                       |
+| `paymentMethodId`    | `PaymentMethodId`    | `private`   | Método de pago asociado                                |
+| `billingAddress`     | `BillingAddress`     | `private`   | Dirección de facturación municipal                     |
+| `autoRenewal`        | `boolean`            | `private`   | Renovación automática habilitada                       |
+| `gracePeriodEndDate` | `LocalDateTime`      | `private`   | Fecha límite del período de gracia                     |
+
+**Métodos principales:**
+
+| Método                          | Tipo de Retorno | Visibilidad | Descripción                                      |
+|---------------------------------|-----------------|-------------|--------------------------------------------------|
+| `activate()`                    | `void`          | `public`    | Activa suscripción validando método de pago      |
+| `suspend(reason)`               | `void`          | `public`    | Suspende servicios por falta de pago o violación |
+| `cancel(reason)`                | `void`          | `public`    | Cancela suscripción con políticas de reembolso   |
+| `updatePlan(newPlanId)`         | `void`          | `public`    | Actualiza plan con cálculo de prorrateo          |
+| `updatePaymentMethod(methodId)` | `void`          | `public`    | Cambia método de pago con validaciones           |
+| `processPayment(amount)`        | `PaymentResult` | `public`    | Procesa pago programado con retry logic          |
+| `isInGracePeriod()`             | `boolean`       | `public`    | Verifica si está en período de gracia            |
+| `canBeUpgraded()`               | `boolean`       | `public`    | Determina si permite upgrade de plan             |
+| `calculateNextBilling()`        | `LocalDateTime` | `public`    | Calcula próxima fecha de facturación             |
+
+2. **`Payment` (Aggregate Root)**
+
+Representa un pago individual con integración a gateway Culqi, gestión de reintentos, y tracking completo de transacciones para asegurar reconciliación financiera.
+
+**Atributos principales:**
+
+| Atributo          | Tipo                | Visibilidad | Descripción                       |
+|-------------------|---------------------|-------------|-----------------------------------|
+| `paymentId`       | `PaymentId`         | `private`   | Identificador de dominio del pago |
+| `subscriptionId`  | `SubscriptionId`    | `private`   | Suscripción asociada al pago      |
+| `amount`          | `MonetaryAmount`    | `private`   | Monto del pago en soles peruanos  |
+| `paymentMethod`   | `PaymentMethodType` | `private`   | Tipo de método de pago utilizado  |
+| `paymentStatus`   | `PaymentStatus`     | `private`   | Estado actual del procesamiento   |
+| `transactionId`   | `TransactionId`     | `private`   | ID de transacción de Culqi        |
+| `gatewayResponse` | `GatewayResponse`   | `private`   | Respuesta completa del gateway    |
+| `attemptNumber`   | `Integer`           | `private`   | Número de intento actual          |
+| `scheduledDate`   | `LocalDateTime`     | `private`   | Fecha programada de procesamiento |
+| `processedDate`   | `LocalDateTime`     | `private`   | Fecha real de procesamiento       |
+| `failureReason`   | `FailureReason`     | `private`   | Razón de falla si aplica          |
+
+**Métodos principales:**
+
+| Método                            | Tipo de Retorno        | Visibilidad | Descripción                                    |
+|-----------------------------------|------------------------|-------------|------------------------------------------------|
+| `process()`                       | `PaymentResult`        | `public`    | Procesa pago a través de Culqi gateway         |
+| `retry()`                         | `PaymentResult`        | `public`    | Reintenta pago fallido con backoff exponencial |
+| `markAsSuccessful(transactionId)` | `void`                 | `public`    | Marca como exitoso con ID de transacción       |
+| `markAsFailed(reason)`            | `void`                 | `public`    | Marca como fallido con razón específica        |
+| `canBeRetried()`                  | `boolean`              | `public`    | Verifica si permite reintentos                 |
+| `isSuccessful()`                  | `boolean`              | `public`    | Determina si el pago fue exitoso               |
+| `getAttemptHistory()`             | `List<PaymentAttempt>` | `public`    | Obtiene historial de intentos                  |
+
+3. **`Invoice` (Aggregate Root)**
+
+Representa una factura con cálculos automáticos de impuestos peruanos, gestión de line items, y tracking de pagos para cumplimiento fiscal.
+
+**Atributos principales:**
+
+| Atributo         | Tipo                    | Visibilidad | Descripción                            |
+|------------------|-------------------------|-------------|----------------------------------------|
+| `invoiceId`      | `InvoiceId`             | `private`   | Identificador de dominio de la factura |
+| `invoiceNumber`  | `InvoiceNumber`         | `private`   | Número secuencial de factura           |
+| `subscriptionId` | `SubscriptionId`        | `private`   | Suscripción asociada                   |
+| `billingPeriod`  | `BillingPeriod`         | `private`   | Período de facturación cubierto        |
+| `issueDate`      | `LocalDateTime`         | `private`   | Fecha de emisión de la factura         |
+| `dueDate`        | `LocalDateTime`         | `private`   | Fecha de vencimiento                   |
+| `subtotal`       | `MonetaryAmount`        | `private`   | Subtotal antes de impuestos            |
+| `taxAmount`      | `MonetaryAmount`        | `private`   | Monto de IGV (18%)                     |
+| `totalAmount`    | `MonetaryAmount`        | `private`   | Total final incluido IGV               |
+| `status`         | `InvoiceStatus`         | `private`   | Estado actual de la factura            |
+| `lineItems`      | `List<InvoiceLineItem>` | `private`   | Items detallados de la factura         |
+
+**Métodos principales:**
+
+| Método                  | Tipo de Retorno | Visibilidad | Descripción                           |
+|-------------------------|-----------------|-------------|---------------------------------------|
+| `addLineItem(item)`     | `void`          | `public`    | Agrega item validando cálculos        |
+| `calculateTotals()`     | `void`          | `public`    | Recalcula totales con IGV peruano     |
+| `markAsPaid(paymentId)` | `void`          | `public`    | Marca como pagada con referencia      |
+| `markAsOverdue()`       | `void`          | `public`    | Marca como vencida para cobranza      |
+| `isPaid()`              | `boolean`       | `public`    | Verifica si está completamente pagada |
+| `isOverdue()`           | `boolean`       | `public`    | Determina si está vencida             |
+| `getDaysOverdue()`      | `int`           | `public`    | Calcula días de mora                  |
+
+**Entities:**
+
+4. **`PaymentMethod` (Entity)**
+
+Entidad que representa métodos de pago con integración específica a Culqi y validaciones para el mercado peruano.
+
+5. **`InvoiceLineItem` (Entity)**
+
+Entidad que representa items individuales de factura con cálculos de IGV y validaciones fiscales.
+
+6. **`PaymentAttempt` (Entity)**
+
+Entidad que registra cada intento de pago con detalles de gateway para auditoría y análisis.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio financiero peruano:
+
+- **`MonetaryAmount`**: Moneda con operaciones matemáticas y soporte para soles peruanos
+- **`BillingCycle`**: Ciclos configurables (mensual, trimestral, anual) con cálculos automáticos
+- **`BillingAddress`**: Direcciones con validaciones específicas de Perú
+- **`PaymentMethodType`**: Tipos de pago soportados por Culqi
+- **`SubscriptionStatus`**: Estados con transiciones válidas y restricciones de negocio
+
+**Factories (Creational Pattern):**
+
+1. **`SubscriptionFactory`**: Implementa Factory pattern para crear suscripciones con diferentes configuraciones (trial gratuito de 30 días, suscripciones pagadas inmediatas, migraciones desde otros sistemas) aplicando validaciones específicas del mercado municipal.
+
+2. **`PaymentFactory`**: Crea pagos programados y reintentos con configuraciones específicas de Culqi, aplicando estrategias de backoff exponencial y validaciones de montos.
+
+3. **`InvoiceFactory`**: Genera facturas mensuales, trimestrales o anuales con cálculos automáticos de prorrateo, aplicando tasas de IGV vigentes y formatos de facturación peruanos.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar métodos de procesamiento de pagos dinámicamente:
+
+1. **`CreditCardStrategy`**: Procesamiento de tarjetas de crédito con validaciones 3DS
+2. **`BankTransferStrategy`**: Transferencias bancarias con integración a bancos peruanos
+3. **`DigitalWalletStrategy`**: Billeteras digitales como Yape, Plin integradas via Culqi
+4. **`CashPaymentStrategy`**: Pagos en efectivo en agentes autorizados
+
+**Domain Services:**
+
+1. **`SubscriptionCommandService`**: Orquesta operaciones CQRS de escritura para lifecycle de suscripciones
+2. **`SubscriptionQueryService`**: Maneja consultas CQRS optimizadas para reportes de revenue
+3. **`PaymentCommandService`**: Coordina procesamiento de pagos con estrategias de reintento
+4. **`PaymentQueryService`**: Genera análisis de transacciones y métricas de conversión
+5. **`BillingCommandService`**: Gestiona generación automática de facturas por ciclos
+6. **`BillingQueryService`**: Proporciona reportes financieros y análisis de accounts receivable
+
+**Commands (CQRS Write Side):**
+
+- `CreateSubscriptionCommand`: Creación de suscripciones con validación de elegibilidad
+- `ProcessPaymentCommand`: Procesamiento de pagos con validaciones de gateway
+- `GenerateInvoiceCommand`: Generación de facturas por ciclo de facturación
+- `UpdateSubscriptionCommand`: Actualizaciones de plan con cálculo de prorrateo
+- `RetryPaymentCommand`: Reintentos de pagos fallidos con estrategias configurables
+
+**Queries (CQRS Read Side):**
+
+- `GetSubscriptionByIdQuery`: Consulta individual con historial de pagos
+- `GetSubscriptionsByMunicipalityQuery`: Consultas por cliente municipal
+- `GetPaymentHistoryQuery`: Historial completo de transacciones
+- `GetOutstandingInvoicesQuery`: Facturas pendientes por municipalidad
+- `GetRevenueAnalyticsQuery`: Análisis de MRR y métricas SaaS
+
+**Domain Events:**
+
+- `SubscriptionCreatedEvent`: Publicado al crear suscripciones municipales
+- `PaymentProcessedEvent`: Publicado al procesar pagos exitosos o fallidos
+- `SubscriptionSuspendedEvent`: Publicado al suspender servicios por falta de pago
+- `InvoiceGeneratedEvent`: Publicado al generar facturas automáticas
+
+#### 4.2.5.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados en operaciones financieras y consumidores de eventos para automatización de facturación.
+
+**Controllers:**
+
+1. **`Subscription Controller`**: Endpoints REST para gestión de suscripciones municipales, configuración de planes, y operaciones de lifecycle. Maneja requests desde dashboard administrativo con validaciones de autorización fiscal.
+
+2. **`Payment Controller`**: Endpoints especializados para procesamiento de pagos, gestión de métodos de pago, y tracking de transacciones. Implementa integración directa con Culqi webhook para confirmaciones de pago.
+
+3. **`Billing Controller`**: Endpoints para generación de facturas, reportes financieros, y análisis de revenue. Proporciona interfaces para exportación de datos fiscales y reconciliación contable.
+
+4. **`Event Consumer`**: Consumidor Kafka que maneja eventos desde Municipal Operations BC (activación de distritos) y Communication Hub BC (solicitudes de notificaciones de facturación). Implementa Consumer pattern para automatización de facturación.
+
+#### 4.2.5.3. Application Layer
+
+Esta capa coordina las operaciones financieras complejas y orquesta los flujos de trabajo de facturación, implementando patrones para optimizar conversión y minimizar revenue churn.
+
+**Application Services:**
+
+1. **`Subscription Service`**: Servicio principal que orquesta lifecycle completo de suscripciones incluyendo onboarding, conversiones de trial, y gestión de renovaciones. Implementa State pattern para estados de suscripción y Template Method pattern para diferentes flujos de onboarding.
+
+2. **`Payment Service`**: Maneja procesamiento completo de pagos, lógica de reintentos, y gestión de transacciones. Implementa Strategy pattern para métodos de pago y Circuit Breaker pattern para integraciones con Culqi gateway.
+
+3. **`Billing Service`**: Gestiona ciclos de facturación, generación automática de invoices, y cálculos de prorrateo. Implementa Builder pattern para facturas complejas y Scheduler pattern para automatización de facturación recurrente.
+
+#### 4.2.5.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para persistencia de datos financieros, integración con gateway Culqi, y comunicación con otros bounded contexts para mantener coherencia de servicios.
+
+**Repositories:**
+
+1. **`Subscription Repository`**: Implementación JPA para persistencia de suscripciones con historial de facturación y tracking de estados. Implementa Repository pattern con optimizaciones para consultas de revenue y análisis de churn.
+
+2. **`Payment Repository`**: Repositorio especializado para transacciones de pago con audit trail y soporte para reconciliación. Incluye optimizaciones para consultas de análisis financiero y detección de fraude.
+
+3. **`Invoice Repository`**: Repositorio para datos de facturación con cálculos fiscales y tracking de compliance. Optimizado para reportes contables y exportación de datos fiscales.
+
+**External Services:**
+
+1. **`Event Publisher`**: Publica eventos financieros a otros bounded contexts vía Kafka. Implementa Publisher pattern y Adapter pattern para abstracción de messaging financiero.
+
+2. **`Cache Service`**: Servicio de caché Redis para datos de facturación frecuentemente accedidos y configuraciones de pricing. Implementa Cache-Aside pattern para optimización de consultas financieras.
+
+3. **`Payment Gateway Adapter`**: Integración especializada con Culqi para procesamiento de pagos en Perú. Implementa Adapter pattern para abstracción de gateway y Retry pattern para resiliencia de transacciones.
+
+#### 4.2.5.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Payment & Subscriptions bounded context, ilustrando la separación por capas DDD y las integraciones especializadas para procesamiento de pagos. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para suscripciones, pagos y facturación, plus event consumers para automatización de billing
+- **Application Layer** (verde medio): Services que coordinan lifecycle de suscripciones, procesamiento de pagos con reintentos, y generación automática de facturas
+- **Infrastructure Layer** (verde oscuro): Repositories optimizados para datos financieros y adaptadores especializados para Culqi gateway
+- **Integraciones financieras**: Culqi Payment Gateway para procesamiento local, Tax Calculation Service para cumplimiento fiscal peruano
+
+La arquitectura implementa patrones avanzados como Strategy para múltiples métodos de pago, Circuit Breaker para resiliencia de gateway, y State para gestión completa del lifecycle de suscripciones.
+
+#### 4.2.5.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.5.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Payment & Subscriptions, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: Subscription, Payment, Invoice como raíces con invariantes financieras
+- **Entities**: PaymentMethod, InvoiceLineItem, PaymentAttempt con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos financieros y de facturación
+- **Domain Services**: Servicios para operaciones financieras complejas
+- **Domain Events**: Eventos para coordinación de revenue y lifecycle de servicios
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: SubscriptionFactory, PaymentFactory, InvoiceFactory para creación especializada
+- **Strategy Pattern**: PaymentProcessingStrategy con múltiples métodos (Tarjetas, Transferencias, Wallets)
+- **State Pattern**: Estados de suscripción con transiciones controladas por reglas de negocio
+- **Repository Pattern**: Interfaces para abstracción de persistencia financiera
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones financieras y fiscales
+- **Queries**: Operaciones de lectura optimizadas para análisis de revenue y reporting
+- **Command/Query Services**: Separación clara con especialización en operaciones SaaS
+
+**Integración Culqi:**
+- **Payment processing**: Estrategias específicas para métodos soportados por Culqi
+- **Webhook handling**: Procesamiento de confirmaciones de transacciones
+- **Retry mechanisms**: Lógica de reintentos para transacciones fallidas
+
+##### 4.2.5.6.2. Bounded Context Database Design Diagram
+
+![database-design-payment-subscriptions.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/5.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para operaciones financieras SaaS:
+
+**Tablas principales:**
+- **subscriptions**: Aggregate root con lifecycle completo, ciclos de facturación y trial management
+- **payments**: Aggregate root con integración Culqi, tracking de intentos y audit trail
+- **invoices**: Aggregate root para facturación con cálculos automáticos de IGV peruano
+- **payment_methods**: Entity para métodos de pago con validaciones específicas de Culqi
+- **invoice_line_items**: Entity para items de factura con cálculos fiscales detallados
+
+**Tablas auxiliares financieras:**
+- **payment_attempts**: Historial completo de intentos con detalles de gateway
+- **subscription_usage**: Tracking de uso para billing por consumo
+- **payment_events**: Domain events para coordinación financiera
+
+**Optimizaciones SaaS:**
+- **Triggers automáticos**: Cálculo de totales de facturas con IGV y actualización de estados
+- **Funciones de MRR**: Cálculos de Monthly Recurring Revenue para análisis SaaS
+- **Índices especializados**: Para consultas de vencimientos, reintentos, y análisis de churn
+- **Limpieza inteligente**: Retención de datos financieros según regulaciones fiscales
+
+**Características de compliance:**
+- **Audit trail completo**: Tracking de todas las transacciones para auditoría
+- **Validaciones fiscales**: Constraints para cumplimiento de regulaciones peruanas
+- **Cálculos de IGV**: Automatización de impuestos según normativa vigente
+- **Numeración secuencial**: Sistema de facturación compatible con SUNAT
+
+**Características técnicas:**
+- **JSONB avanzado**: Para respuestas de gateway y metadatos de transacciones
+- **Triggers financieros**: Automatización de estados y cálculos críticos
+- **Constraints robustos**: Validaciones de integridad para datos financieros críticos
+- **Vistas especializadas**: Para análisis de revenue y reportes de compliance
+
+El esquema está optimizado para las operaciones financieras identificadas en el dominio, incluyendo procesamiento de pagos con Culqi, facturación automática con IGV, gestión de trial periods, análisis de MRR/churn, y cumplimiento de regulaciones fiscales peruanas.
+
+### 4.2.6. Bounded Context: Communication Hub
+
+En esta sección se presenta el análisis detallado del bounded context Communication Hub, que encapsula toda la lógica de negocio relacionada con la orquestación de comunicaciones multi-canal, gestión de templates de mensajes, tracking de entrega, y coordinación de notificaciones entre todos los bounded contexts para asegurar comunicación efectiva y oportuna con stakeholders del sistema.
+
+#### 4.2.6.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de comunicaciones, implementando patrones avanzados de entrega multi-canal y estrategias de optimización para maximizar efectividad de entrega mientras se minimizan costos operacionales.
+
+**Aggregate Roots:**
+
+1. **`NotificationRequest` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una solicitud de notificación, su procesamiento multi-canal, y tracking completo de entrega hasta confirmación final.
+
+**Atributos principales:**
+
+| Atributo           | Tipo                    | Visibilidad | Descripción                                          |
+|--------------------|-------------------------|-------------|------------------------------------------------------|
+| `id`               | `Long`                  | `private`   | Identificador único de la solicitud en base de datos |
+| `requestId`        | `NotificationRequestId` | `private`   | Identificador de dominio de la solicitud             |
+| `sourceContext`    | `SourceContext`         | `private`   | Bounded context origen de la notificación            |
+| `recipientId`      | `RecipientId`           | `private`   | Destinatario de la notificación                      |
+| `recipientType`    | `RecipientType`         | `private`   | Tipo de destinatario (ciudadano, admin, conductor)   |
+| `messageType`      | `MessageType`           | `private`   | Tipo de mensaje (alerta, notificación, marketing)    |
+| `priority`         | `Priority`              | `private`   | Nivel de prioridad para entrega                      |
+| `channels`         | `List<DeliveryChannel>` | `private`   | Canales de entrega configurados                      |
+| `templateId`       | `TemplateId`            | `private`   | Template de mensaje a utilizar                       |
+| `templateData`     | `TemplateData`          | `private`   | Datos para renderizado del template                  |
+| `scheduledDate`    | `LocalDateTime`         | `private`   | Fecha programada de envío                            |
+| `expiryDate`       | `LocalDateTime`         | `private`   | Fecha de expiración                                  |
+| `status`           | `RequestStatus`         | `private`   | Estado actual de la solicitud                        |
+| `deliveryAttempts` | `List<DeliveryAttempt>` | `private`   | Historial de intentos de entrega                     |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno   | Visibilidad | Descripción                              |
+|----------------------------------------|-------------------|-------------|------------------------------------------|
+| `addDeliveryChannel(channel)`          | `void`            | `public`    | Agrega canal de entrega con validaciones |
+| `scheduleDelivery(date)`               | `void`            | `public`    | Programa entrega para fecha específica   |
+| `processDelivery()`                    | `DeliveryResult`  | `public`    | Procesa entrega usando Strategy pattern  |
+| `markAsDelivered(channel, deliveryId)` | `void`            | `public`    | Marca como entregado en canal específico |
+| `markAsFailed(channel, reason)`        | `void`            | `public`    | Marca como fallido con razón de falla    |
+| `canBeRetried()`                       | `boolean`         | `public`    | Verifica si permite reintentos           |
+| `isExpired()`                          | `boolean`         | `public`    | Determina si la notificación expiró      |
+| `getPreferredChannel()`                | `DeliveryChannel` | `public`    | Obtiene canal preferido del destinatario |
+| `requiresImmediateDelivery()`          | `boolean`         | `public`    | Verifica si requiere entrega inmediata   |
+
+2. **`MessageTemplate` (Aggregate Root)**
+
+Representa un template de mensaje con soporte para múltiples canales, localización, y versionado para mantener consistencia en comunicaciones a través de toda la plataforma.
+
+**Atributos principales:**
+
+| Atributo          | Tipo                              | Visibilidad | Descripción                                       |
+|-------------------|-----------------------------------|-------------|---------------------------------------------------|
+| `templateId`      | `TemplateId`                      | `private`   | Identificador de dominio del template             |
+| `name`            | `String`                          | `private`   | Nombre descriptivo del template                   |
+| `category`        | `TemplateCategory`                | `private`   | Categoría del template (sistema, marketing, etc.) |
+| `messageType`     | `MessageType`                     | `private`   | Tipo de mensaje soportado                         |
+| `channels`        | `List<DeliveryChannel>`           | `private`   | Canales compatibles con el template               |
+| `subjectTemplate` | `String`                          | `private`   | Template del asunto (para email)                  |
+| `bodyTemplate`    | `String`                          | `private`   | Template del cuerpo del mensaje                   |
+| `variables`       | `List<TemplateVariable>`          | `private`   | Variables disponibles en el template              |
+| `localization`    | `Map<Language, LocalizedContent>` | `private`   | Contenido localizado por idioma                   |
+| `version`         | `TemplateVersion`                 | `private`   | Versión del template                              |
+| `isActive`        | `boolean`                         | `private`   | Estado de activación                              |
+| `metadata`        | `TemplateMetadata`                | `private`   | Metadatos adicionales                             |
+
+**Métodos principales:**
+
+| Método                               | Tipo de Retorno    | Visibilidad | Descripción                              |
+|--------------------------------------|--------------------|-------------|------------------------------------------|
+| `updateContent(subject, body)`       | `void`             | `public`    | Actualiza contenido del template         |
+| `addLocalization(language, content)` | `void`             | `public`    | Agrega localización para idioma          |
+| `addVariable(variable)`              | `void`             | `public`    | Agrega variable al template              |
+| `renderMessage(data, language)`      | `RenderedMessage`  | `public`    | Renderiza mensaje con datos específicos  |
+| `isCompatibleWith(channel)`          | `boolean`          | `public`    | Verifica compatibilidad con canal        |
+| `validateTemplate()`                 | `ValidationResult` | `public`    | Valida sintaxis y variables del template |
+| `activate()`                         | `void`             | `public`    | Activa template para uso                 |
+| `deactivate()`                       | `void`             | `public`    | Desactiva template                       |
+
+3. **`DeliveryRecord` (Aggregate Root)**
+
+Representa un registro individual de entrega con tracking detallado de estado, costos, y métricas de performance para análisis y optimización de canales.
+
+**Atributos principales:**
+
+| Atributo                | Tipo                    | Visibilidad | Descripción                           |
+|-------------------------|-------------------------|-------------|---------------------------------------|
+| `recordId`              | `DeliveryRecordId`      | `private`   | Identificador de dominio del registro |
+| `requestId`             | `NotificationRequestId` | `private`   | Solicitud asociada                    |
+| `recipientId`           | `RecipientId`           | `private`   | Destinatario de la entrega            |
+| `channel`               | `DeliveryChannel`       | `private`   | Canal utilizado para entrega          |
+| `providerTransactionId` | `String`                | `private`   | ID de transacción del proveedor       |
+| `status`                | `DeliveryStatus`        | `private`   | Estado actual de la entrega           |
+| `attemptNumber`         | `Integer`               | `private`   | Número de intento actual              |
+| `deliveryDate`          | `LocalDateTime`         | `private`   | Fecha de entrega exitosa              |
+| `confirmationDate`      | `LocalDateTime`         | `private`   | Fecha de confirmación de recepción    |
+| `failureReason`         | `FailureReason`         | `private`   | Razón de falla si aplica              |
+| `cost`                  | `MonetaryAmount`        | `private`   | Costo de la entrega                   |
+| `metadata`              | `DeliveryMetadata`      | `private`   | Metadatos de entrega                  |
+
+**Métodos principales:**
+
+| Método                           | Tipo de Retorno | Visibilidad | Descripción                                |
+|----------------------------------|-----------------|-------------|--------------------------------------------|
+| `markAsDelivered(transactionId)` | `void`          | `public`    | Marca como entregado con ID de transacción |
+| `markAsFailed(reason)`           | `void`          | `public`    | Marca como fallido con razón específica    |
+| `markAsConfirmed()`              | `void`          | `public`    | Marca como confirmado por destinatario     |
+| `calculateDeliveryTime()`        | `Duration`      | `public`    | Calcula tiempo total de entrega            |
+| `isSuccessful()`                 | `boolean`       | `public`    | Verifica si la entrega fue exitosa         |
+| `canBeRetried()`                 | `boolean`       | `public`    | Determina si permite reintentos            |
+
+**Entities:**
+
+4. **`DeliveryAttempt` (Entity)**
+
+Entidad que representa un intento individual de entrega con detalles específicos del proveedor y métricas de performance.
+
+5. **`RecipientPreference` (Entity)**
+
+Entidad que gestiona preferencias de comunicación por destinatario, incluyendo canales preferidos, horarios de silencio, y configuraciones de frecuencia.
+
+6. **`TemplateVariable` (Entity)**
+
+Entidad que representa variables utilizables en templates con validaciones y formateo específico.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio de comunicaciones:
+
+- **`DeliveryChannel`**: Canal con capacidades y restricciones específicas
+- **`Priority`**: Nivel de prioridad con comportamientos de entrega asociados
+- **`TemplateData`**: Datos estructurados para renderizado de templates
+- **`RenderedMessage`**: Mensaje final renderizado con metadata por canal
+- **`MessageType`**: Tipo de mensaje con reglas de entrega específicas
+
+**Factories (Creational Pattern):**
+
+1. **`NotificationFactory`**: Implementa Factory pattern para crear notificaciones con diferentes configuraciones (urgentes con canales prioritarios, programadas con optimización de costo, masivas con batching inteligente) aplicando estrategias específicas por tipo.
+
+2. **`TemplateFactory`**: Crea templates especializados por canal (email con HTML/texto plano, SMS con límites de caracteres, push con títulos y acciones) con validaciones específicas.
+
+3. **`DeliveryRecordFactory`**: Genera registros de entrega con cálculos iniciales de costo y configuraciones de retry específicas por proveedor.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de selección de canal dinámicamente:
+
+1. **`PriorityBasedStrategy`**: Selección basada en urgencia del mensaje con canales de alta velocidad
+2. **`CostOptimizedStrategy`**: Optimización por costo de entrega con preferencia por canales económicos
+3. **`ReliabilityBasedStrategy`**: Selección por confiabilidad histórica del canal
+4. **`HybridSelectionStrategy`**: Combinación inteligente de múltiples criterios
+
+**Domain Services:**
+
+1. **`NotificationCommandService`**: Orquesta operaciones CQRS de escritura para solicitudes de notificación
+2. **`NotificationQueryService`**: Maneja consultas CQRS optimizadas para tracking y análisis
+3. **`TemplateCommandService`**: Gestiona operaciones de templates con versionado y validación
+4. **`TemplateQueryService`**: Proporciona consultas optimizadas para selección de templates
+5. **`DeliveryAnalyticsService`**: Genera análisis de performance por canal y proveedor
+6. **`MessageRenderingService`**: Coordina renderizado de mensajes con localización y personalización
+
+**Commands (CQRS Write Side):**
+
+- `CreateNotificationCommand`: Creación de solicitudes con validación de destinatarios
+- `SendNotificationCommand`: Envío inmediato con override de configuraciones
+- `CreateTemplateCommand`: Creación de templates con validación de sintaxis
+- `UpdateTemplateCommand`: Actualización con versionado automático
+- `ScheduleNotificationCommand`: Programación con optimización de timing
+
+**Queries (CQRS Read Side):**
+
+- `GetNotificationByIdQuery`: Consulta individual con historial completo
+- `GetNotificationsByRecipientQuery`: Historial por destinatario con filtros
+- `GetTemplateByIdQuery`: Consulta de template con localizaciones
+- `GetTemplatesByTypeQuery`: Templates disponibles por tipo y canal
+- `GetDeliveryAnalyticsQuery`: Análisis de performance y costos
+
+**Domain Events:**
+
+- `NotificationRequestCreatedEvent`: Publicado al crear solicitudes de notificación
+- `NotificationDeliveredEvent`: Publicado al entregar exitosamente por cualquier canal
+- `NotificationFailedEvent`: Publicado al fallar entrega con programación de fallback
+- `TemplateUpdatedEvent`: Publicado al actualizar templates con control de versiones
+
+#### 4.2.6.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context como hub central de comunicaciones, actuando como Open-Host Service para todos los otros bounded contexts y proporcionando interfaces especializadas para gestión de templates.
+
+**Controllers:**
+
+1. **`Notification Controller`**: Endpoints REST para gestión de notificaciones, configuración de canales, y tracking de entrega. Proporciona interfaces para programación de notificaciones y consultas de estado.
+
+2. **`Template Controller`**: Endpoints especializados para gestión de templates de mensajes, versionado, y localización. Implementa validaciones de sintaxis y preview de renderizado.
+
+3. **`Delivery Controller`**: Endpoints para tracking de entrega, análisis de performance por canal, y configuración de proveedores. Proporciona métricas en tiempo real y reportes de costos.
+
+4. **`Event Consumer`**: Consumidor Kafka que actúa como hub central recibiendo eventos de todos los bounded contexts (Container Monitoring, Route Planning, Community Relations, Payment & Subscriptions, Municipal Operations). Implementa Consumer pattern para procesamiento distribuido.
+
+#### 4.2.6.3. Application Layer
+
+Esta capa coordina las operaciones complejas de comunicación multi-canal y orquesta los flujos de trabajo de entrega, implementando patrones para optimizar efectividad y minimizar costos de comunicación.
+
+**Application Services:**
+
+1. **`Notification Service`**: Servicio principal que orquesta lifecycle completo de notificaciones incluyendo selección de templates, rendering, y coordinación de entrega. Implementa Template Method pattern para diferentes tipos de notificación y Facade pattern para simplificar interacciones con múltiples proveedores.
+
+2. **`Delivery Service`**: Gestiona coordinación multi-canal, lógica de reintentos, y mecanismos de fallback. Implementa Strategy pattern para selección de canales y Circuit Breaker pattern para resiliencia de proveedores externos.
+
+3. **`Template Service`**: Maneja gestión completa de templates, personalización, y localización. Implementa Builder pattern para construcción de mensajes complejos y Version Control pattern para gestión de cambios en templates.
+
+#### 4.2.6.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para integración con múltiples proveedores de comunicación, persistencia de datos de entrega, y adaptadores especializados para cada canal de comunicación.
+
+**Repositories:**
+
+1. **`Notification Repository`**: Implementación JPA para persistencia de solicitudes con tracking de entrega y analytics. Implementa Repository pattern con optimizaciones para consultas de estado y análisis temporal.
+
+2. **`Template Repository`**: Repositorio especializado para templates con soporte para versionado y localización. Incluye optimizaciones para búsquedas por tipo y canal.
+
+3. **`Delivery Repository`**: Repositorio para registros de entrega con métricas de performance y tracking de costos. Optimizado para análisis de tendencias y reportes de eficiencia.
+
+**External Services:**
+
+1. **`Email Service Adapter`**: Integración especializada con SendGrid para entrega de emails transaccionales y marketing. Implementa Adapter pattern para abstracción de provider y Retry pattern para resiliencia.
+
+2. **`SMS Service Adapter`**: Integración con Twilio para entrega de SMS con soporte para mensajes internacionales. Implementa Rate Limiting pattern para cumplimiento de regulaciones.
+
+3. **`Push Notification Adapter`**: Integración con Firebase Cloud Messaging para notificaciones móviles. Implementa Batch Processing pattern para eficiencia en entregas masivas.
+
+#### 4.2.6.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Communication Hub bounded context, ilustrando su rol como hub central de comunicaciones y las integraciones especializadas multi-canal. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para notificaciones, templates y delivery tracking, plus event consumer que actúa como hub central para todos los BCs
+- **Application Layer** (verde medio): Services que coordinan entrega multi-canal, gestión de templates con localización, y optimización de estrategias de entrega
+- **Infrastructure Layer** (verde oscuro): Adapters especializados para cada proveedor de comunicación y repositories optimizados para analytics
+- **Integraciones multi-canal**: SendGrid para email, Twilio para SMS, Firebase para push notifications con fallback automático
+
+La arquitectura implementa patrones avanzados como Strategy para selección óptima de canales, Circuit Breaker para resiliencia de proveedores, y Open-Host Service como punto central de comunicación para toda la plataforma.
+
+#### 4.2.6.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.6.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Communication Hub, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: NotificationRequest, MessageTemplate, DeliveryRecord como raíces con invariantes de comunicación
+- **Entities**: DeliveryAttempt, RecipientPreference, TemplateVariable con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos de entrega y renderizado
+- **Domain Services**: Servicios para renderizado de mensajes y análisis de entrega
+- **Domain Events**: Eventos para coordinación de comunicaciones y tracking
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: NotificationFactory, TemplateFactory, DeliveryRecordFactory para creación especializada
+- **Strategy Pattern**: ChannelSelectionStrategy con múltiples algoritmos (Priority, Cost, Reliability, Hybrid)
+- **Template Method Pattern**: Para procesamiento diferenciado por tipo de notificación
+- **Repository Pattern**: Interfaces para abstracción de persistencia de comunicaciones
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de templates y destinatarios
+- **Queries**: Operaciones de lectura optimizadas para analytics y tracking
+- **Command/Query Services**: Separación clara con especialización en comunicaciones
+
+**Multi-channel capabilities:**
+- **Channel abstraction**: Soporte uniforme para email, SMS, push, in-app
+- **Provider integration**: Adaptadores específicos para SendGrid, Twilio, Firebase
+- **Fallback mechanisms**: Estrategias automáticas de canal alternativo
+- **Cost optimization**: Selección inteligente basada en costo y efectividad
+
+##### 4.2.6.6.2. Bounded Context Database Design Diagram
+
+![database-design-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para comunicaciones multi-canal:
+
+**Tablas principales:**
+- **notification_requests**: Aggregate root con multi-channel delivery y template integration
+- **message_templates**: Aggregate root para templates con localización y versionado automático
+- **delivery_records**: Aggregate root para tracking detallado con provider integration
+- **recipient_preferences**: Entity para preferencias personalizadas por usuario
+- **delivery_attempts**: Entity para historial completo con métricas de performance
+
+**Tablas auxiliares especializadas:**
+- **channel_performance**: Analytics diarios por canal y proveedor con métricas de éxito
+- **communication_events**: Domain events para coordinación entre bounded contexts
+
+**Optimizaciones de comunicación:**
+- **Triggers automáticos**: Actualización de estados basado en delivery results
+- **Funciones de analytics**: Cálculo automático de métricas de performance por canal
+- **Índices especializados**: Para consultas de retry, tracking, y analytics temporales
+- **Limpieza inteligente**: Expiración automática de notificaciones con políticas configurables
+
+**Características multi-canal:**
+- **Provider integration**: Campos específicos para respuestas de SendGrid, Twilio, Firebase
+- **Cost tracking**: Seguimiento detallado de costos por canal y provider
+- **Performance metrics**: Tiempo de entrega, success rates, y reliability scores
+- **Template versioning**: Sistema completo de versionado con rollback capabilities
+
+**Características técnicas:**
+- **JSONB avanzado**: Para respuestas de providers, template data, y recipient preferences
+- **Triggers inteligentes**: Automatización de estados y cálculo de métricas críticas
+- **Constraints robustos**: Validaciones específicas para canales, templates, y delivery status
+- **Vistas especializadas**: Para analytics de delivery y overview de notificaciones
+
+El esquema está optimizado para las operaciones de comunicación identificadas en el dominio, incluyendo entrega multi-canal con fallback automático, template management con localización, cost tracking detallado, performance analytics por proveedor, y coordinación centralizada como hub de comunicaciones para toda la plataforma WasteTrack.
+
+### 4.2.7. Bounded Context: Profile
+
+En esta sección se presenta el análisis detallado del **bounded context Profile**, que encapsula toda la lógica de negocio relacionada con la gestión de perfiles de usuario (ciudadanos, administradores, conductores), sus preferencias personales, configuraciones de notificación y personalización de la experiencia de usuario, asegurando la privacidad de los datos y la validación de elegibilidad del área de servicio.
+
+#### 4.2.7.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de perfiles de usuario, implementando patrones avanzados para la gestión de datos personales, preferencias y personalización, asegurando una experiencia de usuario consistente y segura.
+
+**Aggregate Roots:**
+
+1.  **`UserProfile` (Aggregate Root)**
+
+    Representa el agregado principal del dominio, encapsulando toda la información y comportamiento de un usuario, incluyendo datos personales, de contacto, dirección, y estado del perfil.
+
+**Atributos principales:**
+
+| Atributo              | Tipo                  | Visibilidad | Descripción                                        |
+|:----------------------|:----------------------|:------------|:---------------------------------------------------|
+| `id`                  | `Long`                | `private`   | Identificador único del perfil en la base de datos |
+| `profileId`           | `ProfileId`           | `private`   | Identificador de dominio del perfil                |
+| `userId`              | `UserId`              | `private`   | ID del usuario desde el BC de IAM                  |
+| `userType`            | `UserType`            | `private`   | Tipo de usuario (Citizen, Administrator, Driver)   |
+| `personalInfo`        | `PersonalInfo`        | `private`   | Información personal del usuario                   |
+| `contactInfo`         | `ContactInfo`         | `private`   | Información de contacto (email, teléfono)          |
+| `addressInfo`         | `AddressInfo`         | `private`   | Dirección y coordenadas geográficas                |
+| `serviceArea`         | `ServiceArea`         | `private`   | Área de servicio a la que pertenece                |
+| `profileStatus`       | `ProfileStatus`       | `private`   | Estado actual del perfil (Activo, Suspendido)      |
+| `privacySettings`     | `PrivacySettings`     | `private`   | Configuraciones de privacidad y datos compartidos  |
+| `profileCompleteness` | `ProfileCompleteness` | `private`   | Puntuación de completitud del perfil               |
+| `lastLoginDate`       | `LocalDateTime`       | `private`   | Fecha del último inicio de sesión                  |
+
+ **Métodos principales:**
+
+| Método                             | Tipo de Retorno     | Visibilidad | Descripción                                                                    |
+|:-----------------------------------|:--------------------|:------------|:-------------------------------------------------------------------------------|
+| `updatePersonalInfo(info)`         | `void`              | `public`    | Actualiza la información personal validando los datos                          |
+| `updateAddress(address)`           | `void`              | `public`    | Cambia la dirección y dispara la validación de elegibilidad                    |
+| `validateServiceAreaEligibility()` | `EligibilityResult` | `public`    | Verifica si la dirección del usuario está dentro de un área de servicio válida |
+| `updatePrivacySettings(settings)`  | `void`              | `public`    | Modifica las configuraciones de privacidad                                     |
+| `deactivate(reason)`               | `void`              | `public`    | Desactiva el perfil del usuario por una razón específica                       |
+| `isComplete()`                     | `boolean`           | `public`    | Verifica si el perfil tiene toda la información requerida                      |
+| `calculateProfileScore()`          | `ProfileScore`      | `public`    | Calcula una puntuación basada en la completitud y actividad                    |
+| `recordLogin()`                    | `void`              | `public`    | Registra un nuevo inicio de sesión y actualiza la fecha                        |
+
+2.  **`UserPreferences` (Aggregate Root)**
+
+    Gestiona todas las configuraciones y preferencias de un usuario, como notificaciones, idioma y tema de la interfaz.
+
+**Atributos principales:**
+
+| Atributo                | Tipo                    | Visibilidad | Descripción                                             |
+|:------------------------|:------------------------|:------------|:--------------------------------------------------------|
+| `preferencesId`         | `PreferencesId`         | `private`   | Identificador de dominio de las preferencias            |
+| `profileId`             | `ProfileId`             | `private`   | Perfil de usuario asociado                              |
+| `notificationSettings`  | `NotificationSettings`  | `private`   | Configuración de canales y frecuencia de notificaciones |
+| `languagePreference`    | `Language`              | `private`   | Idioma preferido por el usuario                         |
+| `timezonePreference`    | `Timezone`              | `private`   | Zona horaria del usuario                                |
+| `themePreference`       | `ThemePreference`       | `private`   | Tema visual de la aplicación (claro/oscuro)             |
+| `accessibilitySettings` | `AccessibilitySettings` | `private`   | Configuraciones de accesibilidad                        |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno | Visibilidad | Descripción                                        |
+|:---------------------------------------|:----------------|:------------|:---------------------------------------------------|
+| `updateNotificationSettings(settings)` | `void`          | `public`    | Modifica las preferencias de notificación          |
+| `updateLanguage(language)`             | `void`          | `public`    | Cambia el idioma de la interfaz para el usuario    |
+| `updateTheme(theme)`                   | `void`          | `public`    | Cambia el tema visual de la aplicación             |
+| `isChannelEnabled(channel)`            | `boolean`       | `public`    | Verifica si un canal de notificación está activado |
+
+3.  **`PersonalizationSettings` (Aggregate Root)**
+
+    Encapsula las configuraciones de personalización de la interfaz de usuario, como el layout del dashboard y los widgets.
+
+**Atributos principales:**
+
+| Atributo               | Tipo                        | Visibilidad | Descripción                                    |
+|:-----------------------|:----------------------------|:------------|:-----------------------------------------------|
+| `settingsId`           | `PersonalizationSettingsId` | `private`   | Identificador de dominio de la personalización |
+| `profileId`            | `ProfileId`                 | `private`   | Perfil de usuario asociado                     |
+| `dashboardLayout`      | `DashboardLayout`           | `private`   | Diseño del dashboard principal                 |
+| `widgetConfigurations` | `List<WidgetConfiguration>` | `private`   | Lista de widgets y sus configuraciones         |
+
+ **Métodos principales:**
+
+| Método                          | Tipo de Retorno | Visibilidad | Descripción                                           |
+|:--------------------------------|:----------------|:------------|:------------------------------------------------------|
+| `updateDashboardLayout(layout)` | `void`          | `public`    | Cambia el diseño del dashboard                        |
+| `addWidget(widget)`             | `void`          | `public`    | Agrega un nuevo widget al dashboard                   |
+| `removeWidget(widgetId)`        | `void`          | `public`    | Elimina un widget del dashboard                       |
+| `resetToDefaults(userType)`     | `void`          | `public`    | Restablece la configuración a los valores por defecto |
+
+**Entities:**
+
+* **`ContactMethod`**: Representa un método de contacto (email, teléfono) con su estado de verificación.
+* **`AddressHistory`**: Mantiene un historial de las direcciones del usuario para fines de auditoría.
+* **`WidgetConfiguration`**: Configuración específica de un widget en el dashboard, como su posición y tamaño.
+
+**Value Objects:**
+
+* **`PersonalInfo`**: Encapsula datos personales con validaciones de formato (DNI, nombre).
+* **`ContactInfo`**: Agrupa métodos de contacto primarios y secundarios.
+* **`AddressInfo`**: Contiene la dirección completa y coordenadas, con métodos de validación.
+* **`NotificationSettings`**: Define qué notificaciones y en qué canales desea recibir el usuario.
+* **`PrivacySettings`**: Controla la visibilidad del perfil y el consentimiento para compartir datos.
+* **`ProfileCompleteness`**: Calcula y almacena el porcentaje de completitud del perfil.
+
+**Factories (Creational Pattern):**
+
+* **`UserProfileFactory`**: Implementa el **Factory Pattern** para crear perfiles de usuario según su tipo (`Citizen`, `Administrator`, `Driver`), aplicando reglas de validación específicas para cada uno.
+* **`PreferencesFactory`**: Crea configuraciones de preferencias por defecto basadas en el tipo de usuario.
+
+**Strategies (Behavioral Pattern):**
+
+* **`ProfileValidationStrategy`**: Define una interfaz para las estrategias de validación de perfiles.
+  * **`CitizenValidationStrategy`**: Valida los requisitos específicos para un perfil de ciudadano.
+  * **`AdministratorValidationStrategy`**: Valida la asociación a una municipalidad para un administrador.
+  * **`DriverValidationStrategy`**: Valida la información de la licencia de conducir para un conductor.
+
+**Domain Services:**
+
+* **`ProfileCommandService`** / **`ProfileQueryService`**: Orquestan las operaciones de escritura y lectura para perfiles, siguiendo el patrón **CQRS**.
+* **`PreferencesCommandService`** / **`PreferencesQueryService`**: Gestionan las operaciones sobre las preferencias del usuario.
+* **`PersonalizationCommandService`** / **`PersonalizationQueryService`**: Administran la configuración de personalización.
+* **`ProfileEligibilityService`**: Servicio de dominio que centraliza la lógica compleja para validar la elegibilidad de un perfil en un área de servicio.
+
+**Commands (CQRS Write Side):**
+
+* `CreateProfileCommand`: Para registrar un nuevo perfil de usuario.
+* `UpdateProfileCommand`: Para actualizar la información de un perfil existente.
+* `CreatePreferencesCommand`: Para establecer las preferencias iniciales.
+* `UpdatePreferencesCommand`: Para modificar las preferencias de un usuario.
+
+**Queries (CQRS Read Side):**
+
+* `GetProfileByIdQuery`: Para obtener un perfil por su ID.
+* `GetProfileByUserIdQuery`: Para buscar un perfil a partir del ID de usuario (de IAM).
+* `GetPreferencesByProfileQuery`: Para consultar las preferencias de un perfil.
+
+**Domain Events:**
+
+* `ProfileCreatedEvent`: Se publica cuando un nuevo perfil es creado.
+* `ProfileUpdatedEvent`: Se emite cuando se actualiza la información clave de un perfil.
+* `PreferencesChangedEvent`: Se publica cuando un usuario modifica sus preferencias.
+* `ServiceAreaEligibilityChangedEvent`: Se emite cuando un cambio de dirección afecta la elegibilidad del servicio.
+
+#### 4.2.7.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context a través de controladores REST especializados y consumidores de eventos para la sincronización con otros contextos.
+
+**Controllers:**
+
+1.  **`Profile Controller`**: Endpoints REST para la gestión de perfiles de usuario, actualización de información personal y configuraciones de la cuenta.
+2.  **`Preferences Controller`**: Endpoints para que los usuarios gestionen sus preferencias de notificación, privacidad y canales de comunicación.
+3.  **`Personalization Controller`**: Endpoints para la personalización de la UI, como la configuración de widgets y el idioma.
+
+**Event Consumer:**
+
+* **`Event Consumer`**: Un consumidor de Kafka que escucha eventos de otros BCs. Por ejemplo, `AccountActivationEvent` desde **IAM BC** para crear el perfil inicial o `EngagementUpdateEvent` desde **Community Relations BC** para actualizar métricas de participación.
+
+#### 4.2.7.3. Application Layer
+
+Esta capa orquesta los flujos de negocio relacionados con la gestión de perfiles, aplicando patrones para coordinar las operaciones del dominio.
+
+**Application Services:**
+
+1.  **`Profile Service`**: Servicio principal que orquesta las operaciones de perfiles, como creación, actualización y validación. Utiliza el **Command Pattern** para manejar los casos de uso de escritura.
+2.  **`Preferences Service`**: Gestiona las preferencias del usuario. Implementa el **Strategy Pattern** para aplicar diferentes lógicas de validación de preferencias según el tipo de usuario.
+3.  **`Personalization Service`**: Maneja la personalización de la UI. Utiliza el **Builder Pattern** para construir configuraciones complejas de dashboards y widgets.
+
+#### 4.2.7.4. Infrastructure Layer
+
+Esta capa proporciona las implementaciones técnicas para la persistencia, comunicación y otros servicios externos, desacoplando el dominio de la tecnología subyacente.
+
+**Repositories:**
+
+1.  **`Profile Repository`**: Implementación JPA para la persistencia de perfiles de usuario, con controles de privacidad y un rastro de auditoría.
+2.  **`Preferences Repository`**: Repositorio JPA para las preferencias del usuario, con seguimiento de cambios y versionado.
+3.  **`Personalization Repository`**: Repositorio JPA para las configuraciones de personalización, incluyendo temas y layouts.
+
+**External Services:**
+
+1.  **`Event Publisher`**: Publica eventos de dominio (como `ProfileUpdatedEvent`) a otros bounded contexts a través de Kafka.
+2.  **`Cache Service`**: Servicio de caché con Redis para datos de perfil y preferencias de acceso frecuente, mejorando el rendimiento.
+3.  **`Encryption Service`**: Servicio que utiliza Spring Security para encriptar información personal sensible, asegurando la protección de datos.
+
+#### 4.2.7.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Profile bounded context, ilustrando la separación por capas DDD y las interacciones entre sus componentes. Se observa claramente:
+
+* **Interface Layer** (verde claro): Controllers para la gestión de perfiles, preferencias y personalización, además de un consumidor de eventos para la comunicación asíncrona.
+* **Application Layer** (verde medio): Services que coordinan la lógica de negocio, aplicando patrones como Command, Strategy y Builder.
+* **Infrastructure Layer** (verde oscuro): Repositories para la persistencia de datos y servicios para la publicación de eventos, caching y encriptación.
+* **Integraciones externas**: Se comunica con la base de datos PostgreSQL, el caché de Redis y el message broker de Kafka. También interactúa con servicios como geocodificación y proveedores de email.
+
+La arquitectura sigue un flujo de dependencias claro, asegurando que la lógica de dominio permanezca independiente de los detalles de infraestructura.
+
+#### 4.2.7.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.7.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Profile, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: `UserProfile`, `UserPreferences` y `PersonalizationSettings` como raíces que garantizan la consistencia de sus invariantes.
+- **Entities**: `ContactMethod`, `AddressHistory` y `WidgetConfiguration` con identidad y ciclo de vida propios.
+- **Value Objects**: Objetos inmutables que encapsulan conceptos complejos del dominio como `PersonalInfo`, `AddressInfo` y `PrivacySettings`.
+- **Domain Services**: Servicios como `ProfileEligibilityService` que contienen lógica de dominio que no encaja en un solo agregado.
+- **Domain Events**: Eventos como `ProfileCreatedEvent` para notificar a otros BCs de cambios de estado.
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: `UserProfileFactory` para crear perfiles según el tipo de usuario.
+- **Strategy Pattern**: `ProfileValidationStrategy` para validar perfiles de manera flexible.
+- **Repository Pattern**: Interfaces para abstraer la persistencia de los agregados.
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura que modifican el estado del sistema (`CreateProfileCommand`).
+- **Queries**: Operaciones de lectura optimizadas para diferentes casos de uso (`GetProfileByIdQuery`).
+- **Command/Query Services**: Separación clara de responsabilidades para mejorar la escalabilidad y mantenibilidad.
+
+**Características especiales:**
+- **Service Area Eligibility**: Validación automática de la elegibilidad geográfica del usuario.
+- **Privacy Controls**: Gestión granular de la privacidad y el consentimiento de datos.
+- **Multi-user Types**: Soporte para diferentes tipos de usuarios con reglas de validación específicas.
+
+##### 4.2.7.6.2. Bounded Context Database Design Diagram
+
+![database-design-profile.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/7.database-design-diagram.png)
+
+El diseño de la base de datos implementa el modelo de dominio con optimizaciones específicas para la gestión de perfiles a gran escala:
+
+**Tablas principales:**
+- **`user_profiles`**: Aggregate root que almacena toda la información personal, de contacto y de estado.
+- **`user_preferences`**: Aggregate root para las preferencias de notificación, idioma y privacidad.
+- **`personalization_settings`**: Aggregate root para las configuraciones de la UI, como widgets y temas.
+- **`contact_methods`**: Entity para los métodos de contacto verificables.
+- **`address_history`**: Entity que mantiene un historial de cambios de dirección.
+
+**Tablas auxiliares especializadas:**
+- **`profile_events`**: Almacena los eventos de dominio para su procesamiento asíncrono y auditoría.
+- **`profile_activity_log`**: Registra la actividad del usuario para fines de seguridad y análisis.
+
+**Optimizaciones y características técnicas:**
+- **Triggers automáticos**: Para calcular la completitud del perfil (`profile_completeness_percentage`) y actualizar timestamps.
+- **Índices geoespaciales (GIST)**: Para optimizar las consultas de ubicación y la validación de elegibilidad en el área de servicio.
+- **Auditoría completa**: Tablas de logs y campos `created_at`/`updated_at` en todas las tablas principales.
+- **Función de anonimización**: Procedimiento `anonymize_profile_data` para cumplir con normativas de privacidad (GDPR).
+- **JSONB avanzado**: Utilizado para almacenar configuraciones flexibles como `privacy_settings` y `widget_configurations`.
+- **Vistas especializadas**: `vw_profile_overview` y `vw_users_by_service_area` para simplificar consultas comunes y reporting.
+
+El esquema está diseñado para garantizar la integridad de los datos, la privacidad del usuario y un alto rendimiento en las consultas, soportando las diversas necesidades de los diferentes tipos de usuario de la plataforma.
+
+### 4.2.8. Bounded Context: IAM
+
+En esta sección se presenta el análisis detallado del **bounded context IAM** (Identity and Access Management), que encapsula toda la lógica de negocio relacionada con la gestión de identidades, autenticación, autorización y seguridad de acceso para todos los usuarios de la plataforma WasteTrack. Este contexto es fundamental para garantizar que solo los usuarios autorizados puedan acceder a las funcionalidades correspondientes a sus roles.
+
+#### 4.2.8.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de seguridad y gestión de identidades, implementando patrones de diseño robustos para asegurar un sistema seguro, escalable y mantenible.
+
+**Aggregate Roots:**
+
+1.  **`User` (Aggregate Root)**
+
+    Representa el agregado principal del dominio, encapsulando la identidad de un usuario, sus credenciales seguras, estado y los roles asignados.
+
+**Atributos principales:**
+
+| Atributo         | Tipo             | Visibilidad | Descripción                                              |
+|:-----------------|:-----------------|:------------|:---------------------------------------------------------|
+| `id`             | `Long`           | `private`   | Identificador único del usuario en la base de datos      |
+| `userId`         | `UserId`         | `private`   | Identificador de dominio del usuario                     |
+| `username`       | `Username`       | `private`   | Nombre de usuario único en el sistema                    |
+| `email`          | `EmailAddress`   | `private`   | Correo electrónico único para la autenticación           |
+| `hashedPassword` | `HashedPassword` | `private`   | Contraseña del usuario almacenada de forma segura (hash) |
+| `status`         | `UserStatus`     | `private`   | Estado actual del usuario (Activo, Suspendido, etc.)     |
+| `roles`          | `Set<Role>`      | `private`   | Conjunto de roles asignados al usuario                   |
+| `lastLoginAt`    | `LocalDateTime`  | `private`   | Fecha y hora del último inicio de sesión exitoso         |
+
+**Métodos principales:**
+
+| Método                        | Tipo de Retorno | Visibilidad | Descripción                                                              |
+|:------------------------------|:----------------|:------------|:-------------------------------------------------------------------------|
+| `authenticate(password)`      | `boolean`       | `public`    | Verifica si la contraseña proporcionada coincide con la almacenada       |
+| `changePassword(newPassword)` | `void`          | `public`    | Cambia la contraseña del usuario aplicando políticas de seguridad        |
+| `assignRole(role)`            | `void`          | `public`    | Asigna un nuevo rol al usuario                                           |
+| `removeRole(role)`            | `void`          | `public`    | Revoca un rol asignado al usuario                                        |
+| `activate()`                  | `void`          | `public`    | Activa la cuenta del usuario                                             |
+| `deactivate()`                | `void`          | `public`    | Desactiva la cuenta del usuario                                          |
+| `hasPermission(permission)`   | `boolean`       | `public`    | Verifica si el usuario tiene un permiso específico a través de sus roles |
+
+2.  **`Role` (Aggregate Root)**
+
+    Representa un rol dentro del sistema, agrupando un conjunto de permisos que definen lo que un usuario puede hacer.
+
+**Atributos principales:**
+
+| Atributo      | Tipo              | Visibilidad | Descripción                                      |
+|:--------------|:------------------|:------------|:-------------------------------------------------|
+| `roleId`      | `RoleId`          | `private`   | Identificador de dominio del rol                 |
+| `name`        | `String`          | `private`   | Nombre único del rol (e.g., "CITIZEN", "DRIVER") |
+| `permissions` | `Set<Permission>` | `private`   | Conjunto de permisos asociados a este rol        |
+
+**Métodos principales:**
+
+| Método                         | Tipo de Retorno | Visibilidad | Descripción                                       |
+|:-------------------------------|:----------------|:------------|:--------------------------------------------------|
+| `addPermission(permission)`    | `void`          | `public`    | Agrega un nuevo permiso al rol                    |
+| `removePermission(permission)` | `void`          | `public`    | Elimina un permiso del rol                        |
+| `hasPermission(permission)`    | `boolean`       | `public`    | Verifica si el rol contiene un permiso específico |
+
+**Entities:**
+
+* **`Permission` (Entity)**: Representa una acción granular permitida en el sistema (e.g., "VIEW_CONTAINERS", "MANAGE_USERS").
+
+**Value Objects:**
+
+* **`UserId`**: Identificador único de dominio para un usuario.
+* **`RoleId`**: Identificador único de dominio para un rol.
+* **`HashedPassword`**: Objeto inmutable que encapsula la contraseña hasheada y la lógica de comparación segura.
+* **`Username`**: Representa el nombre de usuario con sus reglas de validación (formato, longitud).
+* **`UserStatus`**: Un enum que define los posibles estados del ciclo de vida de un usuario.
+
+**Factories (Creational Pattern):**
+
+* **`UserFactory`**: Implementa el **Factory Pattern** para encapsular la lógica de creación de un nuevo `User`, incluyendo la validación inicial, la aplicación de políticas de contraseña y el hash seguro de la misma.
+
+**Strategies (Behavioral Pattern):**
+
+* **`PasswordPolicyStrategy`**: Define una interfaz para diferentes estrategias de validación de contraseñas. Esto permite cambiar las reglas de complejidad de las contraseñas (e.g., `SimplePasswordStrategy`, `ComplexPasswordStrategy`) sin modificar el agregado `User`.
+
+**Domain Services:**
+
+* **`UserCommandService` / `UserQueryService`**: Orquestan las operaciones de escritura y lectura para usuarios y roles, aplicando el patrón **CQRS**.
+* **`AuthService`**: Contiene la lógica de dominio para el proceso de autenticación, validando credenciales y coordinando la generación de tokens.
+
+**Commands (CQRS Write Side):**
+
+* `RegisterUserCommand`: Para crear una nueva cuenta de usuario.
+* `AuthenticateUserCommand`: Para iniciar el proceso de login.
+* `AssignRoleToUserCommand`: Para asignar un rol a un usuario.
+* `CreateRoleCommand`: Para crear un nuevo rol en el sistema.
+
+**Queries (CQRS Read Side):**
+
+* `GetUserByIdQuery`: Para obtener un usuario por su ID.
+* `GetUserByEmailQuery`: Para buscar un usuario por su correo electrónico.
+* `GetRoleByNameQuery`: Para consultar un rol por su nombre.
+
+**Domain Events:**
+
+* `UserRegisteredEvent`: Se publica cuando un nuevo usuario se registra. Es escuchado por otros BCs (como Profile) para crear entidades relacionadas.
+* `PasswordResetRequestedEvent`: Se emite para iniciar el flujo de recuperación de contraseña.
+
+#### 4.2.8.2. Interface Layer
+
+Esta capa expone las funcionalidades de seguridad y autenticación a través de controladores REST, actuando como la puerta de entrada para todas las operaciones de IAM.
+
+**Controllers:**
+
+1.  **`Auth Controller`**: Endpoints REST para el registro de nuevos usuarios, inicio de sesión (login), cierre de sesión (logout), recuperación de contraseña y validación de tokens. Es el punto de entrada para todas las aplicaciones cliente (web y móvil).
+
+#### 4.2.8.3. Application Layer
+
+Esta capa coordina los flujos de trabajo complejos de autenticación y gestión de usuarios, conectando la interfaz con el dominio.
+
+**Application Services:**
+
+1.  **`IAM Service`**: Orquesta el ciclo de vida completo de los usuarios y la autenticación. Implementa el **Strategy Pattern** para seleccionar la `PasswordPolicyStrategy` adecuada durante el registro o cambio de contraseña. Coordina la generación de tokens y la publicación de eventos de dominio.
+
+#### 4.2.8.4. Infrastructure Layer
+
+Esta capa proporciona las implementaciones técnicas para la persistencia de datos de seguridad, comunicación con otros servicios y la generación de tokens.
+
+**Repositories:**
+
+1.  **`User Repository`**: Implementación JPA para la persistencia de usuarios, asegurando que las contraseñas se almacenen siempre hasheadas.
+2.  **`Role Repository`**: Repositorio JPA para la gestión de roles y sus permisos asociados.
+
+**External Services:**
+
+1.  **`Event Publisher`**: Publica eventos de dominio, como `UserRegisteredEvent`, a otros bounded contexts a través de Kafka, permitiendo la consistencia eventual.
+2.  **`Token Service`**: Servicio encargado de la generación y validación de JSON Web Tokens (JWT) utilizando librerías como Spring Security o JJWT, para gestionar las sesiones de los usuarios de forma segura.
+
+#### 4.2.8.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del IAM bounded context, ilustrando su estructura por capas y sus responsabilidades enfocadas en la seguridad. Se observa:
+
+* **Interface Layer** (verde claro): Un `Auth Controller` que centraliza todas las solicitudes de autenticación y gestión de usuarios.
+* **Application Layer** (verde medio): Un `IAM Service` que orquesta toda la lógica de negocio.
+* **Infrastructure Layer** (verde oscuro): Repositorios para la persistencia segura de credenciales, un servicio de tokens (JWT), y un publicador de eventos para notificar a otros BCs.
+* **Integraciones externas**: Se conecta con la base de datos PostgreSQL para almacenar usuarios y roles, y con Kafka para la comunicación asíncrona de eventos.
+
+#### 4.2.8.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.8.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio IAM, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: `User` y `Role` como las principales raíces que garantizan la consistencia de las reglas de seguridad.
+- **Entities**: `Permission` como una entidad que define acciones específicas.
+- **Value Objects**: Objetos inmutables como `HashedPassword` y `UserStatus` que encapsulan lógica y validaciones.
+- **Domain Events**: Eventos como `UserRegisteredEvent` para la comunicación desacoplada.
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: `UserFactory` para la creación segura y consistente de usuarios.
+- **Strategy Pattern**: `PasswordPolicyStrategy` para definir políticas de contraseñas intercambiables.
+- **Repository Pattern**: Interfaces para la abstracción de la persistencia de usuarios y roles.
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura como `RegisterUserCommand` y `AssignRoleToUserCommand`.
+- **Queries**: Operaciones de lectura como `GetUserByEmailQuery`.
+- **Command/Query Services**: Separación de responsabilidades para mejorar la mantenibilidad del sistema.
+
+**Seguridad y Roles:**
+- Se define una relación **muchos a muchos** entre `User` y `Role`, y entre `Role` y `Permission`, permitiendo un sistema de control de acceso basado en roles (RBAC) flexible y robusto.
+
+##### 4.2.8.6.2. Bounded Context Database Design Diagram
+
+![database-design-iam.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/8.database-design-diagram.png)
+
+El diseño de la base de datos implementa el modelo de dominio con un enfoque principal en la seguridad y la integridad de los datos de identidad.
+
+**Tablas principales:**
+- **`users`**: Aggregate root que almacena la información de identidad, incluyendo el `hashed_password` y el `status`.
+- **`roles`**: Aggregate root para definir los roles del sistema.
+- **`permissions`**: Tabla para los permisos granulares.
+- **`user_roles`** y **`role_permissions`**: Tablas de unión para implementar las relaciones muchos a muchos (RBAC).
+
+**Tablas auxiliares de seguridad:**
+- **`auth_tokens`**: Almacena tokens temporales y seguros para procesos como la verificación de email y la recuperación de contraseña.
+- **`iam_events`**: Guarda un registro de los eventos de dominio para auditoría y procesamiento asíncrono.
+
+**Características de seguridad y técnicas:**
+- **Hashing de contraseñas**: La columna `hashed_password` nunca almacena contraseñas en texto plano.
+- **Seeding de datos**: Se incluye una función (`seed_roles_and_permissions`) para crear los roles y permisos iniciales del sistema, asegurando una configuración base consistente.
+- **Índices optimizados**: Índices en `email` y `username` para acelerar las búsquedas durante el login.
+- **Control de concurrencia**: Campo `version` para el bloqueo optimista en las tablas de agregados.
+- **Triggers**: Para la actualización automática de timestamps (`updated_at`) y el versionado.
+
+El esquema está diseñado para ser la base de un sistema de autenticación seguro, cumpliendo con las mejores prácticas de almacenamiento de credenciales y gestión de acceso.
 
 # Capítulo V: Solution UI/UX Design
 En esta sección, presentaremos el diseño del producto como parte integral del sistema. El diseño de producto abarcará los componentes físicos como el software. Además, se va a detallar como los componentes influyen en la interacción humano-computadora

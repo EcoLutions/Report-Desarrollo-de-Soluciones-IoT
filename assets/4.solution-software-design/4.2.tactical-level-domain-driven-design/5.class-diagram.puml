@@ -1,0 +1,487 @@
+@startuml Payment & Subscriptions: Domain Layer Class Diagram
+
+title Payment & Subscriptions: Domain Layer Class Diagram
+
+skinparam class {
+    BackgroundColor<<Aggregate Root>> #FFFFFF/B3E5FC
+    BackgroundColor<<Entity>> #FFFFFF/C8E6C9
+    BackgroundColor<<Value Object>> #FFFFFF/FFF9C4
+    BackgroundColor<<Domain Service>> #FFFFFF/FFCCBC
+    BackgroundColor<<Factory>> #FFFFFF/F8BBD9
+    BackgroundColor<<Strategy>> #FFFFFF/E1BEE7
+    BackgroundColor<<Command>> #FFFFFF/D1C4E9
+    BackgroundColor<<Query>> #FFFFFF/C8E6C9
+    BackgroundColor<<Event>> #FFFFFF/FFE0B2
+    BorderColor #212121
+    ArrowColor #212121
+    FontSize 14
+}
+
+package "Payment & Subscriptions Context" {
+    package "Domain Layer" {
+
+        ' ===================== AGGREGATES =====================
+        class "Subscription" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -subscriptionId : SubscriptionId
+            -municipalityId : MunicipalityId
+            -planId : PlanId
+            -status : SubscriptionStatus
+            -startDate : LocalDateTime
+            -endDate : LocalDateTime
+            -nextBillingDate : LocalDateTime
+            -paymentMethodId : PaymentMethodId
+            -billingAddress : BillingAddress
+            -billingCycle : BillingCycle
+            -trialEndDate : LocalDateTime
+            -autoRenewal : boolean
+            -gracePeriodEndDate : LocalDateTime
+            -createdAt : LocalDateTime
+            -version : Long
+
+            #Subscription()
+            +Subscription(municipalityId : MunicipalityId, planId : PlanId, billingCycle : BillingCycle)
+            +Subscription(command : CreateSubscriptionCommand)
+            +activate() : void
+            +suspend(reason : SuspensionReason) : void
+            +cancel(reason : CancellationReason) : void
+            +updatePlan(newPlanId : PlanId) : void
+            +updatePaymentMethod(paymentMethodId : PaymentMethodId) : void
+            +processPayment(amount : MonetaryAmount) : PaymentResult
+            +isActive() : boolean
+            +isInGracePeriod() : boolean
+            +canBeUpgraded() : boolean
+            +calculateNextBilling() : LocalDateTime
+        }
+
+        class "Payment" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -paymentId : PaymentId
+            -subscriptionId : SubscriptionId
+            -amount : MonetaryAmount
+            -currency : Currency
+            -paymentMethod : PaymentMethodType
+            -paymentStatus : PaymentStatus
+            -transactionId : TransactionId
+            -gatewayResponse : GatewayResponse
+            -attemptNumber : Integer
+            -scheduledDate : LocalDateTime
+            -processedDate : LocalDateTime
+            -failureReason : FailureReason
+            -version : Long
+
+            #Payment()
+            +Payment(subscriptionId : SubscriptionId, amount : MonetaryAmount, paymentMethod : PaymentMethodType)
+            +Payment(command : ProcessPaymentCommand)
+            +process() : PaymentResult
+            +retry() : PaymentResult
+            +markAsSuccessful(transactionId : TransactionId) : void
+            +markAsFailed(reason : FailureReason) : void
+            +canBeRetried() : boolean
+            +isSuccessful() : boolean
+            +getAttemptHistory() : List<PaymentAttempt>
+        }
+
+        class "Invoice" <<(A, #27D3F5) Aggregate Root>> {
+            -id : Long
+            -invoiceId : InvoiceId
+            -subscriptionId : SubscriptionId
+            -invoiceNumber : InvoiceNumber
+            -billingPeriod : BillingPeriod
+            -issueDate : LocalDateTime
+            -dueDate : LocalDateTime
+            -subtotal : MonetaryAmount
+            -taxAmount : MonetaryAmount
+            -totalAmount : MonetaryAmount
+            -status : InvoiceStatus
+            -paymentId : PaymentId
+            -lineItems : List<InvoiceLineItem>
+            -version : Long
+
+            #Invoice()
+            +Invoice(subscriptionId : SubscriptionId, billingPeriod : BillingPeriod)
+            +Invoice(command : GenerateInvoiceCommand)
+            +addLineItem(item : InvoiceLineItem) : void
+            +calculateTotals() : void
+            +markAsPaid(paymentId : PaymentId) : void
+            +markAsOverdue() : void
+            +isPaid() : boolean
+            +isOverdue() : boolean
+            +getDaysOverdue() : int
+        }
+
+        ' ===================== ENTITIES =====================
+        class "PaymentMethod" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -paymentMethodId : PaymentMethodId
+            -municipalityId : MunicipalityId
+            -type : PaymentMethodType
+            -cardDetails : CardDetails
+            -bankAccountDetails : BankAccountDetails
+            -isDefault : boolean
+            -isActive : boolean
+            -expiryDate : LocalDateTime
+            -lastUsedDate : LocalDateTime
+
+            +validate() : ValidationResult
+            +isExpired() : boolean
+            +canProcess(amount : MonetaryAmount) : boolean
+        }
+
+        class "InvoiceLineItem" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -lineItemId : LineItemId
+            -description : String
+            -quantity : Integer
+            -unitPrice : MonetaryAmount
+            -totalPrice : MonetaryAmount
+            -taxRate : TaxRate
+            -taxAmount : MonetaryAmount
+
+            +calculateTotal() : MonetaryAmount
+            +applyTax(rate : TaxRate) : void
+        }
+
+        class "PaymentAttempt" <<(E, #4CAF50) Entity>> {
+            -id : Long
+            -attemptId : AttemptId
+            -paymentId : PaymentId
+            -attemptNumber : Integer
+            -attemptDate : LocalDateTime
+            -status : AttemptStatus
+            -gatewayResponse : GatewayResponse
+            -errorCode : String
+            -errorMessage : String
+
+            +isSuccessful() : boolean
+            +getResponseTime() : Duration
+        }
+
+        ' ===================== VALUE OBJECTS =====================
+        class "SubscriptionId" <<(V, #FFD700) Value Object>> {
+            -subscriptionId : String
+            +SubscriptionId(subscriptionId : String)
+            +getValue() : String
+        }
+
+        class "PaymentId" <<(V, #FFD700) Value Object>> {
+            -paymentId : String
+            +PaymentId(paymentId : String)
+            +getValue() : String
+        }
+
+        class "MonetaryAmount" <<(V, #FFD700) Value Object>> {
+            -amount : BigDecimal
+            -currency : Currency
+            +MonetaryAmount(amount : BigDecimal, currency : Currency)
+            +add(other : MonetaryAmount) : MonetaryAmount
+            +subtract(other : MonetaryAmount) : MonetaryAmount
+            +multiply(factor : BigDecimal) : MonetaryAmount
+            +isZero() : boolean
+            +isPositive() : boolean
+        }
+
+        class "BillingAddress" <<(V, #FFD700) Value Object>> {
+            -street : String
+            -city : String
+            -state : String
+            -postalCode : String
+            -country : String
+            +BillingAddress(street : String, city : String, state : String, postalCode : String, country : String)
+            +getFullAddress() : String
+        }
+
+        class "BillingCycle" <<(V, #FFD700) Value Object>> {
+            -type : BillingCycleType
+            -intervalMonths : Integer
+            +BillingCycle(type : BillingCycleType, intervalMonths : Integer)
+            +calculateNextBilling(startDate : LocalDateTime) : LocalDateTime
+        }
+
+        class "PaymentMethodType" <<(V, #FFD700) Value Object>> {
+            -type : String
+            +PaymentMethodType(type : String)
+            +isCreditCard() : boolean
+            +isBankTransfer() : boolean
+        }
+
+        class "SubscriptionStatus" <<(V, #FFD700) Value Object>> {
+            -status : String
+            +SubscriptionStatus(status : String)
+            +isActive() : boolean
+            +isSuspended() : boolean
+            +isCancelled() : boolean
+            +canBeActivated() : boolean
+        }
+
+        class "PaymentStatus" <<(V, #FFD700) Value Object>> {
+            -status : String
+            +PaymentStatus(status : String)
+            +isPending() : boolean
+            +isSuccessful() : boolean
+            +isFailed() : boolean
+            +canBeRetried() : boolean
+        }
+
+        ' ===================== FACTORIES =====================
+        class "SubscriptionFactory" <<(F, #F48FB1) Factory>> {
+            +createTrialSubscription(municipalityId : MunicipalityId, planId : PlanId) : Subscription
+            +createPaidSubscription(municipalityId : MunicipalityId, planId : PlanId, paymentMethod : PaymentMethodId) : Subscription
+            +createFromCommand(command : CreateSubscriptionCommand) : Subscription
+            -validateSubscriptionData(data : SubscriptionData) : ValidationResult
+        }
+
+        class "PaymentFactory" <<(F, #F48FB1) Factory>> {
+            +createScheduledPayment(subscription : Subscription, amount : MonetaryAmount) : Payment
+            +createRetryPayment(originalPayment : Payment) : Payment
+            +createFromCommand(command : ProcessPaymentCommand) : Payment
+            -determinePaymentMethod(subscription : Subscription) : PaymentMethodType
+        }
+
+        class "InvoiceFactory" <<(F, #F48FB1) Factory>> {
+            +createMonthlyInvoice(subscription : Subscription, period : BillingPeriod) : Invoice
+            +createProrationInvoice(subscription : Subscription, adjustment : ProrationAdjustment) : Invoice
+            +createFromCommand(command : GenerateInvoiceCommand) : Invoice
+            -calculateInvoiceLineItems(subscription : Subscription, period : BillingPeriod) : List<InvoiceLineItem>
+        }
+
+        ' ===================== STRATEGIES =====================
+        class "PaymentProcessingStrategy" <<(S, #CE93D8) Strategy>> {
+            +processPayment(payment : Payment, paymentMethod : PaymentMethod) : PaymentResult
+            +validatePayment(payment : Payment) : ValidationResult
+            +canProcess(paymentMethod : PaymentMethodType) : boolean
+        }
+
+        class "CreditCardStrategy" <<(S, #CE93D8) Strategy>> {
+            +processPayment(payment : Payment, paymentMethod : PaymentMethod) : PaymentResult
+            +validatePayment(payment : Payment) : ValidationResult
+            +canProcess(paymentMethod : PaymentMethodType) : boolean
+            -validateCardDetails(cardDetails : CardDetails) : ValidationResult
+        }
+
+        class "BankTransferStrategy" <<(S, #CE93D8) Strategy>> {
+            +processPayment(payment : Payment, paymentMethod : PaymentMethod) : PaymentResult
+            +validatePayment(payment : Payment) : ValidationResult
+            +canProcess(paymentMethod : PaymentMethodType) : boolean
+            -initiateBankTransfer(bankDetails : BankAccountDetails, amount : MonetaryAmount) : TransferResult
+        }
+
+        class "DigitalWalletStrategy" <<(S, #CE93D8) Strategy>> {
+            +processPayment(payment : Payment, paymentMethod : PaymentMethod) : PaymentResult
+            +validatePayment(payment : Payment) : ValidationResult
+            +canProcess(paymentMethod : PaymentMethodType) : boolean
+            -processWalletPayment(walletDetails : WalletDetails, amount : MonetaryAmount) : WalletResult
+        }
+
+        ' ===================== COMMANDS =====================
+        class "CreateSubscriptionCommand" <<(C, #BA68C8) Command>> {
+            +municipalityId : MunicipalityId
+            +planId : PlanId
+            +billingCycle : BillingCycle
+            +paymentMethodId : PaymentMethodId
+            +billingAddress : BillingAddress
+            +autoRenewal : boolean
+        }
+
+        class "ProcessPaymentCommand" <<(C, #BA68C8) Command>> {
+            +subscriptionId : SubscriptionId
+            +amount : MonetaryAmount
+            +paymentMethodId : PaymentMethodId
+            +scheduledDate : LocalDateTime
+        }
+
+        class "GenerateInvoiceCommand" <<(C, #BA68C8) Command>> {
+            +subscriptionId : SubscriptionId
+            +billingPeriod : BillingPeriod
+            +includeUsageCharges : boolean
+        }
+
+        class "UpdateSubscriptionCommand" <<(C, #BA68C8) Command>> {
+            +subscriptionId : SubscriptionId
+            +newPlanId : PlanId
+            +effectiveDate : LocalDateTime
+            +prorationPolicy : ProrationPolicy
+        }
+
+        ' ===================== QUERIES =====================
+        class "GetSubscriptionByIdQuery" <<(Q, #C5E1A5) Query>> {
+            +subscriptionId : SubscriptionId
+        }
+
+        class "GetSubscriptionsByMunicipalityQuery" <<(Q, #C5E1A5) Query>> {
+            +municipalityId : MunicipalityId
+            +status : SubscriptionStatus
+        }
+
+        class "GetPaymentHistoryQuery" <<(Q, #C5E1A5) Query>> {
+            +subscriptionId : SubscriptionId
+            +startDate : LocalDateTime
+            +endDate : LocalDateTime
+        }
+
+        class "GetOutstandingInvoicesQuery" <<(Q, #C5E1A5) Query>> {
+            +municipalityId : MunicipalityId
+            +overdueOnly : boolean
+        }
+
+        ' ===================== DOMAIN EVENTS =====================
+        class "SubscriptionCreatedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +subscriptionId : SubscriptionId
+            +municipalityId : MunicipalityId
+            +planId : PlanId
+            +SubscriptionCreatedEvent(source : Object, subscriptionId : SubscriptionId, municipalityId : MunicipalityId, planId : PlanId)
+        }
+
+        class "PaymentProcessedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +paymentId : PaymentId
+            +subscriptionId : SubscriptionId
+            +amount : MonetaryAmount
+            +status : PaymentStatus
+            +PaymentProcessedEvent(source : Object, paymentId : PaymentId, subscriptionId : SubscriptionId, amount : MonetaryAmount, status : PaymentStatus)
+        }
+
+        class "SubscriptionSuspendedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +subscriptionId : SubscriptionId
+            +suspensionReason : SuspensionReason
+            +suspensionDate : LocalDateTime
+            +SubscriptionSuspendedEvent(source : Object, subscriptionId : SubscriptionId, suspensionReason : SuspensionReason, suspensionDate : LocalDateTime)
+        }
+
+        class "InvoiceGeneratedEvent" <<(E, #FFB74D) Domain Event>> {
+            +source : Object
+            +invoiceId : InvoiceId
+            +subscriptionId : SubscriptionId
+            +totalAmount : MonetaryAmount
+            +dueDate : LocalDateTime
+            +InvoiceGeneratedEvent(source : Object, invoiceId : InvoiceId, subscriptionId : SubscriptionId, totalAmount : MonetaryAmount, dueDate : LocalDateTime)
+        }
+
+        ' ===================== DOMAIN SERVICES =====================
+        class "SubscriptionCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : CreateSubscriptionCommand) : Optional<Subscription>
+            +handle(command : UpdateSubscriptionCommand) : void
+            -validateMunicipalityEligibility(municipalityId : MunicipalityId) : ValidationResult
+        }
+
+        class "SubscriptionQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetSubscriptionByIdQuery) : Optional<Subscription>
+            +handle(query : GetSubscriptionsByMunicipalityQuery) : List<Subscription>
+        }
+
+        class "PaymentCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : ProcessPaymentCommand) : Optional<Payment>
+            -determinePaymentStrategy(paymentMethod : PaymentMethodType) : PaymentProcessingStrategy
+        }
+
+        class "PaymentQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetPaymentHistoryQuery) : List<Payment>
+            +calculatePaymentStatistics(subscriptionId : SubscriptionId) : PaymentStatistics
+        }
+
+        class "BillingCommandService" <<(S, #FF8A65) Domain Service>> {
+            +handle(command : GenerateInvoiceCommand) : Optional<Invoice>
+            -calculateProrationAmount(subscription : Subscription, change : SubscriptionChange) : MonetaryAmount
+        }
+
+        class "BillingQueryService" <<(S, #FF8A65) Domain Service>> {
+            +handle(query : GetOutstandingInvoicesQuery) : List<Invoice>
+            +generateFinancialReport(municipalityId : MunicipalityId, period : ReportPeriod) : FinancialReport
+        }
+    }
+}
+
+package "Shared Kernel" {
+    package "Domain Layer" {
+        class "MunicipalityId" <<(V, #FFD700) Value Object>> {
+            -municipalityId : String
+        }
+
+        class "PlanId" <<(V, #FFD700) Value Object>> {
+            -planId : String
+        }
+
+        class "Currency" <<(V, #FFD700) Value Object>> {
+            -currencyCode : String
+            -symbol : String
+        }
+
+        class "TaxRate" <<(V, #FFD700) Value Object>> {
+            -rate : BigDecimal
+            -taxType : TaxType
+        }
+    }
+}
+
+' ===================== RELATIONSHIPS =====================
+
+' --- Aggregate composition ---
+Subscription *-- SubscriptionId
+Subscription *-- SubscriptionStatus
+Subscription *-- BillingCycle
+Subscription *-- BillingAddress
+Payment *-- PaymentId
+Payment *-- PaymentStatus
+Payment *-- MonetaryAmount
+Invoice *-- InvoiceId
+Invoice *-- MonetaryAmount
+Invoice *-- InvoiceLineItem
+
+' --- Shared Kernel usage ---
+Subscription ..> MunicipalityId : uses >
+Subscription ..> PlanId : uses >
+Payment ..> Currency : uses >
+Invoice ..> TaxRate : uses >
+
+' --- Entity relationships ---
+Subscription o-- PaymentMethod
+Payment o-- PaymentAttempt
+Invoice o-- InvoiceLineItem
+
+' --- Factory relationships ---
+SubscriptionFactory ..> Subscription : creates >
+SubscriptionFactory ..> CreateSubscriptionCommand
+PaymentFactory ..> Payment : creates >
+PaymentFactory ..> ProcessPaymentCommand
+InvoiceFactory ..> Invoice : creates >
+InvoiceFactory ..> GenerateInvoiceCommand
+
+' --- Strategy relationships ---
+PaymentProcessingStrategy <|-- CreditCardStrategy
+PaymentProcessingStrategy <|-- BankTransferStrategy
+PaymentProcessingStrategy <|-- DigitalWalletStrategy
+
+' --- Command/Query relationships ---
+Subscription ..> CreateSubscriptionCommand : creates >
+Subscription ..> UpdateSubscriptionCommand : updates >
+Payment ..> ProcessPaymentCommand : creates >
+Invoice ..> GenerateInvoiceCommand : creates >
+
+' --- Event relationships ---
+Subscription ..> SubscriptionCreatedEvent : publishes >
+Subscription ..> SubscriptionSuspendedEvent : publishes >
+Payment ..> PaymentProcessedEvent : publishes >
+Invoice ..> InvoiceGeneratedEvent : publishes >
+
+' --- Service relationships ---
+SubscriptionCommandService ..> Subscription : manages >
+SubscriptionCommandService ..> CreateSubscriptionCommand
+SubscriptionCommandService ..> UpdateSubscriptionCommand
+SubscriptionQueryService ..> Subscription : queries >
+SubscriptionQueryService ..> GetSubscriptionByIdQuery
+SubscriptionQueryService ..> GetSubscriptionsByMunicipalityQuery
+
+PaymentCommandService ..> Payment : manages >
+PaymentCommandService ..> ProcessPaymentCommand
+PaymentCommandService ..> PaymentProcessingStrategy : uses >
+PaymentQueryService ..> Payment : queries >
+PaymentQueryService ..> GetPaymentHistoryQuery
+
+BillingCommandService ..> Invoice : manages >
+BillingCommandService ..> GenerateInvoiceCommand
+BillingQueryService ..> Invoice : queries >
+BillingQueryService ..> GetOutstandingInvoicesQuery
+
+@enduml
