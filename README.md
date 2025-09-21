@@ -3179,6 +3179,320 @@ El diseño de base de datos implementa el modelo de dominio con optimizaciones e
 
 El esquema está optimizado para las operaciones financieras identificadas en el dominio, incluyendo procesamiento de pagos con Culqi, facturación automática con IGV, gestión de trial periods, análisis de MRR/churn, y cumplimiento de regulaciones fiscales peruanas.
 
+### 4.2.6. Bounded Context: Communication Hub
+
+En esta sección se presenta el análisis detallado del bounded context Communication Hub, que encapsula toda la lógica de negocio relacionada con la orquestación de comunicaciones multi-canal, gestión de templates de mensajes, tracking de entrega, y coordinación de notificaciones entre todos los bounded contexts para asegurar comunicación efectiva y oportuna con stakeholders del sistema.
+
+#### 4.2.6.1. Domain Layer
+
+Esta capa contiene las reglas de negocio fundamentales del dominio de comunicaciones, implementando patrones avanzados de entrega multi-canal y estrategias de optimización para maximizar efectividad de entrega mientras se minimizan costos operacionales.
+
+**Aggregate Roots:**
+
+1. **`NotificationRequest` (Aggregate Root)**
+
+Representa el agregado principal del dominio, encapsulando toda la información y comportamiento relacionado con una solicitud de notificación, su procesamiento multi-canal, y tracking completo de entrega hasta confirmación final.
+
+**Atributos principales:**
+
+| Atributo           | Tipo                    | Visibilidad | Descripción                                          |
+|--------------------|-------------------------|-------------|------------------------------------------------------|
+| `id`               | `Long`                  | `private`   | Identificador único de la solicitud en base de datos |
+| `requestId`        | `NotificationRequestId` | `private`   | Identificador de dominio de la solicitud             |
+| `sourceContext`    | `SourceContext`         | `private`   | Bounded context origen de la notificación            |
+| `recipientId`      | `RecipientId`           | `private`   | Destinatario de la notificación                      |
+| `recipientType`    | `RecipientType`         | `private`   | Tipo de destinatario (ciudadano, admin, conductor)   |
+| `messageType`      | `MessageType`           | `private`   | Tipo de mensaje (alerta, notificación, marketing)    |
+| `priority`         | `Priority`              | `private`   | Nivel de prioridad para entrega                      |
+| `channels`         | `List<DeliveryChannel>` | `private`   | Canales de entrega configurados                      |
+| `templateId`       | `TemplateId`            | `private`   | Template de mensaje a utilizar                       |
+| `templateData`     | `TemplateData`          | `private`   | Datos para renderizado del template                  |
+| `scheduledDate`    | `LocalDateTime`         | `private`   | Fecha programada de envío                            |
+| `expiryDate`       | `LocalDateTime`         | `private`   | Fecha de expiración                                  |
+| `status`           | `RequestStatus`         | `private`   | Estado actual de la solicitud                        |
+| `deliveryAttempts` | `List<DeliveryAttempt>` | `private`   | Historial de intentos de entrega                     |
+
+**Métodos principales:**
+
+| Método                                 | Tipo de Retorno   | Visibilidad | Descripción                              |
+|----------------------------------------|-------------------|-------------|------------------------------------------|
+| `addDeliveryChannel(channel)`          | `void`            | `public`    | Agrega canal de entrega con validaciones |
+| `scheduleDelivery(date)`               | `void`            | `public`    | Programa entrega para fecha específica   |
+| `processDelivery()`                    | `DeliveryResult`  | `public`    | Procesa entrega usando Strategy pattern  |
+| `markAsDelivered(channel, deliveryId)` | `void`            | `public`    | Marca como entregado en canal específico |
+| `markAsFailed(channel, reason)`        | `void`            | `public`    | Marca como fallido con razón de falla    |
+| `canBeRetried()`                       | `boolean`         | `public`    | Verifica si permite reintentos           |
+| `isExpired()`                          | `boolean`         | `public`    | Determina si la notificación expiró      |
+| `getPreferredChannel()`                | `DeliveryChannel` | `public`    | Obtiene canal preferido del destinatario |
+| `requiresImmediateDelivery()`          | `boolean`         | `public`    | Verifica si requiere entrega inmediata   |
+
+2. **`MessageTemplate` (Aggregate Root)**
+
+Representa un template de mensaje con soporte para múltiples canales, localización, y versionado para mantener consistencia en comunicaciones a través de toda la plataforma.
+
+**Atributos principales:**
+
+| Atributo          | Tipo                              | Visibilidad | Descripción                                       |
+|-------------------|-----------------------------------|-------------|---------------------------------------------------|
+| `templateId`      | `TemplateId`                      | `private`   | Identificador de dominio del template             |
+| `name`            | `String`                          | `private`   | Nombre descriptivo del template                   |
+| `category`        | `TemplateCategory`                | `private`   | Categoría del template (sistema, marketing, etc.) |
+| `messageType`     | `MessageType`                     | `private`   | Tipo de mensaje soportado                         |
+| `channels`        | `List<DeliveryChannel>`           | `private`   | Canales compatibles con el template               |
+| `subjectTemplate` | `String`                          | `private`   | Template del asunto (para email)                  |
+| `bodyTemplate`    | `String`                          | `private`   | Template del cuerpo del mensaje                   |
+| `variables`       | `List<TemplateVariable>`          | `private`   | Variables disponibles en el template              |
+| `localization`    | `Map<Language, LocalizedContent>` | `private`   | Contenido localizado por idioma                   |
+| `version`         | `TemplateVersion`                 | `private`   | Versión del template                              |
+| `isActive`        | `boolean`                         | `private`   | Estado de activación                              |
+| `metadata`        | `TemplateMetadata`                | `private`   | Metadatos adicionales                             |
+
+**Métodos principales:**
+
+| Método                               | Tipo de Retorno    | Visibilidad | Descripción                              |
+|--------------------------------------|--------------------|-------------|------------------------------------------|
+| `updateContent(subject, body)`       | `void`             | `public`    | Actualiza contenido del template         |
+| `addLocalization(language, content)` | `void`             | `public`    | Agrega localización para idioma          |
+| `addVariable(variable)`              | `void`             | `public`    | Agrega variable al template              |
+| `renderMessage(data, language)`      | `RenderedMessage`  | `public`    | Renderiza mensaje con datos específicos  |
+| `isCompatibleWith(channel)`          | `boolean`          | `public`    | Verifica compatibilidad con canal        |
+| `validateTemplate()`                 | `ValidationResult` | `public`    | Valida sintaxis y variables del template |
+| `activate()`                         | `void`             | `public`    | Activa template para uso                 |
+| `deactivate()`                       | `void`             | `public`    | Desactiva template                       |
+
+3. **`DeliveryRecord` (Aggregate Root)**
+
+Representa un registro individual de entrega con tracking detallado de estado, costos, y métricas de performance para análisis y optimización de canales.
+
+**Atributos principales:**
+
+| Atributo                | Tipo                    | Visibilidad | Descripción                           |
+|-------------------------|-------------------------|-------------|---------------------------------------|
+| `recordId`              | `DeliveryRecordId`      | `private`   | Identificador de dominio del registro |
+| `requestId`             | `NotificationRequestId` | `private`   | Solicitud asociada                    |
+| `recipientId`           | `RecipientId`           | `private`   | Destinatario de la entrega            |
+| `channel`               | `DeliveryChannel`       | `private`   | Canal utilizado para entrega          |
+| `providerTransactionId` | `String`                | `private`   | ID de transacción del proveedor       |
+| `status`                | `DeliveryStatus`        | `private`   | Estado actual de la entrega           |
+| `attemptNumber`         | `Integer`               | `private`   | Número de intento actual              |
+| `deliveryDate`          | `LocalDateTime`         | `private`   | Fecha de entrega exitosa              |
+| `confirmationDate`      | `LocalDateTime`         | `private`   | Fecha de confirmación de recepción    |
+| `failureReason`         | `FailureReason`         | `private`   | Razón de falla si aplica              |
+| `cost`                  | `MonetaryAmount`        | `private`   | Costo de la entrega                   |
+| `metadata`              | `DeliveryMetadata`      | `private`   | Metadatos de entrega                  |
+
+**Métodos principales:**
+
+| Método                           | Tipo de Retorno | Visibilidad | Descripción                                |
+|----------------------------------|-----------------|-------------|--------------------------------------------|
+| `markAsDelivered(transactionId)` | `void`          | `public`    | Marca como entregado con ID de transacción |
+| `markAsFailed(reason)`           | `void`          | `public`    | Marca como fallido con razón específica    |
+| `markAsConfirmed()`              | `void`          | `public`    | Marca como confirmado por destinatario     |
+| `calculateDeliveryTime()`        | `Duration`      | `public`    | Calcula tiempo total de entrega            |
+| `isSuccessful()`                 | `boolean`       | `public`    | Verifica si la entrega fue exitosa         |
+| `canBeRetried()`                 | `boolean`       | `public`    | Determina si permite reintentos            |
+
+**Entities:**
+
+4. **`DeliveryAttempt` (Entity)**
+
+Entidad que representa un intento individual de entrega con detalles específicos del proveedor y métricas de performance.
+
+5. **`RecipientPreference` (Entity)**
+
+Entidad que gestiona preferencias de comunicación por destinatario, incluyendo canales preferidos, horarios de silencio, y configuraciones de frecuencia.
+
+6. **`TemplateVariable` (Entity)**
+
+Entidad que representa variables utilizables en templates con validaciones y formateo específico.
+
+**Value Objects:**
+
+Los value objects implementan inmutabilidad y encapsulan validaciones específicas del dominio de comunicaciones:
+
+- **`DeliveryChannel`**: Canal con capacidades y restricciones específicas
+- **`Priority`**: Nivel de prioridad con comportamientos de entrega asociados
+- **`TemplateData`**: Datos estructurados para renderizado de templates
+- **`RenderedMessage`**: Mensaje final renderizado con metadata por canal
+- **`MessageType`**: Tipo de mensaje con reglas de entrega específicas
+
+**Factories (Creational Pattern):**
+
+1. **`NotificationFactory`**: Implementa Factory pattern para crear notificaciones con diferentes configuraciones (urgentes con canales prioritarios, programadas con optimización de costo, masivas con batching inteligente) aplicando estrategias específicas por tipo.
+
+2. **`TemplateFactory`**: Crea templates especializados por canal (email con HTML/texto plano, SMS con límites de caracteres, push con títulos y acciones) con validaciones específicas.
+
+3. **`DeliveryRecordFactory`**: Genera registros de entrega con cálculos iniciales de costo y configuraciones de retry específicas por proveedor.
+
+**Strategies (Behavioral Pattern):**
+
+El patrón Strategy permite intercambiar algoritmos de selección de canal dinámicamente:
+
+1. **`PriorityBasedStrategy`**: Selección basada en urgencia del mensaje con canales de alta velocidad
+2. **`CostOptimizedStrategy`**: Optimización por costo de entrega con preferencia por canales económicos
+3. **`ReliabilityBasedStrategy`**: Selección por confiabilidad histórica del canal
+4. **`HybridSelectionStrategy`**: Combinación inteligente de múltiples criterios
+
+**Domain Services:**
+
+1. **`NotificationCommandService`**: Orquesta operaciones CQRS de escritura para solicitudes de notificación
+2. **`NotificationQueryService`**: Maneja consultas CQRS optimizadas para tracking y análisis
+3. **`TemplateCommandService`**: Gestiona operaciones de templates con versionado y validación
+4. **`TemplateQueryService`**: Proporciona consultas optimizadas para selección de templates
+5. **`DeliveryAnalyticsService`**: Genera análisis de performance por canal y proveedor
+6. **`MessageRenderingService`**: Coordina renderizado de mensajes con localización y personalización
+
+**Commands (CQRS Write Side):**
+
+- `CreateNotificationCommand`: Creación de solicitudes con validación de destinatarios
+- `SendNotificationCommand`: Envío inmediato con override de configuraciones
+- `CreateTemplateCommand`: Creación de templates con validación de sintaxis
+- `UpdateTemplateCommand`: Actualización con versionado automático
+- `ScheduleNotificationCommand`: Programación con optimización de timing
+
+**Queries (CQRS Read Side):**
+
+- `GetNotificationByIdQuery`: Consulta individual con historial completo
+- `GetNotificationsByRecipientQuery`: Historial por destinatario con filtros
+- `GetTemplateByIdQuery`: Consulta de template con localizaciones
+- `GetTemplatesByTypeQuery`: Templates disponibles por tipo y canal
+- `GetDeliveryAnalyticsQuery`: Análisis de performance y costos
+
+**Domain Events:**
+
+- `NotificationRequestCreatedEvent`: Publicado al crear solicitudes de notificación
+- `NotificationDeliveredEvent`: Publicado al entregar exitosamente por cualquier canal
+- `NotificationFailedEvent`: Publicado al fallar entrega con programación de fallback
+- `TemplateUpdatedEvent`: Publicado al actualizar templates con control de versiones
+
+#### 4.2.6.2. Interface Layer
+
+Esta capa expone las funcionalidades del bounded context como hub central de comunicaciones, actuando como Open-Host Service para todos los otros bounded contexts y proporcionando interfaces especializadas para gestión de templates.
+
+**Controllers:**
+
+1. **`Notification Controller`**: Endpoints REST para gestión de notificaciones, configuración de canales, y tracking de entrega. Proporciona interfaces para programación de notificaciones y consultas de estado.
+
+2. **`Template Controller`**: Endpoints especializados para gestión de templates de mensajes, versionado, y localización. Implementa validaciones de sintaxis y preview de renderizado.
+
+3. **`Delivery Controller`**: Endpoints para tracking de entrega, análisis de performance por canal, y configuración de proveedores. Proporciona métricas en tiempo real y reportes de costos.
+
+4. **`Event Consumer`**: Consumidor Kafka que actúa como hub central recibiendo eventos de todos los bounded contexts (Container Monitoring, Route Planning, Community Relations, Payment & Subscriptions, Municipal Operations). Implementa Consumer pattern para procesamiento distribuido.
+
+#### 4.2.6.3. Application Layer
+
+Esta capa coordina las operaciones complejas de comunicación multi-canal y orquesta los flujos de trabajo de entrega, implementando patrones para optimizar efectividad y minimizar costos de comunicación.
+
+**Application Services:**
+
+1. **`Notification Service`**: Servicio principal que orquesta lifecycle completo de notificaciones incluyendo selección de templates, rendering, y coordinación de entrega. Implementa Template Method pattern para diferentes tipos de notificación y Facade pattern para simplificar interacciones con múltiples proveedores.
+
+2. **`Delivery Service`**: Gestiona coordinación multi-canal, lógica de reintentos, y mecanismos de fallback. Implementa Strategy pattern para selección de canales y Circuit Breaker pattern para resiliencia de proveedores externos.
+
+3. **`Template Service`**: Maneja gestión completa de templates, personalización, y localización. Implementa Builder pattern para construcción de mensajes complejos y Version Control pattern para gestión de cambios en templates.
+
+#### 4.2.6.4. Infrastructure Layer
+
+Esta capa proporciona implementaciones técnicas para integración con múltiples proveedores de comunicación, persistencia de datos de entrega, y adaptadores especializados para cada canal de comunicación.
+
+**Repositories:**
+
+1. **`Notification Repository`**: Implementación JPA para persistencia de solicitudes con tracking de entrega y analytics. Implementa Repository pattern con optimizaciones para consultas de estado y análisis temporal.
+
+2. **`Template Repository`**: Repositorio especializado para templates con soporte para versionado y localización. Incluye optimizaciones para búsquedas por tipo y canal.
+
+3. **`Delivery Repository`**: Repositorio para registros de entrega con métricas de performance y tracking de costos. Optimizado para análisis de tendencias y reportes de eficiencia.
+
+**External Services:**
+
+1. **`Email Service Adapter`**: Integración especializada con SendGrid para entrega de emails transaccionales y marketing. Implementa Adapter pattern para abstracción de provider y Retry pattern para resiliencia.
+
+2. **`SMS Service Adapter`**: Integración con Twilio para entrega de SMS con soporte para mensajes internacionales. Implementa Rate Limiting pattern para cumplimiento de regulaciones.
+
+3. **`Push Notification Adapter`**: Integración con Firebase Cloud Messaging para notificaciones móviles. Implementa Batch Processing pattern para eficiencia en entregas masivas.
+
+#### 4.2.6.5. Bounded Context Software Architecture Component Level Diagrams
+
+![component-diagram-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.componente-level-diagram.png)
+
+El diagrama de componentes muestra la arquitectura interna del Communication Hub bounded context, ilustrando su rol como hub central de comunicaciones y las integraciones especializadas multi-canal. Se observa claramente:
+
+- **Interface Layer** (verde claro): Controllers especializados para notificaciones, templates y delivery tracking, plus event consumer que actúa como hub central para todos los BCs
+- **Application Layer** (verde medio): Services que coordinan entrega multi-canal, gestión de templates con localización, y optimización de estrategias de entrega
+- **Infrastructure Layer** (verde oscuro): Adapters especializados para cada proveedor de comunicación y repositories optimizados para analytics
+- **Integraciones multi-canal**: SendGrid para email, Twilio para SMS, Firebase para push notifications con fallback automático
+
+La arquitectura implementa patrones avanzados como Strategy para selección óptima de canales, Circuit Breaker para resiliencia de proveedores, y Open-Host Service como punto central de comunicación para toda la plataforma.
+
+#### 4.2.6.6. Bounded Context Software Architecture Code Level Diagrams
+
+##### 4.2.6.6.1. Bounded Context Domain Layer Class Diagrams
+
+![class-diagram-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.class-diagram.png)
+
+El diagrama de clases del Domain Layer presenta la estructura completa del dominio Communication Hub, mostrando:
+
+**Elementos DDD implementados:**
+- **Aggregate Roots**: NotificationRequest, MessageTemplate, DeliveryRecord como raíces con invariantes de comunicación
+- **Entities**: DeliveryAttempt, RecipientPreference, TemplateVariable con identidad y ciclo de vida específicos
+- **Value Objects**: Objetos inmutables para conceptos de entrega y renderizado
+- **Domain Services**: Servicios para renderizado de mensajes y análisis de entrega
+- **Domain Events**: Eventos para coordinación de comunicaciones y tracking
+
+**Patrones de diseño aplicados:**
+- **Factory Pattern**: NotificationFactory, TemplateFactory, DeliveryRecordFactory para creación especializada
+- **Strategy Pattern**: ChannelSelectionStrategy con múltiples algoritmos (Priority, Cost, Reliability, Hybrid)
+- **Template Method Pattern**: Para procesamiento diferenciado por tipo de notificación
+- **Repository Pattern**: Interfaces para abstracción de persistencia de comunicaciones
+
+**CQRS Implementation:**
+- **Commands**: Operaciones de escritura con validaciones de templates y destinatarios
+- **Queries**: Operaciones de lectura optimizadas para analytics y tracking
+- **Command/Query Services**: Separación clara con especialización en comunicaciones
+
+**Multi-channel capabilities:**
+- **Channel abstraction**: Soporte uniforme para email, SMS, push, in-app
+- **Provider integration**: Adaptadores específicos para SendGrid, Twilio, Firebase
+- **Fallback mechanisms**: Estrategias automáticas de canal alternativo
+- **Cost optimization**: Selección inteligente basada en costo y efectividad
+
+##### 4.2.6.6.2. Bounded Context Database Design Diagram
+
+![database-design-communication-hub.png](assets/4.solution-software-design/4.2.tactical-level-domain-driven-design/6.database-design-diagram.png)
+
+El diseño de base de datos implementa el modelo de dominio con optimizaciones específicas para comunicaciones multi-canal:
+
+**Tablas principales:**
+- **notification_requests**: Aggregate root con multi-channel delivery y template integration
+- **message_templates**: Aggregate root para templates con localización y versionado automático
+- **delivery_records**: Aggregate root para tracking detallado con provider integration
+- **recipient_preferences**: Entity para preferencias personalizadas por usuario
+- **delivery_attempts**: Entity para historial completo con métricas de performance
+
+**Tablas auxiliares especializadas:**
+- **channel_performance**: Analytics diarios por canal y proveedor con métricas de éxito
+- **communication_events**: Domain events para coordinación entre bounded contexts
+
+**Optimizaciones de comunicación:**
+- **Triggers automáticos**: Actualización de estados basado en delivery results
+- **Funciones de analytics**: Cálculo automático de métricas de performance por canal
+- **Índices especializados**: Para consultas de retry, tracking, y analytics temporales
+- **Limpieza inteligente**: Expiración automática de notificaciones con políticas configurables
+
+**Características multi-canal:**
+- **Provider integration**: Campos específicos para respuestas de SendGrid, Twilio, Firebase
+- **Cost tracking**: Seguimiento detallado de costos por canal y provider
+- **Performance metrics**: Tiempo de entrega, success rates, y reliability scores
+- **Template versioning**: Sistema completo de versionado con rollback capabilities
+
+**Características técnicas:**
+- **JSONB avanzado**: Para respuestas de providers, template data, y recipient preferences
+- **Triggers inteligentes**: Automatización de estados y cálculo de métricas críticas
+- **Constraints robustos**: Validaciones específicas para canales, templates, y delivery status
+- **Vistas especializadas**: Para analytics de delivery y overview de notificaciones
+
+El esquema está optimizado para las operaciones de comunicación identificadas en el dominio, incluyendo entrega multi-canal con fallback automático, template management con localización, cost tracking detallado, performance analytics por proveedor, y coordinación centralizada como hub de comunicaciones para toda la plataforma WasteTrack.
+
 # Capítulo V: Solution UI/UX Design
 
 ## 5.1. Style Guidelines
